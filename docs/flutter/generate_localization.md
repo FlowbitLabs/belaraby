@@ -1,3 +1,3 @@
-## Generate localization
+Use this command in frontend directory
 
-- use this command `dart run intl_utils:generate`
+- `dart run intl_utils:generate`
