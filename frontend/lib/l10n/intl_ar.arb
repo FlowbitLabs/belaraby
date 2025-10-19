@@ -1,0 +1,66 @@
+{
+  "@@locale": "ar",
+  "app_title": "بالعربي",
+  "@app_title": {
+    "description": "Title for the app"
+  },
+  "home_title": "اكتشف بالعربي",
+  "@home_title": {
+    "description": "Title for the home screen"
+  },
+  "home_free_stories": "قصص مجانية",
+  "@home_free_stories": {
+    "description": "Label for free stories title section"
+  },
+  "home_more_stories": "المزيد",
+  "@home_more_stories": {
+    "description": "Label for the more stories button on the home screen"
+  },
+  "home_hide_learnt": "إخفاء ما تعلمت",
+  "@home_hide_learnt": {
+    "description": "Label for the stories section in the navbar"
+  },
+  "home_filter": "البحث بالمستوى: {level}",
+  "@home_filter": {
+    "description": "Label for the more stories button on the home screen",
+    "placeholders": {
+      "level": {}
+    }
+  },
+  "navbar_stories": "قصص",
+  "@navbar_stories": {
+    "description": "Label for the stories section in the navbar"
+  },
+  "navbar_training": "تدريبات",
+  "@navbar_training": {
+    "description": "Label for the training section in the navbar"
+  },
+  "navbar_my_library": "مكتبتي",
+  "@navbar_my_library": {
+    "description": "Label for the My Library section in the navbar"
+  },
+  "library_favorites": "قصص مفضلة",
+  "@library_favorites": {
+    "description": "Label for the favorites section in the library"
+  },
+  "library_learned_stories": "قصص تعلمتها",
+  "@library_learned_stories": {
+    "description": "Label for the learned stories section in the library"
+  },
+  "lesson_tab_story": "قصة",
+  "@lesson_tab_story": {
+    "description": "Label for the story tab in the lesson view"
+  },
+  "lesson_tab_quiz": "اختبار",
+  "@lesson_tab_quiz": {
+    "description": "Label for the quiz tab in the lesson view"
+  },
+  "lesson_tab_keywords": "كلمات",
+  "@lesson_tab_keywords": {
+    "description": "Label for the keywords tab in the lesson view"
+  },
+  "lesson_tab_grammar": "نحو",
+  "@lesson_tab_grammar": {
+    "description": "Label for the grammar tab in the lesson view"
+  }
+}

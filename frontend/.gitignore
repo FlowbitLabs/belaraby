@@ -1,0 +1,56 @@
+# misc
+.idea/
+.vscode/
+
+*.env
+.env.local
+.env.localbackend.local
+.env.development.local
+.env.test.local
+.env.preproduction.local
+.env.production.local
+
+# Node dependencies
+node_modules
+*.pnp
+*.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool
+.eslintcache
+.flutter-plugins
+.flutter-plugins-dependencies
+devtools_options.yaml
+.packages
+.pub-cache
+.pub
+.metadata
+frontend/build
+build/*
+!build/web
+
+# Android Studio build artifacts
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Android
+gradle-wrapper.jar
+.gradle
+captures
+gradlew
+gradlew.bat
+local.properties
+GeneratedPluginRegistrant.java
+
+# Remember to never publicly share your keystore.
+# See https://flutter.dev/docs/deployment/android#reference-the-keystore-from-the-app
+key.properties
+**/*.keystore
+**/*.jks
+

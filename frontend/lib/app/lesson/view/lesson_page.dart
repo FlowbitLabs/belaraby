@@ -1,0 +1,29 @@
+import 'package:belaraby/app/home/cubit/cubit.dart';
+import 'package:belaraby/app/lesson/cubit/lesson_cubit.dart';
+import 'package:belaraby/app/lesson/tab_views/grammar_tab_view.dart';
+import 'package:belaraby/app/lesson/tab_views/keywords_tab_view.dart';
+import 'package:belaraby/app/lesson/tab_views/lesson_tab_view.dart';
+import 'package:belaraby/app/lesson/tab_views/quiz_tab_view.dart';
+import 'package:belaraby/constant/colors.dart';
+import 'package:belaraby/constant/typography.dart';
+import 'package:belaraby/l10n/l10n.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:go_router/go_router.dart';
+
+part 'lesson_view.dart';
+
+class LessonPage extends StatelessWidget {
+  const LessonPage(this.lesson, {super.key});
+
+  final Lesson lesson;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => LessonCubit(),
+      child: LessonView(lesson),
+    );
+  }
+}

@@ -1,0 +1,60 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/ios
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+
+# add default ignore patterns
+# See https://git-scm.com/docs/gitignore
+# for more information
+# Ignore all files in the node_modules directory
+node_modules/
+# Ignore all files in the dist directory
+dist/
+# Ignore all files in the coverage directory
+coverage/
+# Ignore all files in the .env file
+.env
+# Ignore all files in the .DS_Store file
+.DS_Store
+# Ignore all files in the .idea directory
+.idea/
