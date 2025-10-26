@@ -29,6 +29,9 @@ supabase link
 supabase start
 ```
 
+You should see this
+![Supabase Studio Interface](../assets/images/supabase_start.png)
+
 ```bash
 supabase stop
 ```
