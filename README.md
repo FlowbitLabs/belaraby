@@ -23,6 +23,9 @@ pip install -r requirements.txt
 
 ### 3. Serve documentation locally at http://127.0.0.1:8000/
 
+If you have dependencies installed, use these commands to run mkdocs
+
 ```bash
+source .venv/bin/activate
 mkdocs serve
 ```
