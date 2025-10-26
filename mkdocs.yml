@@ -29,26 +29,25 @@ theme:
 
   # Built-in Material features
   features:
-    features:
-      - navigation.expand # Expand the current section automatically
-      - navigation.sections # Show second-level sections in sidebar
-      - navigation.instant # Instant loading between pages
-      - navigation.tracking # Highlight current section
-      - navigation.tabs # Top-level sections as tabs
-      - toc.integrate # Merge page TOC into sidebar
-      - navigation.path
-      - navigation.indexes
-      - search.suggest
-      - search.highlight
-      - search.share
-      - announce.dismiss
-      - content.action.edit
-      - content.action.view
-      - content.code.copy
-      - content.code.annotate
-      - content.tooltips
-      - content.tabs.link
-      - toc.follow
+    - navigation.expand # Expand the current section automatically
+    - navigation.sections # Show second-level sections in sidebar
+    - navigation.instant # Instant loading between pages
+    - navigation.tracking # Highlight current section
+    - navigation.tabs # Top-level sections as tabs
+    - toc.integrate # Merge page TOC into sidebar
+    - navigation.path
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - search.share
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+    - content.tabs.link
+    - toc.follow
 
 # Location of documentation source files
 docs_dir: docs/
