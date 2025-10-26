@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:belaraby/app/home/cubit/cubit.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
+import 'package:belaraby/data/data.dart';
 import 'package:flutter/material.dart';
 
 class LessonTabView extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'package:belaraby/app/home/cubit/home_cubit.dart';
-import 'package:belaraby/app/home/cubit/model/lesson.dart';
+import 'package:belaraby/data/data.dart';
 import 'package:equatable/equatable.dart';
 
 final List<String> levelsFilterList = [
