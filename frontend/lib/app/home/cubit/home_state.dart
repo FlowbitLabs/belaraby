@@ -19,19 +19,12 @@ class HomeState extends Equatable {
   });
 
   final HomeStatus status;
-  final List<dynamic> lessons;
+  final List<Lesson> lessons;
   final String filterBy;
   final String error;
 
-  List<Lesson> get lessonsList {
-    return lessons.map((lesson) {
-      return Lesson.fromJson(lesson as Map<String, dynamic>);
-    }).toList();
-  }
-
-  List<Lesson> get freeLessons {
-    return lessonsList.where((lesson) => !lesson.isPaid).toList();
-  }
+  List<Lesson> get freeLessons =>
+      lessons.where((lesson) => !lesson.isPaid).toList();
 
   List<Lesson> get paidLessonsBySelectedLevel {
     final levelFilters = {
@@ -44,15 +37,14 @@ class HomeState extends Equatable {
 
     final allowedLevel = levelFilters[filterBy];
 
-    return lessonsList.where((lesson) {
+    return lessons.where((lesson) {
       if (allowedLevel == null) return true; // 'الكل' case
       return lesson.grade == allowedLevel;
     }).toList();
   }
 
-  List<String> get levels {
-    return lessonsList.map((lesson) => lesson.level).toSet().toList();
-  }
+  List<String> get levels =>
+      lessons.map((lesson) => lesson.level).toSet().toList();
 
   String get title => 'Home';
 
@@ -63,7 +55,7 @@ class HomeState extends Equatable {
     HomeStatus? status,
     String? error,
     String? filterBy,
-    List<dynamic>? lessons,
+    List<Lesson>? lessons,
   }) {
     return HomeState(
       status: status ?? this.status,

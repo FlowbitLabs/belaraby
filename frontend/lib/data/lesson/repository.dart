@@ -5,7 +5,7 @@ class LessonRepository {
   Future<List<Lesson>> getLessons() async {
     final response = await supabase
         .from('lessons')
-        .select('id, title, level, hero_image')
+        .select('paid, title, body, level, grade, hero_image, date')
         .order('created_at', ascending: false);
 
     if (response.isEmpty) return [];
@@ -18,7 +18,7 @@ class LessonRepository {
   Future<Lesson?> getLessonById(String id) async {
     final response = await supabase
         .from('lessons')
-        .select('id, title, body, level, hero_image')
+        .select('paid, title, body, level, grade, hero_image, date')
         .eq('id', id)
         .maybeSingle();
 
