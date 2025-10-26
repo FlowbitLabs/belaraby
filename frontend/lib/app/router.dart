@@ -1,7 +1,7 @@
-import 'package:belaraby/app/home/cubit/cubit.dart';
 import 'package:belaraby/app/home/view/home_page.dart';
 import 'package:belaraby/app/lesson/view/lesson_page.dart';
 import 'package:belaraby/app/my_library/view/my_library_page.dart';
+import 'package:belaraby/data/data.dart';
 import 'package:belaraby/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

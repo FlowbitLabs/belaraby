@@ -1,6 +1,6 @@
 import 'package:belaraby/app/home/cubit/home_state.dart';
+import 'package:belaraby/data/data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum HomeStatus { initial, loading, success, error }
 
@@ -14,7 +14,7 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> getLessons() async {
     emit(state.copyWith(status: HomeStatus.loading));
     try {
-      final lessons = await Supabase.instance.client.from('lessons').select();
+      final lessons = await LessonRepository().getLessons();
 
       emit(state.copyWith(status: HomeStatus.success, lessons: lessons));
     } on Exception catch (e) {

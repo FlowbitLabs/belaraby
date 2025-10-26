@@ -1,4 +1,4 @@
-import 'package:belaraby/app/home/cubit/cubit.dart';
+import 'package:belaraby/data/data.dart';
 import 'package:belaraby/l10n/l10n.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
