@@ -1,10 +1,121 @@
 part of 'home_page.dart';
 
-class HomeView extends StatelessWidget {
+class HomeView extends StatefulWidget {
   const HomeView({super.key});
 
   @override
+  State<HomeView> createState() => _HomeViewState();
+}
+
+class _HomeViewState extends State<HomeView> {
+  void _showLoginDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final emailController = TextEditingController();
+        final passwordController = TextEditingController();
+
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autocorrect: false,
+                enableSuggestions: false,
+                autofillHints: const [AutofillHints.email],
+                decoration: const InputDecoration(
+                  labelText: 'البريد الإلكتروني',
+                  hintText: 'أدخل بريدك الإلكتروني',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                keyboardType: TextInputType.visiblePassword,
+                textInputAction: TextInputAction.done,
+                autocorrect: false,
+                enableSuggestions: false,
+                autofillHints: const [AutofillHints.password],
+                decoration: const InputDecoration(
+                  labelText: 'كلمة المرور',
+                  hintText: 'أدخل كلمة المرور الخاصة بك',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('إلغاء'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final email = emailController.text.trim();
+                final password = passwordController.text.trim();
+
+                if (email.isEmpty || password.isEmpty) return;
+
+                try {
+                  await supabase.auth.signInWithPassword(
+                    email: email,
+                    password: password,
+                  );
+
+                  setState(() {
+                    context.pop();
+                  });
+                } catch (e) {
+                  // Optionally show an error message
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Login failed: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('تسجيل الدخول'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // uncomment to sign out user for testing
+    // supabase.auth.signOut();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (supabase.auth.currentUser == null) {
+        _showLoginDialog(context);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (supabase.auth.currentUser == null) {
+      return Center(
+        child: ElevatedButton(
+          onPressed: () {
+            _showLoginDialog(context);
+          },
+          child: const Text('Login to continue'),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 241, 241, 241),
       body: SafeArea(
