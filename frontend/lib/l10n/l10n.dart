@@ -143,6 +143,15 @@ class L10n {
       args: [],
     );
   }
+  
+  String get navbar_my_welcome_page {
+    return Intl.message(
+      'Welcome',
+      name: 'navbar_Welcome_page',
+      desc: 'Welcome Page for Login/Signup',
+      args: [],
+    );
+  }
 
   /// `قصص مفضلة`
   String get library_favorites {

@@ -12,18 +12,37 @@ class WelcomePage extends StatelessWidget {
       backgroundColor: const Color.fromARGB(220, 8, 173, 228),
       body: SafeArea(
         child: Center(
-          child: TextField(
-          decoration: InputDecoration(
-            labelText: 'Email',
-            hintText:  'Enter Your email',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10)
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 15,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Email',
+                hintText: 'Enter your Email',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                prefixIcon: const Icon(Icons.email),
+              ),
+              keyboardType: TextInputType.emailAddress,
             ),
-            prefixIcon: const Icon(Icons.email),
+            TextField(
+              obscureText: true, //hide the characters
+              decoration: InputDecoration(
+                labelText: 'Password',
+                hintText: 'Enter your password',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                prefixIcon: const Icon(Icons.password),
+              ),
+              keyboardType: TextInputType.visiblePassword,
             ),
-            keyboardType: TextInputType.text,),
+          ],
         ),
-      )
-    );
+      ),
+    ),
+      );
   }
 }

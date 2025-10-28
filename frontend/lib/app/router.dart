@@ -1,3 +1,4 @@
+import 'package:belaraby/app/authentication/view/welcome_page.dart';
 import 'package:belaraby/app/home/view/home_page.dart';
 import 'package:belaraby/app/lesson/view/lesson_page.dart';
 import 'package:belaraby/app/my_library/view/my_library_page.dart';
@@ -30,6 +31,14 @@ final GoRouter router = GoRouter(
             GoRoute(
               path: '/library',
               builder: (context, state) => const MyLibraryPage(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/authentication',
+              builder: (context, state) => const WelcomePage(),
             ),
           ],
         ),
@@ -72,6 +81,10 @@ class ScaffoldWithBottomNavigation extends StatelessWidget {
     BottomNavigationBarItem(
       icon: const Icon(Icons.menu_book),
       label: L10n.of(context).navbar_my_library,
+    ),
+    BottomNavigationBarItem(
+      icon: const Icon(Icons.login),
+      label: L10n.of(context).navbar_my_welcome_page,
     ),
   ];
 
