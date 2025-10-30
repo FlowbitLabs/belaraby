@@ -82,6 +82,7 @@ class ScaffoldWithBottomNavigation extends StatelessWidget {
       icon: const Icon(Icons.menu_book),
       label: L10n.of(context).navbar_my_library,
     ),
+    //This should be removed later
     BottomNavigationBarItem(
       icon: const Icon(Icons.login),
       label: L10n.of(context).navbar_my_welcome_page,
