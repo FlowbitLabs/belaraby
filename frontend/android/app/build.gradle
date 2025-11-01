@@ -28,7 +28,7 @@ android {
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-        compileSdkVersion 35
+        compileSdkVersion 36
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
@@ -43,7 +43,7 @@ android {
 
     defaultConfig {
         applicationId "com.belaraby.frontend"
-        targetSdkVersion 35
+        targetSdkVersion 36
         minSdkVersion 24
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
