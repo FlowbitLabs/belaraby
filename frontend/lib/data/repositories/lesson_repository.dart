@@ -1,4 +1,4 @@
-import 'package:belaraby/data/lesson/model.dart';
+import 'package:belaraby/data/models/lesson_model.dart';
 import 'package:belaraby/data/supabase_client.dart';
 
 class LessonRepository {

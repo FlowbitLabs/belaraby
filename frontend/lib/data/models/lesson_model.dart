@@ -28,19 +28,4 @@ class Lesson {
   final String grade;
   final String heroImage;
   final String? date;
-
-  String gradeArabic() {
-    switch (grade) {
-      case '1':
-        return 'الأول ابتدائي';
-      case '2':
-        return 'الثاني ابتدائي';
-      case '3':
-        return 'الثالث ابتدائي';
-      case '4':
-        return 'الرابع ابتدائي';
-      default:
-        return '';
-    }
-  }
 }

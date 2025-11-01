@@ -41,7 +41,7 @@ class _LessonTabViewState extends State<LessonTabView> {
                 style: BTextStyles.of(context).displayMedium,
               ),
               Text(
-                widget.lesson.gradeArabic(),
+                widget.lesson.grade,
                 style: BTextStyles.of(context).title2,
               ),
               RichText(text: widget.textSpan),
