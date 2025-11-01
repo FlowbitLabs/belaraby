@@ -1,3 +1,5 @@
+import 'package:belaraby/app/authentication/view/login_page.dart';
+import 'package:belaraby/app/authentication/view/signup_page.dart';
 import 'package:flutter/material.dart';
 
 class WelcomePage extends StatefulWidget {
@@ -8,17 +10,6 @@ class WelcomePage extends StatefulWidget {
 }
 
 class _WelcomePageState extends State<WelcomePage> {
-  
-  
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
   
   @override
   Widget build(BuildContext context) {
@@ -31,8 +22,8 @@ class _WelcomePageState extends State<WelcomePage> {
       body: Column(
         children: [
           Container(
-            height: screenHeight / 3,
-            width: screenWidth,
+            height: screenHeight / 2,
+            width: screenWidth /2 ,
             decoration: const BoxDecoration(
               color: Color.fromARGB(0, 202, 3, 3),
               borderRadius: BorderRadius.all(Radius.circular(70))
@@ -57,14 +48,24 @@ class _WelcomePageState extends State<WelcomePage> {
                   fontWeight: FontWeight.bold
                 ),
               ),
+              const SizedBox(height: 10,),
               const Text(
-                'Thank you for choosing us in your journey to start learning arabic.Through an easy and innovative way you will become fluent in no time', 
+                '''
+                Thank you for choosing us in your journey to start learning arabic.
+                Through an easy and innovative way you will become fluent in no time.
+                ''', 
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 10,
                 ),
               ),
+              const SizedBox(height: 20,),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(context, 
+                  MaterialPageRoute(builder: (context)=> const SignupPage())
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.blue,
@@ -78,6 +79,7 @@ class _WelcomePageState extends State<WelcomePage> {
                 ), 
                 child: const Text('Sign up')
                 ),
+                const SizedBox(height: 20,),
                 Row(
                   children: [
                     const Text(
@@ -87,9 +89,13 @@ class _WelcomePageState extends State<WelcomePage> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {}, 
+                      onPressed: () {
+                        Navigator.push(context, 
+                        MaterialPageRoute(builder: (context)=> const LoginPage())
+                        );
+                      }, 
                       child: const Text(
-                        'Login in',
+                        'Log in',
                         style: TextStyle(
                           color: Colors.blue
                         ),

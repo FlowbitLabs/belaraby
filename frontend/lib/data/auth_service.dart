@@ -1,8 +1,9 @@
+// import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AuthService {
-  final supabase = Supabase.instance.client;
-
+class AuthService{
+  final SupabaseClient supabase = Supabase.instance.client;
+  
   Future<AuthResponse> signUp(String email, String password) {
     return supabase.auth.signUp(email: email, password: password);
   }
