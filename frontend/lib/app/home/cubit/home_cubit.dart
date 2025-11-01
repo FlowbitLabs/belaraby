@@ -14,7 +14,7 @@ class HomeCubit extends Cubit<HomeState> {
   Future<void> getLessons() async {
     emit(state.copyWith(status: HomeStatus.loading));
     try {
-      final lessons = await LessonRepository().getLessons();
+      final lessons = await LessonRepository().getAllLessons();
 
       emit(state.copyWith(status: HomeStatus.success, lessons: lessons));
     } on Exception catch (e) {
