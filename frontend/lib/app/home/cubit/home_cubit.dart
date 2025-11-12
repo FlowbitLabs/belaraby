@@ -11,6 +11,7 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(filterBy: level));
   }
 
+  // Added some comments here for clarity
   Future<void> getLessons() async {
     emit(state.copyWith(status: HomeStatus.loading));
     try {
