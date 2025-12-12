@@ -1,14 +1,17 @@
-# Welcome to MkDocs
+# Welcome to Belaraby Documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+Belaraby is an Arabic learning platform built with Flutter and Supabase.
 
-## Commands
+## Quick Links
 
-- `mkdocs serve` - Start the live-reloading docs server.
+### Frontend Development
+*   [**Getting Started**](frontend/getting_started.md): Setup guide for the Flutter app.
+*   [**Architecture**](frontend/architecture.md): Overview of the simplified project structure.
+*   [**Navigation**](frontend/navigation.md): How routing works in the app.
+*   [**Localization**](frontend/localization.md): How to add translations.
 
-## Project layout
+### Backend
+*   [**Supabase Guide**](supabase/getting_started.md): Database and backend setup.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+### Release
+*   [**Release Process**](release/0_index.md): Checklist and procedures for releasing the app.

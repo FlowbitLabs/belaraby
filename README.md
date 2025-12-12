@@ -1,31 +1,28 @@
-# Belaraby
+# Belaraby 🚀
 
-This is the monorepository for belaraby app.
+**Belaraby** is an interactive Arabic learning platform.
 
-# 📘 Documentation
+## 📚 Documentation
 
-This project uses **[MkDocs](https://www.mkdocs.org/)** with the **Material theme** to centralize and publish our documentation.
+Detailed documentation is available in the `docs/` directory.
 
-### 1. Create and activate a virtual environment
+👉 **[Read the Documentation](docs/index.md)** 👈
 
-It’s recommended to work in an isolated Python environment.
+## Quick Start
+
+### Frontend (Flutter)
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
+cd frontend
+# Create .env file with Supabase credentials
+flutter pub get
+flutter run
 ```
 
-### 2. All required packages (MkDocs, theme, and plugins) are listed in requirements.txt
+### Backend (Supabase)
+
+Starts the Supabase local development stack.
 
 ```bash
-pip install -r requirements.txt
-```
-
-### 3. Serve documentation locally at http://127.0.0.1:8000/
-
-If you have dependencies installed, use these commands to run mkdocs
-
-```bash
-source .venv/bin/activate
-mkdocs serve
+supabase start
 ```
