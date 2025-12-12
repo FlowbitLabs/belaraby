@@ -1,6 +1,9 @@
-import 'package:belaraby/app/home/cubit/cubit.dart';
-import 'package:belaraby/app/home/widgets/filter_bar.dart';
+import 'package:belaraby/app/home/cubit/home_cubit.dart';
+import 'package:belaraby/app/home/cubit/home_state.dart';
+
 import 'package:belaraby/app/home/widgets/free_lessons.dart';
+import 'package:belaraby/app/home/widgets/home_header_delegate.dart';
+import 'package:belaraby/app/home/widgets/lesson_filter_delegate.dart';
 import 'package:belaraby/app/home/widgets/lessons_section.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';

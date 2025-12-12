@@ -24,10 +24,10 @@ class HomeView extends StatelessWidget {
 
             return CustomScrollView(
               slivers: [
-                SliverSafeArea(
+                const SliverSafeArea(
                   sliver: SliverPersistentHeader(
                     pinned: true,
-                    delegate: _HeaderDelegate(),
+                    delegate: HomeHeaderDelegate(),
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -100,9 +100,9 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
                 ),
-                SliverPersistentHeader(
+                const SliverPersistentHeader(
                   pinned: true,
-                  delegate: _LessonsSelectorDelegate(),
+                  delegate: LessonFilterDelegate(),
                 ),
                 SliverToBoxAdapter(
                   child: LessonsSection(
@@ -117,84 +117,4 @@ class HomeView extends StatelessWidget {
       ),
     );
   }
-}
-
-class _HeaderDelegate extends SliverPersistentHeaderDelegate {
-  @override
-  double get minExtent => 80;
-
-  @override
-  double get maxExtent => 80;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return Container(
-      color: const Color.fromARGB(255, 241, 241, 241),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      alignment: Alignment.centerRight,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'home_title'.tr(),
-            style: const TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsetsGeometry.only(left: 23, top: 5),
-            child: Icon(Icons.account_box, size: 40, color: Colors.yellow[800]),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(_HeaderDelegate oldDelegate) => false;
-}
-
-class _LessonsSelectorDelegate extends SliverPersistentHeaderDelegate {
-  @override
-  double get minExtent => 60;
-
-  @override
-  double get maxExtent => 60;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, state) {
-        return Container(
-          color: const Color.fromARGB(255, 241, 241, 241),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-          alignment: Alignment.centerRight,
-          child: Column(
-            children: [
-              LevelFilterBar(
-                levelsFilterList: levelsFilterList,
-                selected: state.filterBy,
-                onSelected: (level) {
-                  context.read<HomeCubit>().filterBy(level);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  bool shouldRebuild(_LessonsSelectorDelegate oldDelegate) => false;
 }
