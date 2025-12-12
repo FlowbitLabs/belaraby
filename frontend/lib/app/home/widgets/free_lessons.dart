@@ -1,6 +1,6 @@
 import 'package:belaraby/data/data.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class FreeLessons extends StatelessWidget {
