@@ -1,0 +1,17 @@
+{
+    "app_title": "BelAraby",
+    "home_title": "Discover BelAraby",
+    "home_free_stories": "Free Stories",
+    "home_more_stories": "More",
+    "home_hide_learnt": "Hide Learned",
+    "home_filter": "Filter by Level: {}",
+    "navbar_stories": "Stories",
+    "navbar_training": "Training",
+    "navbar_my_library": "My Library",
+    "library_favorites": "Favorite Stories",
+    "library_learned_stories": "Learned Stories",
+    "lesson_tab_story": "Story",
+    "lesson_tab_quiz": "Quiz",
+    "lesson_tab_keywords": "Keywords",
+    "lesson_tab_grammar": "Grammar"
+}

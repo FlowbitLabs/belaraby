@@ -1,5 +1,5 @@
 import 'package:belaraby/data/data.dart';
-import 'package:belaraby/l10n/l10n.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 
@@ -20,7 +20,7 @@ class FreeLessons extends StatelessWidget {
               const Icon(Icons.card_giftcard, color: Colors.black),
               const SizedBox(width: 8),
               Text(
-                L10n.of(context).home_free_stories,
+                'home_free_stories'.tr(),
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

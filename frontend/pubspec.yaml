@@ -11,16 +11,13 @@ environment:
 dependencies:
   carousel_slider: ^5.1.1
   cupertino_icons: ^1.0.8
+  easy_localization: ^3.0.7
   equatable: ^2.0.7
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  flutter_localizations:
-    sdk: flutter
   flutter_tts: ^4.2.3
   go_router: ^16.2.4
-  intl: ^0.20.2
-  intl_utils: ^2.8.12
   supabase_flutter: ^2.10.0
 
 dev_dependencies:
@@ -30,12 +27,7 @@ dev_dependencies:
     sdk: flutter
   very_good_analysis: 10.0.0
 
-flutter_intl:
-  enabled: true
-  main_locale: ar
-  class_name: L10n
-  arb_dir: lib/l10n
-  output_dir: lib/l10n
-
 flutter:
   uses-material-design: true
+  assets:
+    - assets/translations/

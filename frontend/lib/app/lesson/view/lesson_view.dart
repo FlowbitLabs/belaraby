@@ -152,20 +152,20 @@ class _LessonViewState extends State<LessonView> {
               tabs: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(text: L10n.of(context).lesson_tab_story),
+                  child: Tab(text: 'lesson_tab_story'.tr()),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(text: L10n.of(context).lesson_tab_quiz),
+                  child: Tab(text: 'lesson_tab_quiz'.tr()),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(text: L10n.of(context).lesson_tab_keywords),
+                  child: Tab(text: 'lesson_tab_keywords'.tr()),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Tab(
-                    text: L10n.of(context).lesson_tab_grammar,
+                    text: 'lesson_tab_grammar'.tr(),
                   ),
                 ),
               ],

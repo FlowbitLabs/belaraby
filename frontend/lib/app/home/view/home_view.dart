@@ -48,7 +48,7 @@ class HomeView extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  L10n.of(context).home_filter(state.filterBy),
+                                  'home_filter'.tr(args: [state.filterBy]),
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: Colors.black,
@@ -78,7 +78,7 @@ class HomeView extends StatelessWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    L10n.of(context).home_hide_learnt,
+                                    'home_hide_learnt'.tr(),
                                     style: const TextStyle(
                                       fontSize: 16,
                                       color: Colors.black,
@@ -140,7 +140,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            L10n.of(context).home_title,
+            'home_title'.tr(),
             style: const TextStyle(
               fontSize: 30,
               fontWeight: FontWeight.w600,

@@ -2,7 +2,7 @@ import 'package:belaraby/app/home/view/home_page.dart';
 import 'package:belaraby/app/lesson/view/lesson_page.dart';
 import 'package:belaraby/app/my_library/view/my_library_page.dart';
 import 'package:belaraby/data/data.dart';
-import 'package:belaraby/l10n/l10n.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -63,15 +63,15 @@ class ScaffoldWithBottomNavigation extends StatelessWidget {
   List<BottomNavigationBarItem> _allNavigationItems(BuildContext context) => [
     BottomNavigationBarItem(
       icon: const Icon(Icons.library_books),
-      label: L10n.of(context).navbar_stories,
+      label: 'navbar_stories'.tr(),
     ),
     BottomNavigationBarItem(
       icon: const Icon(Icons.line_weight),
-      label: L10n.of(context).navbar_training,
+      label: 'navbar_training'.tr(),
     ),
     BottomNavigationBarItem(
       icon: const Icon(Icons.menu_book),
-      label: L10n.of(context).navbar_my_library,
+      label: 'navbar_my_library'.tr(),
     ),
   ];
 

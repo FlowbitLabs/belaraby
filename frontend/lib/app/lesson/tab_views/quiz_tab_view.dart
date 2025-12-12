@@ -1,6 +1,6 @@
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
-import 'package:belaraby/l10n/l10n.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class QuizTabView extends StatelessWidget {
@@ -10,7 +10,7 @@ class QuizTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return RichText(
       text: TextSpan(
-        text: L10n.of(context).lesson_tab_quiz,
+        text: 'lesson_tab_quiz'.tr(),
         style: BTextStyles.of(
           context,
         ).displayLarge.copyWith(color: grey190),

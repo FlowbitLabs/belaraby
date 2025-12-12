@@ -43,7 +43,7 @@ class MyLibraryButtons extends StatelessWidget {
         children: [
           _buildLibraryButton(
             context,
-            label: L10n.of(context).library_favorites,
+            label: 'library_favorites'.tr(),
             itemCount: calculateItems(context, items: 0),
             trailingIcon: Icons.favorite_border,
             onPressed: () {
@@ -53,7 +53,7 @@ class MyLibraryButtons extends StatelessWidget {
           const SizedBox(height: 12),
           _buildLibraryButton(
             context,
-            label: L10n.of(context).library_learned_stories,
+            label: 'library_learned_stories'.tr(),
             itemCount: calculateItems(context, items: 0),
             trailingIcon: Icons.library_add_check,
             onPressed: () {
@@ -150,7 +150,7 @@ class _HeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Row(
         children: [
           Text(
-            L10n.of(context).navbar_my_library,
+            'navbar_my_library'.tr(),
             style: const TextStyle(
               fontSize: 30,
               fontWeight: FontWeight.w600,
