@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:flutter_tts/flutter_tts.dart';
 
+/// Manages Text-to-Speech (TTS) playback and word highlighting for lessons.
+/// 
+/// - Splits lesson text into [WordInfo] objects.
+/// - Tracks playback progress to highlight the current word.
+/// - Exposes callbacks for UI updates to avoid direct dependency on Flutter Widgets.
 class LessonPlayerController {
   final FlutterTts _flutterTts = FlutterTts();
   List<WordInfo> _wordInfoList = [];
@@ -27,6 +32,8 @@ class LessonPlayerController {
 
     _flutterTts
       ..setProgressHandler((_, start, _, _) {
+        // 'start' is the character index in the full text string.
+        // We find which word range contains this index to highlight the correct word.
         final index = _wordInfoList.indexWhere(
           (w) => start >= w.start && start < w.start + w.word.length,
         );
@@ -70,6 +77,8 @@ class LessonPlayerController {
   }
 
   List<WordInfo> _splitText(String text) {
+    // Regex \S+ matches any non-whitespace character sequence.
+    // This allows us to track start/end indices for highlighting functionality.
     final regex = RegExp(r'\S+');
     return regex
         .allMatches(text)

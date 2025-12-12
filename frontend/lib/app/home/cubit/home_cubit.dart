@@ -4,6 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum HomeStatus { initial, loading, success, error }
 
+/// Manages the state of the Home screen.
+/// 
+/// Responsibilities:
+/// - Fetching lessons from [LessonRepository].
+/// - Filtering lessons by difficulty level.
+/// - Managing loading and error states.
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit() : super(const HomeState());
 

@@ -2,6 +2,12 @@ import 'package:belaraby/app/router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+/// The prompt root widget of the application.
+///
+/// Configures [MaterialApp] with:
+/// - Localization delegates from [EasyLocalization].
+/// - Global theme settings.
+/// - [MainScreen] as the home route.
 class BelArabyApp extends StatelessWidget {
   const BelArabyApp({super.key});
 

@@ -1,6 +1,12 @@
 import 'package:belaraby/data/models/lesson_model.dart';
 import 'package:belaraby/data/supabase_client.dart';
 
+/// Repository for managing [Lesson] data.
+/// 
+/// Handles interactions with Supabase tables:
+/// - `lessons`: Main lesson content.
+/// - `user_favorites`: User's favorite lessons.
+/// - `user_learned_lessons`: User's completed lessons.
 class LessonRepository {
   Future<List<Lesson>> getAllLessons() async {
     return await supabase
@@ -13,6 +19,8 @@ class LessonRepository {
   Future<List<Lesson>> getFavoriteLessons({required int userId}) async {
     return await supabase
         .from('user_favorites')
+        // Select logic: fetching the join table `user_favorites` AND the related `lessons` data
+        // utilizing Supabase's foreign key detection.
         .select('lesson_id, lessons(*)')
         .eq('user_id', userId)
         .withConverter((data) {

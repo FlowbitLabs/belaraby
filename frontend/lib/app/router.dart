@@ -5,7 +5,14 @@ import 'package:belaraby/data/data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-/// Simple main screen with bottom navigation
+/// The main shell of the application handling top-level navigation.
+/// 
+/// Uses an [IndexedStack] to preserve the state of:
+/// 1. Home (Stories/Lessons)
+/// 2. Training (Placeholder)
+/// 3. My Library (Favorites/History)
+///
+/// This approach avoids rebuilding tabs when switching between them.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
@@ -66,7 +73,9 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-/// Navigate to lesson page
+/// Navigates to the [LessonPage] for a specific [lesson].
+/// 
+/// Uses [MaterialPageRoute] for standard platform transitions.
 void navigateToLesson(BuildContext context, Lesson lesson) {
   Navigator.push(
     context,
