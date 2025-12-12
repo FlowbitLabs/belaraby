@@ -4,14 +4,17 @@ Belaraby is an Arabic learning platform built with Flutter and Supabase.
 
 ## Quick Links
 
-### Frontend Development
-*   [**Getting Started**](frontend/getting_started.md): Setup guide for the Flutter app.
-*   [**Architecture**](frontend/architecture.md): Overview of the simplified project structure.
-*   [**Navigation**](frontend/navigation.md): How routing works in the app.
-*   [**Localization**](frontend/localization.md): How to add translations.
+### Frontend (Flutter)
+*   [**Getting Started**](frontend/getting_started.md): Setup guide for the App.
+*   [**Architecture**](frontend/architecture.md): Simple folder structure and principles.
+*   [**Navigation**](frontend/navigation.md): Routing guide.
+*   [**Localization**](frontend/localization.md): Translation guide.
 
-### Backend
-*   [**Supabase Guide**](supabase/getting_started.md): Database and backend setup.
+### Dashboard (React)
+*   [**Getting Started**](dashboard/getting_started.md): Setup guide for the Admin Dashboard.
+
+### Backend (Supabase)
+*   [**Supabase Guide**](supabase/getting_started.md): Database setup.
 
 ### Release
-*   [**Release Process**](release/0_index.md): Checklist and procedures for releasing the app.
+*   [**Release Process**](release/0_index.md): Checklist and procedures.
