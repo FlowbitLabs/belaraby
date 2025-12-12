@@ -1,8 +1,8 @@
+import 'package:belaraby/app/router.dart';
 import 'package:belaraby/app/util/convert_arabic_date.dart';
 import 'package:belaraby/app/util/get_level_color.dart';
-import 'package:belaraby/data/data.dart';
+import 'package:belaraby/data/models/lesson_model.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 class LessonsSection extends StatelessWidget {
   const LessonsSection({required this.lessons, super.key});
@@ -27,8 +27,8 @@ class LessonsSection extends StatelessWidget {
       itemBuilder: (context, index) {
         return InkWell(
           onTap: () {
-            // Navigate to lesson details page
-            context.pushNamed('lesson', extra: lessons[index]);
+            // Navigate to lesson
+            navigateToLesson(context, lessons[index]);
           },
           child: _LessonCard(lesson: lessons[index]),
         );

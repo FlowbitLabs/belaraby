@@ -7,7 +7,7 @@ class BelArabyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return MaterialApp(
       title: 'BelAraby',
       
       // Easy localization setup
@@ -15,8 +15,8 @@ class BelArabyApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       
-      routerConfig: router,
       theme: ThemeData(useMaterial3: true),
+      home: const MainScreen(),
     );
   }
 }

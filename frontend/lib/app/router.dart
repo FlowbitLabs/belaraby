@@ -4,130 +4,74 @@ import 'package:belaraby/app/my_library/view/my_library_page.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-final GoRouter router = GoRouter(
-  routes: [
-    StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) =>
-          ScaffoldWithBottomNavigation(navigationShell: navigationShell),
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(path: '/', builder: (context, state) => const HomePage()),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/training',
-              builder: (context, state) => const SizedBox(),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/library',
-              builder: (context, state) => const MyLibraryPage(),
-            ),
-          ],
-        ),
-      ],
-    ),
-    GoRoute(
-      path: '/lesson',
-      name: 'lesson',
-      builder: (BuildContext context, GoRouterState state) {
-        final lesson = state.extra;
-        if (lesson is! Lesson) {
-          // You could navigate to an error page or return a fallback widget
-          return const Scaffold(
-            body: Center(child: Text('Invalid lesson data')),
-          );
-        }
-        return LessonPage(lesson);
-      },
-    ),
-  ],
-);
+/// Simple main screen with bottom navigation
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
-class ScaffoldWithBottomNavigation extends StatelessWidget {
-  const ScaffoldWithBottomNavigation({
-    required this.navigationShell,
-    super.key,
-  });
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
 
-  final StatefulNavigationShell navigationShell;
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
 
-  List<BottomNavigationBarItem> _allNavigationItems(BuildContext context) => [
-    BottomNavigationBarItem(
-      icon: const Icon(Icons.library_books),
-      label: 'navbar_stories'.tr(),
-    ),
-    BottomNavigationBarItem(
-      icon: const Icon(Icons.line_weight),
-      label: 'navbar_training'.tr(),
-    ),
-    BottomNavigationBarItem(
-      icon: const Icon(Icons.menu_book),
-      label: 'navbar_my_library'.tr(),
-    ),
+  final List<Widget> _pages = const [
+    HomePage(),
+    Center(child: Text('Training - Coming Soon')),
+    MyLibraryPage(),
   ];
-
-  void _goBranch(int index) {
-    navigationShell.goBranch(
-      index,
-      initialLocation: index == navigationShell.currentIndex,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: AppBottomNavigationBar(
-        pageIndex: navigationShell.currentIndex,
-        onItemSelected: _goBranch,
-        items: _allNavigationItems(context),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        selectedIconTheme: IconThemeData(size: 25, color: Colors.yellow[800]),
+        unselectedIconTheme: const IconThemeData(size: 22, color: Colors.grey),
+        selectedItemColor: Colors.yellow[800],
+        unselectedItemColor: Colors.grey,
+        selectedLabelStyle: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          height: 1.6,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          height: 1.6,
+        ),
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.library_books),
+            label: 'navbar_stories'.tr(),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.line_weight),
+            label: 'navbar_training'.tr(),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.menu_book),
+            label: 'navbar_my_library'.tr(),
+          ),
+        ],
       ),
     );
   }
 }
 
-class AppBottomNavigationBar extends StatelessWidget {
-  const AppBottomNavigationBar({
-    required this.pageIndex,
-    required this.items,
-    required this.onItemSelected,
-    super.key,
-  });
-
-  final int pageIndex;
-  final List<BottomNavigationBarItem> items;
-  final void Function(int) onItemSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedIconTheme: IconThemeData(size: 25, color: Colors.yellow[800]),
-      unselectedIconTheme: const IconThemeData(size: 22, color: Colors.grey),
-      selectedItemColor: Colors.yellow[800],
-      unselectedItemColor: Colors.grey,
-      selectedLabelStyle: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        height: 1.6,
-      ),
-      unselectedLabelStyle: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w400,
-        height: 1.6,
-      ),
-      currentIndex: pageIndex,
-      onTap: onItemSelected,
-      items: items,
-    );
-  }
+/// Navigate to lesson page
+void navigateToLesson(BuildContext context, Lesson lesson) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => LessonPage(lesson),
+    ),
+  );
 }

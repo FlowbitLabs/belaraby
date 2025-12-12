@@ -117,7 +117,7 @@ class _LessonViewState extends State<LessonView> {
                 icon: const Icon(Icons.arrow_back, color: grey0),
                 onPressed: () async {
                   await _stop();
-                  if (context.mounted) context.pop();
+                  if (context.mounted) Navigator.of(context).pop();
                 },
               ),
             ),
