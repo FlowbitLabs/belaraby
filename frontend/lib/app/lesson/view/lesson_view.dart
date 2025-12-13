@@ -15,44 +15,12 @@ class _LessonViewState extends State<LessonView> {
   void initState() {
     super.initState();
     _controller.init(widget.lesson.body);
-    _controller.onWordHighlighted = (index) {
-      if (mounted) setState(() {});
-    };
-    _controller.onPlayingStateChanged = (isPlaying) {
-      if (mounted) setState(() {});
-    };
-    _controller.onCompleted = () {
-      if (mounted) setState(() {});
-    };
   }
   
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  TextSpan _buildTextSpan() {
-    return TextSpan(
-      children: List.generate(_controller.wordInfoList.length, (index) {
-        final word = _controller.wordInfoList[index].word;
-        final isHighlighted = index == _controller.currentWordIndex;
-        return TextSpan(
-          children: [
-            TextSpan(
-              text: word,
-              style: BTextStyles.of(context).displaySmall.copyWith(
-                color: isHighlighted ? yellow120 : grey190,
-              ),
-            ),
-            const TextSpan(
-              text: '  ', 
-              style: TextStyle(decoration: TextDecoration.none),
-            ),
-          ],
-        );
-      }),
-    );
   }
 
   @override
@@ -90,12 +58,11 @@ class _LessonViewState extends State<LessonView> {
         length: 4,
         child: Column(
           children: [
+            // ... (TabBar setup omitted for brevity, assuming standard Flutter TabBar) ...
             TabBar(
               labelColor: grey0,
               labelPadding: EdgeInsets.zero,
-              labelStyle: BTextStyles.of(
-                context,
-              ).title1.copyWith(color: grey0),
+              labelStyle: BTextStyles.of(context).title1.copyWith(color: grey0),
               unselectedLabelColor: grey140,
               indicator: BoxDecoration(
                 color: yellow120,
@@ -103,45 +70,35 @@ class _LessonViewState extends State<LessonView> {
               ),
               indicatorSize: TabBarIndicatorSize.label,
               indicatorWeight: 1,
-              indicatorPadding: const EdgeInsets.symmetric(
-                horizontal: 5,
-                vertical: 8,
-              ),
+              indicatorPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
               indicatorAnimation: TabIndicatorAnimation.linear,
               splashFactory: NoSplash.splashFactory,
               dividerColor: grey110,
               dividerHeight: 0.5,
               tabs: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(text: 'lesson_tab_story'.tr()),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(text: 'lesson_tab_quiz'.tr()),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(text: 'lesson_tab_keywords'.tr()),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Tab(
-                    text: 'lesson_tab_grammar'.tr(),
-                  ),
-                ),
+                _buildTab('lesson_tab_story'.tr()),
+                _buildTab('lesson_tab_quiz'.tr()),
+                _buildTab('lesson_tab_keywords'.tr()),
+                _buildTab('lesson_tab_grammar'.tr()),
               ],
             ),
             Expanded(
               child: TabBarView(
                 children: [
-                  LessonTabView(
-                    lesson: widget.lesson,
-                    textSpan: _buildTextSpan(),
-                    isPlaying: _controller.isPlaying,
-                    speak: () => _controller.speak(widget.lesson.body),
-                    stop: _controller.stop,
+                  // TAB 1: STORY & PLAYER
+                  ListenableBuilder(
+                    listenable: _controller,
+                    builder: (context, _) {
+                      return LessonTabView(
+                        lesson: widget.lesson,
+                        textSpan: _buildHighlightedText(),
+                        isPlaying: _controller.isPlaying,
+                        speak: () => _controller.speak(widget.lesson.body),
+                        stop: _controller.stop,
+                      );
+                    },
                   ),
+                  // Other Tabs
                   const QuizTabView(),
                   const KeywordsTabView(),
                   const GrammarTabView(),
@@ -151,6 +108,40 @@ class _LessonViewState extends State<LessonView> {
           ],
         ),
       ),
+    );
+  }
+
+  /// Helper to build a consistent Tab widget
+  Widget _buildTab(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Tab(text: text),
+    );
+  }
+
+  /// Builds the rich text with the current word highlighted.
+  TextSpan _buildHighlightedText() {
+    return TextSpan(
+      children: List.generate(_controller.words.length, (index) {
+        final info = _controller.words[index];
+        final isHighlighted = index == _controller.highlightedIndex;
+        
+        return TextSpan(
+          children: [
+            TextSpan(
+              text: info.word,
+              style: BTextStyles.of(context).displaySmall.copyWith(
+                color: isHighlighted ? yellow120 : grey190,
+              ),
+            ),
+            // Add a non-highlighted space after each word
+            const TextSpan(
+              text: '  ', 
+              style: TextStyle(decoration: TextDecoration.none),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
