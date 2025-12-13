@@ -9,72 +9,34 @@ class LessonView extends StatefulWidget {
 }
 
 class _LessonViewState extends State<LessonView> {
-  final FlutterTts flutterTts = FlutterTts();
-
-  late final List<WordInfo> wordInfoList;
-  int currentWordIndex = -1;
-  bool isPlaying = false;
+  final LessonPlayerController _controller = LessonPlayerController();
 
   @override
   void initState() {
     super.initState();
-    wordInfoList = _splitText(widget.lesson.body);
-    _initTts();
+    _controller.init(widget.lesson.body);
+    _controller.onWordHighlighted = (index) {
+      if (mounted) setState(() {});
+    };
+    _controller.onPlayingStateChanged = (isPlaying) {
+      if (mounted) setState(() {});
+    };
+    _controller.onCompleted = () {
+      if (mounted) setState(() {});
+    };
   }
-
-  List<WordInfo> _splitText(String text) {
-    final regex = RegExp(r'\S+');
-    return regex
-        .allMatches(text)
-        .map((m) => WordInfo(m.group(0)!, m.start))
-        .toList();
-  }
-
-  void _updateState({bool? playing, int? wordIndex}) {
-    setState(() {
-      if (playing != null) isPlaying = playing;
-      if (wordIndex != null) currentWordIndex = wordIndex;
-    });
-  }
-
-  Future<void> _initTts() async {
-    await flutterTts.setLanguage('ar');
-    await flutterTts.setSpeechRate(0.5);
-    await flutterTts.awaitSpeakCompletion(true);
-
-    flutterTts
-      ..setProgressHandler((_, start, _, _) {
-        final index = wordInfoList.indexWhere(
-          (w) => start >= w.start && start < w.start + w.word.length,
-        );
-        if (index != -1 && index != currentWordIndex) {
-          _updateState(wordIndex: index);
-        }
-      })
-      ..setStartHandler(() => _updateState(playing: true))
-      ..setCompletionHandler(() => _updateState(playing: false, wordIndex: -1))
-      ..setErrorHandler((_) => _updateState(playing: false, wordIndex: -1));
-  }
-
-  Future<void> _speak() async {
-    if (isPlaying) {
-      await _stop();
-    } else {
-      await flutterTts.speak(widget.lesson.body);
-      _updateState(playing: true);
-    }
-  }
-
-  Future<void> _stop() async {
-    await flutterTts.stop();
-    _updateState(playing: false, wordIndex: -1);
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   TextSpan _buildTextSpan() {
     return TextSpan(
-      children: List.generate(wordInfoList.length, (index) {
-        final word = wordInfoList[index].word;
-        final isHighlighted = index == currentWordIndex;
+      children: List.generate(_controller.wordInfoList.length, (index) {
+        final word = _controller.wordInfoList[index].word;
+        final isHighlighted = index == _controller.currentWordIndex;
         return TextSpan(
           children: [
             TextSpan(
@@ -84,7 +46,7 @@ class _LessonViewState extends State<LessonView> {
               ),
             ),
             const TextSpan(
-              text: '  ', // space without underline
+              text: '  ', 
               style: TextStyle(decoration: TextDecoration.none),
             ),
           ],
@@ -92,7 +54,6 @@ class _LessonViewState extends State<LessonView> {
       }),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -117,7 +78,7 @@ class _LessonViewState extends State<LessonView> {
               child: IconButton(
                 icon: const Icon(Icons.arrow_back, color: grey0),
                 onPressed: () async {
-                  await _stop();
+                  await _controller.stop();
                   if (context.mounted) Navigator.of(context).pop();
                 },
               ),
@@ -177,9 +138,9 @@ class _LessonViewState extends State<LessonView> {
                   LessonTabView(
                     lesson: widget.lesson,
                     textSpan: _buildTextSpan(),
-                    isPlaying: isPlaying,
-                    speak: _speak,
-                    stop: _stop,
+                    isPlaying: _controller.isPlaying,
+                    speak: () => _controller.speak(widget.lesson.body),
+                    stop: _controller.stop,
                   ),
                   const QuizTabView(),
                   const KeywordsTabView(),

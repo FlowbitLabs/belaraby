@@ -26,7 +26,22 @@ class LessonPlayerController {
   Future<void> init(String text) async {
     _wordInfoList = _splitText(text);
     
-    await _flutterTts.setLanguage('ar');
+    
+    // Web/IOS safety check
+    // We can iterate platform check here if we want to be safe, though previous code removed it.
+    // Let's add the Web language fix.
+    final dynamic voices = await _flutterTts.getLanguages;
+    if (voices != null && voices is List) {
+      final List<String> voiceList = voices.map((e) => e.toString()).toList();
+      final arabicVoice = voiceList.firstWhere(
+        (v) => v.startsWith('ar'), 
+        orElse: () => 'ar', 
+      );
+      await _flutterTts.setLanguage(arabicVoice);
+    } else {
+      await _flutterTts.setLanguage('ar');
+    }
+    
     await _flutterTts.setSpeechRate(0.5);
     await _flutterTts.awaitSpeakCompletion(true);
 
@@ -86,8 +101,8 @@ class LessonPlayerController {
         .toList();
   }
   
-  void dispose() {
-    _flutterTts.stop();
+  Future<void> dispose() async {
+    await _flutterTts.stop();
   }
 }
 
