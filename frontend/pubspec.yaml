@@ -5,8 +5,8 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: "3.9.0"
-  flutter: "3.35.2"
+  sdk: 3.9.0
+  flutter: 3.35.2
 
 dependencies:
   carousel_slider: ^5.1.1

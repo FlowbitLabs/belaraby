@@ -42,9 +42,9 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
-    # Workaround for M1/M2 Macs - exclude arm64 for simulator
+    # Remove EXCLUDED_ARCHS workaround for Apple Silicon
     target.build_configurations.each do |config|
-      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-    end  
+      config.build_settings.delete('EXCLUDED_ARCHS[sdk=iphonesimulator*]')
+    end
   end
 end
