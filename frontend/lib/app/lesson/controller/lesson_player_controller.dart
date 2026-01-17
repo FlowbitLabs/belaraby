@@ -114,10 +114,20 @@ class LessonPlayerController extends ChangeNotifier {
     _onPlaybackStopped();
   }
 
-  void _onPlaybackStopped() {
+  Future<void> Function()? onRepeat;
+
+  void setRepeatCallback(Future<void> Function()? callback) {
+    onRepeat = callback;
+  }
+
+  void _onPlaybackStopped() async {
     _isPlaying = false;
     _highlightedIndex = -1;
     notifyListeners();
+    if (onRepeat != null) {
+      await Future.delayed(const Duration(seconds: 1));
+      await onRepeat!();
+    }
   }
 
   /// Splits text into words using Regex, capturing start indices for highlighting.

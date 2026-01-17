@@ -7,12 +7,16 @@ class LessonControls extends StatelessWidget {
     required this.isPlaying,
     required this.onPlay,
     required this.onStop,
+    required this.isRepeatEnabled,
+    required this.onRepeatToggle,
     super.key,
   });
 
   final bool isPlaying;
   final VoidCallback onPlay;
   final VoidCallback onStop;
+  final bool isRepeatEnabled;
+  final VoidCallback onRepeatToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +44,9 @@ class LessonControls extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton.filled(
-                      onPressed: () {}, // UI only
+                      onPressed: onRepeatToggle,
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
+                        backgroundColor: isRepeatEnabled ? Colors.blueAccent : Colors.grey,
                         foregroundColor: Colors.white,
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(10),

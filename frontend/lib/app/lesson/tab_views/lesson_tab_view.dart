@@ -11,6 +11,8 @@ class LessonTabView extends StatefulWidget {
     required this.speak,
     required this.stop,
     required this.isPlaying,
+    required this.isRepeatEnabled,
+    required this.onRepeatToggle,
     super.key,
   });
 
@@ -19,6 +21,8 @@ class LessonTabView extends StatefulWidget {
   final Future<void> Function() speak;
   final Future<void> Function() stop;
   final bool isPlaying;
+  final bool isRepeatEnabled;
+  final VoidCallback onRepeatToggle;
 
   @override
   State<LessonTabView> createState() => _LessonTabViewState();
@@ -102,6 +106,8 @@ class _LessonTabViewState extends State<LessonTabView> {
           isPlaying: widget.isPlaying,
           onPlay: widget.speak,
           onStop: widget.stop,
+          isRepeatEnabled: widget.isRepeatEnabled,
+          onRepeatToggle: widget.onRepeatToggle,
         ),
       ],
     );

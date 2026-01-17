@@ -1,3 +1,4 @@
+
 part of 'lesson_page.dart';
 
 class LessonView extends StatefulWidget {
@@ -10,12 +11,24 @@ class LessonView extends StatefulWidget {
 
 class _LessonViewState extends State<LessonView> {
   final LessonPlayerController _controller = LessonPlayerController();
+  bool _isRepeatEnabled = false;
   bool _isLearnt = false;
+
+  Future<void> _handleRepeat() async {
+    if (_isRepeatEnabled) {
+      await _controller.speak(widget.lesson.body);
+      setState(() {
+        _isRepeatEnabled = false;
+      });
+      _controller.setRepeatCallback(_handleRepeat);
+    }
+  }
 
   @override
   void initState() {
     super.initState();
     _controller.init(widget.lesson.body);
+    _controller.setRepeatCallback(_handleRepeat);
   }
 
   @override
@@ -46,7 +59,7 @@ class _LessonViewState extends State<LessonView> {
               left: 15,
               child: Container(
                 width: 38,
-                height: 38,
+                  height: 38,
                 decoration: const BoxDecoration(
                   color: grey100,
                   shape: BoxShape.circle,
@@ -91,6 +104,7 @@ class _LessonViewState extends State<LessonView> {
                           fontSize: 15,
                         ),
                       ),
+// ...existing code...
                       const SizedBox(width: 8),
                       Icon(
                         _isLearnt ? Icons.check_circle : Icons.check_circle_outline,
@@ -148,6 +162,13 @@ class _LessonViewState extends State<LessonView> {
                         isPlaying: _controller.isPlaying,
                         speak: () => _controller.speak(widget.lesson.body),
                         stop: _controller.stop,
+                        isRepeatEnabled: _isRepeatEnabled,
+                        onRepeatToggle: () {
+                          setState(() {
+                            _isRepeatEnabled = !_isRepeatEnabled;
+                          });
+                          _controller.setRepeatCallback(_handleRepeat);
+                        },
                       );
                     },
                   ),
