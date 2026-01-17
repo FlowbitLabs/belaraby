@@ -40,6 +40,18 @@ class LessonControls extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     IconButton.filled(
+                      onPressed: () {}, // UI only
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(10),
+                        elevation: 2,
+                      ),
+                      icon: const Icon(Icons.repeat, size: 22),
+                    ),
+                    const SizedBox(width: 16),
+                    IconButton.filled(
                       onPressed: onStop,
                       style: IconButton.styleFrom(
                         backgroundColor: Colors.redAccent,
