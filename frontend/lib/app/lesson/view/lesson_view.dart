@@ -1,6 +1,7 @@
 
 part of 'lesson_page.dart';
 
+
 class LessonView extends StatefulWidget {
   const LessonView(this.lesson, {super.key});
   final Lesson lesson;
@@ -10,6 +11,12 @@ class LessonView extends StatefulWidget {
 }
 
 class _LessonViewState extends State<LessonView> {
+    String? _selectedWord;
+    void _onWordSelected(String word) {
+      setState(() {
+        _selectedWord = word;
+      });
+    }
   final LessonPlayerController _controller = LessonPlayerController();
   bool _isRepeatEnabled = false;
   bool _isLearnt = false;
@@ -54,12 +61,79 @@ class _LessonViewState extends State<LessonView> {
                 errorBuilder: (_, _, _) => const ColoredBox(color: grey140),
               ),
             ),
+            if (_selectedWord != null)
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: 20,
+                child: Dismissible(
+                  key: ValueKey(_selectedWord),
+                  direction: DismissDirection.horizontal,
+                  onDismissed: (direction) {
+                    setState(() {
+                      _selectedWord = null;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.95),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _selectedWord!,
+                            textAlign: TextAlign.start,
+                            style: BTextStyles.of(context).title1.copyWith(fontWeight: FontWeight.bold, color: Colors.black87),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.fitness_center, size: 20),
+                              tooltip: 'Exercise',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Exercise for "$_selectedWord"')),
+                                );
+                              },
+                            ),
+                                IconButton(
+                              icon: const Icon(Icons.volume_up, size: 20),
+                              tooltip: 'Play',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                              onPressed: () {
+                                WordSpeaker().speak(_selectedWord!);
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             Positioned(
-              top: 60,
-              left: 15,
+              top: 67,
+              left: 16,
               child: Container(
                 width: 38,
-                  height: 38,
+                height: 38,
                 decoration: const BoxDecoration(
                   color: grey100,
                   shape: BoxShape.circle,
@@ -77,43 +151,42 @@ class _LessonViewState extends State<LessonView> {
             ),
             Positioned(
               top: 60,
-              right: 10,
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _isLearnt = !_isLearnt;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isLearnt ? yellow120 : Colors.white,
-                    foregroundColor: _isLearnt ? Colors.white : yellow120,
-                    shape: const StadiumBorder(),
-                    side: BorderSide(color: yellow120, width: 2),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    elevation: _isLearnt ? 2 : 0,
-                    shadowColor: _isLearnt ? green100.withOpacity(0.2) : Colors.transparent,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'lesson_learnt_button'.tr(),
-                        style: TextStyle(
-                          color: _isLearnt ? Colors.white : yellow120,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15,
-                        ),
-                      ),
-// ...existing code...
-                      const SizedBox(width: 8),
-                      Icon(
-                        _isLearnt ? Icons.check_circle : Icons.check_circle_outline,
-                        color: _isLearnt ? Colors.white : yellow120,
-                        size: 22,
-                      ),
-                    ],
-                  ),
+              right: 16,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _isLearnt = !_isLearnt;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isLearnt ? yellow120 : Colors.white,
+                  foregroundColor: _isLearnt ? Colors.white : yellow120,
+                  shape: const StadiumBorder(),
+                  side: BorderSide(color: yellow120, width: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  elevation: _isLearnt ? 2 : 0,
+                  shadowColor: _isLearnt ? green100.withOpacity(0.2) : Colors.transparent,
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'lesson_learnt_button'.tr(),
+                      style: TextStyle(
+                        color: _isLearnt ? Colors.white : yellow120,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      _isLearnt ? Icons.check_circle : Icons.check_circle_outline,
+                      color: _isLearnt ? Colors.white : yellow120,
+                      size: 22,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -122,7 +195,6 @@ class _LessonViewState extends State<LessonView> {
         length: 4,
         child: Column(
           children: [
-            // ... (TabBar setup omitted for brevity, assuming standard Flutter TabBar) ...
             TabBar(
               labelColor: grey0,
               labelPadding: EdgeInsets.zero,
@@ -152,7 +224,6 @@ class _LessonViewState extends State<LessonView> {
             Expanded(
               child: TabBarView(
                 children: [
-                  // TAB 1: STORY & PLAYER
                   ListenableBuilder(
                     listenable: _controller,
                     builder: (context, _) {
@@ -169,10 +240,11 @@ class _LessonViewState extends State<LessonView> {
                           });
                           _controller.setRepeatCallback(_handleRepeat);
                         },
+                        onWordSelected: _onWordSelected,
+                        selectedWord: _selectedWord,
                       );
                     },
                   ),
-                  // Other Tabs
                   const QuizTabView(),
                   const KeywordsTabView(),
                   const GrammarTabView(),

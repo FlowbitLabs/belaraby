@@ -13,6 +13,7 @@ class LessonPlayerController extends ChangeNotifier {
   List<WordInfo> _words = [];
   int _highlightedIndex = -1;
   bool _isPlaying = false;
+  bool _isSpeakingWord = false;
   
   // Internal flag to track if the TTS engine (audio context, voice selection) is ready.
   bool _isEngineReady = false;
@@ -36,6 +37,7 @@ class LessonPlayerController extends ChangeNotifier {
   void _configureEventHandlers() {
     _tts
       ..setProgressHandler((_, start, __, ___) {
+        if (_isSpeakingWord) return;
         // Find the word that corresponds to the current character position 'start'
         final index = _words.indexWhere((w) => w.containsIndex(start));
         if (index != -1 && index != _highlightedIndex) {
@@ -44,11 +46,24 @@ class LessonPlayerController extends ChangeNotifier {
         }
       })
       ..setStartHandler(() {
+        if (_isSpeakingWord) return;
         _isPlaying = true;
         notifyListeners();
       })
-      ..setCompletionHandler(_onPlaybackStopped)
-      ..setErrorHandler((_) => _onPlaybackStopped());
+      ..setCompletionHandler(() {
+        if (_isSpeakingWord) {
+          _isSpeakingWord = false;
+          return;
+        }
+        _onPlaybackStopped();
+      })
+      ..setErrorHandler((_) {
+        if (_isSpeakingWord) {
+          _isSpeakingWord = false;
+          return;
+        }
+        _onPlaybackStopped();
+      });
   }
 
   /// Initializes the TTS engine: finds the best Arabic voice and configures speed
@@ -112,6 +127,13 @@ class LessonPlayerController extends ChangeNotifier {
   Future<void> stop() async {
     await _tts.stop();
     _onPlaybackStopped();
+  }
+
+  /// Speaks a single word without tracking/highlighting.
+  Future<void> speakWord(String word) async {
+    if (!_isEngineReady) await _initializeEngine();
+    _isSpeakingWord = true;
+    await _tts.speak(word);
   }
 
   Future<void> Function()? onRepeat;
