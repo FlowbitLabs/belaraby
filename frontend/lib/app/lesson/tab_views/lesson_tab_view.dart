@@ -114,6 +114,7 @@ class _LessonTabViewState extends State<LessonTabView> {
                 widget.lesson.title,
                 style: BTextStyles.of(context).displayLarge.copyWith(fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 15),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -153,13 +154,24 @@ class _LessonTabViewState extends State<LessonTabView> {
               LayoutBuilder(
                 builder: (context, constraints) {
                   final textSpan = _buildTextSpanWithSelection();
+                  // Define consistent text styling properties
+
+                  const strutStyle = StrutStyle(
+                    fontSize: 20,
+                    height: 1.5,
+                    leading: 0.8,
+                    forceStrutHeight: true,
+                  );
+                  
                   return GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onTapUp: (details) {
-                      // Create text painter with exact same constraints as the rendered text
+                      // Create text painter with exact same constraints and styling as the rendered text
                       final textPainter = TextPainter(
                         text: textSpan,
                         textDirection: Directionality.of(context),
+
+                        strutStyle: strutStyle,
                       );
                       textPainter.layout(maxWidth: constraints.maxWidth);
                       
@@ -186,6 +198,7 @@ class _LessonTabViewState extends State<LessonTabView> {
                     },
                     child: RichText(
                       text: textSpan,
+                      strutStyle: strutStyle,
                     ),
                   );
                 },
