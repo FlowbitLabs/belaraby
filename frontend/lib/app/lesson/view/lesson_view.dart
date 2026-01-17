@@ -10,13 +10,14 @@ class LessonView extends StatefulWidget {
 
 class _LessonViewState extends State<LessonView> {
   final LessonPlayerController _controller = LessonPlayerController();
+  bool _isLearnt = false;
 
   @override
   void initState() {
     super.initState();
     _controller.init(widget.lesson.body);
   }
-  
+
   @override
   void dispose() {
     _controller.dispose();
@@ -41,15 +42,64 @@ class _LessonViewState extends State<LessonView> {
               ),
             ),
             Positioned(
-              top: 40,
-              right: 8,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: grey0),
-                onPressed: () async {
-                  await _controller.stop();
-                  if (context.mounted) Navigator.of(context).pop();
-                },
+              top: 60,
+              left: 15,
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: const BoxDecoration(
+                  color: grey100,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_forward, color: grey170, size: 20),
+                  onPressed: () async {
+                    await _controller.stop();
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                  tooltip: 'back',
+                  padding: EdgeInsets.zero,
+                ),
               ),
+            ),
+            Positioned(
+              top: 60,
+              right: 10,
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _isLearnt = !_isLearnt;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isLearnt ? yellow120 : Colors.white,
+                    foregroundColor: _isLearnt ? Colors.white : yellow120,
+                    shape: const StadiumBorder(),
+                    side: BorderSide(color: yellow120, width: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    elevation: _isLearnt ? 2 : 0,
+                    shadowColor: _isLearnt ? green100.withOpacity(0.2) : Colors.transparent,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'lesson_learnt_button'.tr(),
+                        style: TextStyle(
+                          color: _isLearnt ? Colors.white : yellow120,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        _isLearnt ? Icons.check_circle : Icons.check_circle_outline,
+                        color: _isLearnt ? Colors.white : yellow120,
+                        size: 22,
+                      ),
+                    ],
+                  ),
+                ),
             ),
           ],
         ),
@@ -70,7 +120,10 @@ class _LessonViewState extends State<LessonView> {
               ),
               indicatorSize: TabBarIndicatorSize.label,
               indicatorWeight: 1,
-              indicatorPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+              indicatorPadding: const EdgeInsets.symmetric(
+                horizontal: 5,
+                vertical: 8,
+              ),
               indicatorAnimation: TabIndicatorAnimation.linear,
               splashFactory: NoSplash.splashFactory,
               dividerColor: grey110,
@@ -125,7 +178,7 @@ class _LessonViewState extends State<LessonView> {
       children: List.generate(_controller.words.length, (index) {
         final info = _controller.words[index];
         final isHighlighted = index == _controller.highlightedIndex;
-        
+
         return TextSpan(
           children: [
             TextSpan(
@@ -136,7 +189,7 @@ class _LessonViewState extends State<LessonView> {
             ),
             // Add a non-highlighted space after each word
             const TextSpan(
-              text: '  ', 
+              text: '  ',
               style: TextStyle(decoration: TextDecoration.none),
             ),
           ],
@@ -145,4 +198,3 @@ class _LessonViewState extends State<LessonView> {
     );
   }
 }
-
