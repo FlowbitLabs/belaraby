@@ -11,12 +11,53 @@ class LessonView extends StatefulWidget {
 }
 
 class _LessonViewState extends State<LessonView> {
-    String? _selectedWord;
-    void _onWordSelected(String word) {
-      setState(() {
-        _selectedWord = word;
-      });
-    }
+  String? _selectedWord;
+  String? _translatedText;
+  bool _isTranslating = false;
+  String? _translationError;
+  
+  final TranslationHelper _translationHelper = TranslationHelper();
+  
+  void _onWordSelected(String word) {
+    setState(() {
+      _selectedWord = word;
+      _translatedText = null;
+      _translationError = null;
+    });
+    // Automatically translate the selected word
+    _translateSelectedWord(word);
+  }
+  
+  Future<void> _translateSelectedWord(String word) async {
+    await _translationHelper.translateWord(
+      word,
+      onLoading: () {
+        if (mounted) {
+          setState(() {
+            _isTranslating = true;
+            _translationError = null;
+          });
+        }
+      },
+      onSuccess: (translatedText) {
+        if (mounted) {
+          setState(() {
+            _translatedText = translatedText;
+            _isTranslating = false;
+            _translationError = null;
+          });
+        }
+      },
+      onError: (errorMessage) {
+        if (mounted) {
+          setState(() {
+            _translationError = errorMessage;
+            _isTranslating = false;
+          });
+        }
+      },
+    );
+  }
   final LessonPlayerController _controller = LessonPlayerController();
   bool _isRepeatEnabled = false;
   bool _isLearnt = false;
@@ -70,8 +111,12 @@ class _LessonViewState extends State<LessonView> {
                   key: ValueKey(_selectedWord),
                   direction: DismissDirection.horizontal,
                   onDismissed: (direction) {
+
                     setState(() {
                       _selectedWord = null;
+                      _translatedText = null;
+                      _translationError = null;
+                      _isTranslating = false;
                     });
                   },
                   child: Container(
@@ -87,39 +132,109 @@ class _LessonViewState extends State<LessonView> {
                         ),
                       ],
                     ),
-                    child: Row(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Expanded(
-                          child: Text(
-                            _selectedWord!,
-                            textAlign: TextAlign.start,
-                            style: BTextStyles.of(context).title1.copyWith(fontWeight: FontWeight.bold, color: Colors.black87),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
+                        Row(
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.fitness_center, size: 20),
-                              tooltip: 'Exercise',
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Exercise for "$_selectedWord"')),
-                                );
-                              },
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _selectedWord!,
+                                    textAlign: TextAlign.start,
+                                    style: BTextStyles.of(context).title1.copyWith(fontWeight: FontWeight.bold, color: Colors.black87),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  // Translation result display
+                                  Builder(
+                                    builder: (context) {
+                                      if (_translatedText != null) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Text(
+                                            _translatedText!,
+                                            style: BTextStyles.of(context).body1.copyWith(
+                                              color: Colors.blue.shade700,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        );
+                                      } else if (_isTranslating) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Row(
+                                            children: [
+                                              const SizedBox(
+                                                width: 12,
+                                                height: 12,
+                                                child: CircularProgressIndicator(strokeWidth: 1.5),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'translating'.tr(),
+                                                style: BTextStyles.of(context).caption.copyWith(
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      } else if (_translationError != null) {
+                                        return Padding(
+                                          padding: const EdgeInsets.only(top: 4),
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.error_outline,
+                                                size: 12,
+                                                color: Colors.red.shade600,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Text(
+                                                  _translationError!,
+                                                  style: BTextStyles.of(context).caption.copyWith(
+                                                    color: Colors.red.shade600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
                                 IconButton(
-                              icon: const Icon(Icons.volume_up, size: 20),
-                              tooltip: 'Play',
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                              onPressed: () {
-                                WordSpeaker().speak(_selectedWord!);
-                              },
+                                  icon: const Icon(Icons.fitness_center, size: 20),
+                                  tooltip: 'Exercise',
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Exercise for "$_selectedWord"')),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.volume_up, size: 20),
+                                  tooltip: 'Play',
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                  onPressed: () {
+                                    WordSpeaker().speak(_selectedWord!);
+                                  },
+                                ),
+                              ],
                             ),
                           ],
                         ),

@@ -14,5 +14,9 @@
     "lesson_tab_quiz": "اختبار",
     "lesson_tab_keywords": "كلمات",
     "lesson_tab_grammar": "نحو",
-    "lesson_learnt_button": "تم التعلم"
+    "lesson_learnt_button": "تم التعلم",
+    "selected_word_label": "الكلمة المختارة",
+    "translation_result": "الترجمة",
+    "translation_error": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
+    "translating": "جاري الترجمة..."
 }

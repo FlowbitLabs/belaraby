@@ -14,5 +14,9 @@
     "lesson_tab_quiz": "Quiz",
     "lesson_tab_keywords": "Keywords",
     "lesson_tab_grammar": "Grammar",
-    "lesson_learnt_button": "Lesson Learnt"
+    "lesson_learnt_button": "Lesson Learnt",
+    "selected_word_label": "Selected Word",
+    "translation_result": "Translation",
+    "translation_error": "Translation failed. Please try again.",
+    "translating": "Translating..."
 }
