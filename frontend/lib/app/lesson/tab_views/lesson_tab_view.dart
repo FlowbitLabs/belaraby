@@ -5,6 +5,7 @@ import 'package:belaraby/constant/typography.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 
 class LessonTabView extends StatefulWidget {
   const LessonTabView({
@@ -325,7 +326,7 @@ class _LessonTabViewState extends State<LessonTabView> {
     final sentences = _splitIntoSentences(widget.lesson.body);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (_isTranslatingAll)
           Padding(
@@ -352,7 +353,7 @@ class _LessonTabViewState extends State<LessonTabView> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 GestureDetector(
                   onTapUp: (details) {
@@ -364,19 +365,28 @@ class _LessonTabViewState extends State<LessonTabView> {
                       fontSize: 20,
                       height: 1.5,
                     ),
-                    textAlign: TextAlign.right,
+                    textAlign: TextAlign.center,
                   ),
                 ),
                 const SizedBox(height: 8),
                 if (translation != null)
-                  Text(
-                    translation,
-                    style: BTextStyles.of(context).body1.copyWith(
-                      color: Colors.blue.shade700,
-                      fontSize: 16,
-                      fontStyle: FontStyle.italic,
+                  Directionality(
+                    textDirection: ui.TextDirection.ltr,
+                    child: Text(
+                      translation,
+                      style: BTextStyles.of(context).body1.copyWith(
+                        color: Colors.blue.shade700,
+                        fontSize: 16,
+                        fontStyle: FontStyle.normal,
+                        fontWeight: FontWeight.w500,
+                        height: 1.6,
+                        letterSpacing: 0.1,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: null,
+                      softWrap: true,
+                      overflow: TextOverflow.visible,
                     ),
-                    textAlign: TextAlign.left,
                   )
                 else
                   const SizedBox(
