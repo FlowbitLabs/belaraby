@@ -60,7 +60,6 @@ class _LessonViewState extends State<LessonView> {
   }
   final LessonPlayerController _controller = LessonPlayerController();
   bool _isRepeatEnabled = false;
-  bool _isLearnt = false;
 
   Future<void> _handleRepeat() async {
     if (_isRepeatEnabled) {
@@ -218,10 +217,17 @@ class _LessonViewState extends State<LessonView> {
                                   icon: const Icon(Icons.fitness_center, size: 20),
                                   tooltip: 'Exercise',
                                   padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 32,
+                                  ),
                                   onPressed: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Exercise for "$_selectedWord"')),
+                                      SnackBar(
+                                        content: Text(
+                                          'Exercise for "$_selectedWord"',
+                                        ),
+                                      ),
                                     );
                                   },
                                 ),
@@ -229,7 +235,10 @@ class _LessonViewState extends State<LessonView> {
                                   icon: const Icon(Icons.volume_up, size: 20),
                                   tooltip: 'Play',
                                   padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 32,
+                                  ),
                                   onPressed: () {
                                     WordSpeaker().speak(_selectedWord!);
                                   },
@@ -267,40 +276,55 @@ class _LessonViewState extends State<LessonView> {
             Positioned(
               top: 60,
               right: 16,
-              child: ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _isLearnt = !_isLearnt;
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _isLearnt ? yellow120 : Colors.white,
-                  foregroundColor: _isLearnt ? Colors.white : yellow120,
-                  shape: const StadiumBorder(),
-                  side: BorderSide(color: yellow120, width: 2),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                  elevation: _isLearnt ? 2 : 0,
-                  shadowColor: _isLearnt ? green100.withOpacity(0.2) : Colors.transparent,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'lesson_learnt_button'.tr(),
-                      style: TextStyle(
-                        color: _isLearnt ? Colors.white : yellow120,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
+              child: BlocBuilder<LessonCubit, LessonState>(
+                builder: (context, lessonState) {
+                  final isLearnt = lessonState.learned ?? false;
+                  return ElevatedButton(
+                    onPressed: () {
+                      final userId = supabase.auth.currentUser?.id;
+                      if (userId == null) return;
+                      context.read<LessonCubit>().toggleLearnedLesson(
+                        userId: userId,
+                        lessonId: widget.lesson.id,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isLearnt ? yellow120 : Colors.white,
+                      foregroundColor: isLearnt ? Colors.white : yellow120,
+                      shape: const StadiumBorder(),
+                      side: const BorderSide(color: yellow120, width: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
                       ),
+                      elevation: isLearnt ? 2 : 0,
+                      shadowColor: isLearnt
+                          ? green100.withValues(alpha: 0.2)
+                          : Colors.transparent,
                     ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      _isLearnt ? Icons.check_circle : Icons.check_circle_outline,
-                      color: _isLearnt ? Colors.white : yellow120,
-                      size: 22,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'lesson_learnt_button'.tr(),
+                          style: TextStyle(
+                            color: isLearnt ? Colors.white : yellow120,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          isLearnt
+                              ? Icons.check_circle
+                              : Icons.check_circle_outline,
+                          color: isLearnt ? Colors.white : yellow120,
+                          size: 22,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],

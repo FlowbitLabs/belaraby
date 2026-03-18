@@ -9,6 +9,7 @@ import 'package:belaraby/app/lesson/utils/word_speaker.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
 import 'package:belaraby/data/data.dart';
+import 'package:belaraby/data/supabase_client.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

@@ -1,14 +1,16 @@
+import 'package:belaraby/app/my_library/cubit/my_library_cubit.dart';
 import 'package:belaraby/app/util/convert_arabic_digits.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LibraryButtons extends StatelessWidget {
   const LibraryButtons({super.key});
-  String calculateItems(BuildContext context, {required int items}) {
+
+  String _calculateItems(int items) {
     if (items < 1) return 'لا توجد عناصر';
     if (items == 1) return 'عنصر واحد';
     if (items == 2) return 'عنصران';
-
     final arabicDigits = convertToArabicDigits(number: items);
     if (items >= 3 && items <= 10) return '$arabicDigits عناصر';
     if (items >= 11 && items < 100) return '$arabicDigits عنصراً';
@@ -17,31 +19,31 @@ class LibraryButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        children: [
-          _buildLibraryButton(
-            context,
-            label: 'library_favorites'.tr(),
-            itemCount: calculateItems(context, items: 0),
-            trailingIcon: Icons.favorite_border,
-            onPressed: () {
-              // TODO(test): Navigate to Favorites
-            },
+    return BlocBuilder<MyLibraryCubit, MyLibraryState>(
+      builder: (context, state) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            children: [
+              _buildLibraryButton(
+                context,
+                label: 'library_favorites'.tr(),
+                itemCount: _calculateItems(state.favorites.length),
+                trailingIcon: Icons.favorite_border,
+                onPressed: () {},
+              ),
+              const SizedBox(height: 12),
+              _buildLibraryButton(
+                context,
+                label: 'library_learned_stories'.tr(),
+                itemCount: _calculateItems(state.learnedLessons.length),
+                trailingIcon: Icons.library_add_check,
+                onPressed: () {},
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          _buildLibraryButton(
-            context,
-            label: 'library_learned_stories'.tr(),
-            itemCount: calculateItems(context, items: 0),
-            trailingIcon: Icons.library_add_check,
-            onPressed: () {
-              // TODO(test): Navigate to Learned Stories
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -68,12 +70,10 @@ class LibraryButtons extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Right icon
             Padding(
               padding: const EdgeInsets.only(left: 18, right: 5),
               child: Icon(trailingIcon, size: 40, color: Colors.yellow[800]),
             ),
-            // Label with subtitle
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,7 +85,6 @@ class LibraryButtons extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-
                   Text(
                     itemCount,
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
@@ -93,7 +92,6 @@ class LibraryButtons extends StatelessWidget {
                 ],
               ),
             ),
-            // Left arrow icon
             const Padding(
               padding: EdgeInsets.only(right: 12),
               child: Icon(Icons.arrow_forward_ios_rounded, size: 20),

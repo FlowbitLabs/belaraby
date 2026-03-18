@@ -12,7 +12,7 @@ class MyLibraryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => MyLibraryCubit(),
+      create: (_) => MyLibraryCubit()..loadLibrary(),
       child: const MyLibraryView(),
     );
   }

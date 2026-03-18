@@ -1,14 +1,7 @@
 import 'package:belaraby/app/home/cubit/home_cubit.dart';
+import 'package:belaraby/constant/lesson_constants.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:equatable/equatable.dart';
-
-final List<String> levelsFilterList = [
-  'الكل',
-  'الأول ابتدائي',
-  'الثاني ابتدائي',
-  'الثالث ابتدائي',
-  'الرابع ابتدائي',
-];
 
 class HomeState extends Equatable {
   const HomeState({
@@ -27,26 +20,15 @@ class HomeState extends Equatable {
       lessons.where((lesson) => !lesson.isPaid).toList();
 
   List<Lesson> get paidLessonsBySelectedLevel {
-    final levelFilters = {
-      'الكل': null, // null means no filtering on grade
-      'الأول ابتدائي': '1',
-      'الثاني ابتدائي': '2',
-      'الثالث ابتدائي': '3',
-      'الرابع ابتدائي': '4',
-    };
-
-    final allowedLevel = levelFilters[filterBy];
-
+    final allowedLevel = levelGradeFilters[filterBy];
     return lessons.where((lesson) {
-      if (allowedLevel == null) return true; // 'الكل' case
+      if (allowedLevel == null) return true;
       return lesson.grade == allowedLevel;
     }).toList();
   }
 
   List<String> get levels =>
       lessons.map((lesson) => lesson.level).toSet().toList();
-
-  String get title => 'Home';
 
   @override
   List<Object> get props => [status, lessons, filterBy, error];

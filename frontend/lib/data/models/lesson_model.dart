@@ -1,5 +1,7 @@
-class Lesson {
-  Lesson({
+import 'package:equatable/equatable.dart';
+
+class Lesson extends Equatable {
+  const Lesson({
     required this.id,
     required this.isPaid,
     required this.title,
@@ -7,7 +9,7 @@ class Lesson {
     required this.level,
     required this.grade,
     required this.heroImage,
-    required this.date,
+    this.date,
   });
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
@@ -31,4 +33,38 @@ class Lesson {
   final String grade;
   final String heroImage;
   final String? date;
+
+  @override
+  List<Object?> get props => [
+    id,
+    isPaid,
+    title,
+    body,
+    level,
+    grade,
+    heroImage,
+    date,
+  ];
+
+  Lesson copyWith({
+    String? id,
+    bool? isPaid,
+    String? title,
+    String? body,
+    String? level,
+    String? grade,
+    String? heroImage,
+    String? date,
+  }) {
+    return Lesson(
+      id: id ?? this.id,
+      isPaid: isPaid ?? this.isPaid,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      level: level ?? this.level,
+      grade: grade ?? this.grade,
+      heroImage: heroImage ?? this.heroImage,
+      date: date ?? this.date,
+    );
+  }
 }
