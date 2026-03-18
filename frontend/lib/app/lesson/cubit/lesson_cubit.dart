@@ -7,8 +7,8 @@ class LessonCubit extends Cubit<LessonState> {
   LessonCubit() : super(const LessonState());
 
   Future<void> toggleLearnedLesson({
-    required int userId,
-    required int lessonId,
+    required String userId,
+    required String lessonId,
   }) async {
     try {
       final success = await LessonRepository().toggleLearnedLesson(
@@ -16,29 +16,25 @@ class LessonCubit extends Cubit<LessonState> {
         lessonId: lessonId,
       );
 
-      if (success) {
-        emit(state.copyWith(favorite: true));
-      } else {
-        emit(state.copyWith(favorite: false));
-      }
+      emit(state.copyWith(learned: success));
     } on Exception catch (e) {
       debugPrint(e.toString());
-      emit(state.copyWith(favorite: false));
+      emit(state.copyWith(learned: false));
     }
   }
 }
 
 class LessonState extends Equatable {
-  const LessonState({this.favorite});
+  const LessonState({this.learned});
 
-  final bool? favorite;
+  final bool? learned;
 
   @override
-  List<Object?> get props => [favorite];
+  List<Object?> get props => [learned];
 
-  LessonState copyWith({bool? favorite}) {
+  LessonState copyWith({bool? learned}) {
     return LessonState(
-      favorite: favorite ?? this.favorite,
+      learned: learned ?? this.learned,
     );
   }
 }

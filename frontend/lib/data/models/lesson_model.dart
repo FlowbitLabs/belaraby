@@ -1,5 +1,6 @@
 class Lesson {
   Lesson({
+    required this.id,
     required this.isPaid,
     required this.title,
     required this.body,
@@ -11,6 +12,7 @@ class Lesson {
 
   factory Lesson.fromJson(Map<String, dynamic> json) {
     return Lesson(
+      id: json['id'] as String,
       isPaid: json['paid'] as bool,
       title: json['title'] as String,
       body: json['body'] as String,
@@ -21,6 +23,7 @@ class Lesson {
     );
   }
 
+  final String id;
   final bool isPaid;
   final String title;
   final String body;
