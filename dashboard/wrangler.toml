@@ -1,0 +1,30 @@
+# Cloudflare Workers config for the admin dashboard (static assets only —
+# no Worker script, so requests are free and unmetered on the free plan).
+# Deployed by .github/workflows/deploy_dashboard.yml:
+#   npx wrangler deploy --env staging|prod
+# Local preview against a build: npm run build && npx wrangler dev
+
+name = "belaraby-admin"
+compatibility_date = "2026-06-10"
+
+[assets]
+directory = "./dist"
+# Serve index.html for unknown paths so client-side routes deep-link cleanly.
+not_found_handling = "single-page-application"
+
+# `assets` is a non-inheritable key in wrangler config, so each environment
+# repeats it explicitly.
+
+[env.staging]
+name = "belaraby-admin-staging"
+
+[env.staging.assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+
+[env.prod]
+name = "belaraby-admin-prod"
+
+[env.prod.assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
