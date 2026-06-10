@@ -1,5 +1,9 @@
 import 'package:belaraby/app/lesson/controller/lesson_player_controller.dart';
+import 'package:belaraby/app/lesson/cubit/grammar_cubit.dart';
+import 'package:belaraby/app/lesson/cubit/keywords_cubit.dart';
+import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/lesson_cubit.dart';
+import 'package:belaraby/app/lesson/cubit/quiz_cubit.dart';
 import 'package:belaraby/app/lesson/tab_views/grammar_tab_view.dart';
 import 'package:belaraby/app/lesson/tab_views/keywords_tab_view.dart';
 import 'package:belaraby/app/lesson/tab_views/lesson_tab_view.dart';
@@ -9,7 +13,6 @@ import 'package:belaraby/app/lesson/utils/word_speaker.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
 import 'package:belaraby/data/data.dart';
-import 'package:belaraby/data/supabase_client.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,9 +26,32 @@ class LessonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => LessonCubit(),
-      child: LessonView(lesson),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => LessonCubit(lessonId: lesson.id)..loadLearnedStatus(),
+        ),
+        BlocProvider(
+          create: (_) => QuizCubit(lessonId: lesson.id)..loadExercises(),
+        ),
+        BlocProvider(
+          create: (_) => KeywordsCubit(lessonId: lesson.id)..loadKeywords(),
+        ),
+        BlocProvider(
+          create: (_) => GrammarCubit(lessonId: lesson.id)..loadGrammar(),
+        ),
+      ],
+      // Mirror the per-lesson learned toggle into the global LearnedCubit
+      // so the home screen "Hide Learned" filter stays in sync.
+      child: BlocListener<LessonCubit, LessonState>(
+        listenWhen: (previous, current) =>
+            previous.isLearned != current.isLearned,
+        listener: (context, state) => context.read<LearnedCubit>().setLearned(
+          lesson.id,
+          isLearned: state.isLearned,
+        ),
+        child: LessonView(lesson),
+      ),
     );
   }
 }

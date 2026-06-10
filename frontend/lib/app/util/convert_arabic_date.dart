@@ -1,14 +1,22 @@
-String formatArabicDate(String? dateStr) {
+/// Formats [dateStr] (ISO `yyyy-mm-dd`) for the given [languageCode].
+///
+/// Arabic gets Arabic-Indic numerals and Arabic month names; every other
+/// locale gets Western numerals and English month names.
+String formatLessonDate(String? dateStr, String languageCode) {
   if (dateStr == null) return '';
 
   final date = DateTime.tryParse(dateStr);
   if (date == null) return '';
 
-  final day = date.day;
-  final month = _arabicMonthName(date.month);
-  final year = date.year;
+  if (languageCode == 'ar') {
+    final day = _toArabicNumerals(date.day);
+    final month = _arabicMonthName(date.month);
+    final year = _toArabicNumerals(date.year);
+    return '$day $month $year';
+  }
 
-  return '${_toArabicNumerals(day)} $month ${_toArabicNumerals(year)}';
+  final month = _englishMonthName(date.month);
+  return '${date.day} $month ${date.year}';
 }
 
 String _arabicMonthName(int month) {
@@ -25,6 +33,24 @@ String _arabicMonthName(int month) {
     'أكتوبر',
     'نوفمبر',
     'ديسمبر',
+  ];
+  return months[month - 1];
+}
+
+String _englishMonthName(int month) {
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
   return months[month - 1];
 }

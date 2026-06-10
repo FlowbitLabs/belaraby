@@ -1,13 +1,14 @@
 import 'package:belaraby/data/services/translation_service.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 
 /// A simple helper class for translating words without using cubit/bloc pattern.
 /// Provides direct translation functionality with callback-based results.
 class TranslationHelper {
-  static final TranslationHelper _instance = TranslationHelper._internal();
   factory TranslationHelper() => _instance;
 
   TranslationHelper._internal();
+  static final TranslationHelper _instance = TranslationHelper._internal();
 
   final TranslationService _translationService = TranslationService();
   bool _isTranslating = false;
@@ -20,9 +21,9 @@ class TranslationHelper {
   /// [onError] - Called with error message when translation fails
   Future<void> translateWord(
     String word, {
-    VoidCallback? onLoading,
     required void Function(String translatedText) onSuccess,
     required void Function(String errorMessage) onError,
+    VoidCallback? onLoading,
   }) async {
     // Prevent concurrent translations
     if (_isTranslating) {
@@ -46,16 +47,11 @@ class TranslationHelper {
     } on TranslationException catch (e) {
       debugPrint('Translation exception: ${e.message}');
       onError(e.message);
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Unexpected translation error: $e');
-      onError('Translation failed. Please try again.');
+      onError('translation_error'.tr());
     } finally {
       _isTranslating = false;
     }
-  }
-
-  /// Resets the translation state (useful when canceling ongoing translations)
-  void reset() {
-    _isTranslating = false;
   }
 }

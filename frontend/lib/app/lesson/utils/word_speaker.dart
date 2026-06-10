@@ -3,10 +3,10 @@ import 'package:flutter_tts/flutter_tts.dart';
 /// A standalone utility for speaking individual words.
 /// Completely separate from the lesson playback system.
 class WordSpeaker {
-  static final WordSpeaker _instance = WordSpeaker._internal();
   factory WordSpeaker() => _instance;
-  
+
   WordSpeaker._internal();
+  static final WordSpeaker _instance = WordSpeaker._internal();
 
   final FlutterTts _tts = FlutterTts();
   bool _isInitialized = false;
@@ -16,15 +16,18 @@ class WordSpeaker {
 
     try {
       // Find and set Arabic voice
-      final voices = await _tts.getLanguages;
-      final arabicVoice = voices.firstWhere(
-        (voice) => voice.toString().toLowerCase().contains('ar'),
+      final dynamic voices = await _tts.getLanguages;
+      final voiceList = voices is List
+          ? voices.map((voice) => voice.toString()).toList()
+          : <String>[];
+      final arabicVoice = voiceList.firstWhere(
+        (voice) => voice.toLowerCase().contains('ar'),
         orElse: () => 'ar',
       );
       await _tts.setLanguage(arabicVoice);
       await _tts.setSpeechRate(0.5);
       _isInitialized = true;
-    } catch (e) {
+    } on Exception {
       // Fallback to default Arabic
       await _tts.setLanguage('ar');
       _isInitialized = true;
@@ -35,13 +38,5 @@ class WordSpeaker {
   Future<void> speak(String word) async {
     if (!_isInitialized) await _initialize();
     await _tts.speak(word);
-  }
-
-  Future<void> stop() async {
-    await _tts.stop();
-  }
-
-  void dispose() {
-    _tts.stop();
   }
 }

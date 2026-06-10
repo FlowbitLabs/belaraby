@@ -1,0 +1,246 @@
+import 'dart:async';
+
+import 'package:belaraby/data/repositories/auth_repository.dart';
+import 'package:belaraby/data/services/purchases_service.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+
+enum SubscriptionStatus { initial, loading, success, error }
+
+/// Global cubit exposing the user's premium status and store packages.
+///
+/// Consumes [PurchasesService] only — no direct plugin calls from the UI.
+class SubscriptionCubit extends Cubit<SubscriptionState> {
+  SubscriptionCubit({
+    required PurchasesService purchasesService,
+    AuthRepository? authRepository,
+  }) : _purchasesService = purchasesService,
+       _authRepository = authRepository ?? AuthRepository(),
+       super(const SubscriptionState()) {
+    _customerInfoSubscription = _purchasesService.customerInfoStream.listen(
+      _onCustomerInfoUpdated,
+    );
+  }
+
+  final PurchasesService _purchasesService;
+  final AuthRepository _authRepository;
+  late final StreamSubscription<CustomerInfo> _customerInfoSubscription;
+
+  /// Makes sure the purchase is attributed to the Supabase user id.
+  ///
+  /// The startup anonymous sign-in can have failed (e.g. offline first
+  /// boot); without a Supabase identity RevenueCat would record the purchase
+  /// under an anonymous id the webhook cannot map to `auth.users`. Retries
+  /// the sign-in, identifies RevenueCat, and returns whether it is safe to
+  /// continue. Emits an error state when no identity could be established.
+  Future<bool> _ensureIdentified() async {
+    final userId = await _authRepository.ensureSignedIn();
+    if (userId == null) {
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_error_signin',
+        ),
+      );
+      return false;
+    }
+    await _purchasesService.logIn(userId);
+    return true;
+  }
+
+  void _onCustomerInfoUpdated(CustomerInfo customerInfo) {
+    emit(
+      state.copyWith(
+        isPremium: PurchasesService.hasPremiumEntitlement(customerInfo),
+      ),
+    );
+  }
+
+  /// Loads the premium status and the available store packages.
+  Future<void> load() async {
+    if (!_purchasesService.isBillingAvailable) {
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.success,
+          isBillingAvailable: false,
+        ),
+      );
+      return;
+    }
+    emit(
+      state.copyWith(
+        status: SubscriptionStatus.loading,
+        errorMessage: '',
+        infoMessage: '',
+      ),
+    );
+    try {
+      final isPremium = await _purchasesService.isPremium();
+      final packages = await _purchasesService.getAvailablePackages();
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.success,
+          isPremium: isPremium,
+          packages: packages,
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('SubscriptionCubit.load failed: $error');
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_error_load',
+        ),
+      );
+    }
+  }
+
+  /// Purchases [package] through the store.
+  Future<void> purchase(Package package) async {
+    if (!state.isBillingAvailable) {
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_billing_unavailable',
+        ),
+      );
+      return;
+    }
+    emit(
+      state.copyWith(
+        status: SubscriptionStatus.loading,
+        errorMessage: '',
+        infoMessage: '',
+      ),
+    );
+    if (!await _ensureIdentified()) return;
+    try {
+      final customerInfo = await _purchasesService.purchasePackage(package);
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.success,
+          isPremium: PurchasesService.hasPremiumEntitlement(customerInfo),
+        ),
+      );
+    } on PlatformException catch (error) {
+      if (PurchasesService.isUserCancellation(error)) {
+        emit(state.copyWith(status: SubscriptionStatus.success));
+        return;
+      }
+      debugPrint('SubscriptionCubit.purchase failed: $error');
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_error_purchase',
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('SubscriptionCubit.purchase failed: $error');
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_error_purchase',
+        ),
+      );
+    }
+  }
+
+  /// Restores previous purchases for the current store account.
+  Future<void> restore() async {
+    if (!state.isBillingAvailable) {
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_billing_unavailable',
+        ),
+      );
+      return;
+    }
+    emit(
+      state.copyWith(
+        status: SubscriptionStatus.loading,
+        errorMessage: '',
+        infoMessage: '',
+      ),
+    );
+    if (!await _ensureIdentified()) return;
+    try {
+      final customerInfo = await _purchasesService.restorePurchases();
+      final isPremium = PurchasesService.hasPremiumEntitlement(customerInfo);
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.success,
+          isPremium: isPremium,
+          infoMessage: isPremium ? '' : 'paywall_restore_none',
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('SubscriptionCubit.restore failed: $error');
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_error_restore',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> close() async {
+    await _customerInfoSubscription.cancel();
+    return super.close();
+  }
+}
+
+class SubscriptionState extends Equatable {
+  const SubscriptionState({
+    this.status = SubscriptionStatus.initial,
+    this.isPremium = false,
+    this.isBillingAvailable = true,
+    this.packages = const [],
+    this.errorMessage = '',
+    this.infoMessage = '',
+  });
+
+  final SubscriptionStatus status;
+  final bool isPremium;
+  final bool isBillingAvailable;
+  final List<Package> packages;
+
+  /// Translation key for the snackbar shown on failures.
+  final String errorMessage;
+
+  /// Translation key for informational snackbars (e.g. nothing to restore).
+  final String infoMessage;
+
+  @override
+  List<Object?> get props => [
+    status,
+    isPremium,
+    isBillingAvailable,
+    packages,
+    errorMessage,
+    infoMessage,
+  ];
+
+  SubscriptionState copyWith({
+    SubscriptionStatus? status,
+    bool? isPremium,
+    bool? isBillingAvailable,
+    List<Package>? packages,
+    String? errorMessage,
+    String? infoMessage,
+  }) {
+    return SubscriptionState(
+      status: status ?? this.status,
+      isPremium: isPremium ?? this.isPremium,
+      isBillingAvailable: isBillingAvailable ?? this.isBillingAvailable,
+      packages: packages ?? this.packages,
+      errorMessage: errorMessage ?? this.errorMessage,
+      infoMessage: infoMessage ?? this.infoMessage,
+    );
+  }
+}

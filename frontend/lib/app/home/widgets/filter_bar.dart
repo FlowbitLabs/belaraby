@@ -1,6 +1,12 @@
 import 'package:belaraby/app/util/get_level_color.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+/// Horizontal chip bar selecting a grade level filter.
+///
+/// Works with translation keys (see `levelFilterKeys`): the chip shows the
+/// localized label while the key itself is reported to [onSelected], so the
+/// DB grade mapping stays locale-independent.
 class LevelFilterBar extends StatefulWidget {
   const LevelFilterBar({
     required this.levelsFilterList,
@@ -51,7 +57,7 @@ class _LevelFilterBarState extends State<LevelFilterBar> {
         children: widget.levelsFilterList.map((level) {
           final isSelected = widget.selected == level;
           return Padding(
-            padding: const EdgeInsets.only(left: 10),
+            padding: const EdgeInsetsDirectional.only(start: 10),
             child: Container(
               key: _itemKeys[level],
               decoration: BoxDecoration(
@@ -69,7 +75,7 @@ class _LevelFilterBarState extends State<LevelFilterBar> {
                       vertical: 6,
                     ),
                     child: Text(
-                      level,
+                      level.tr(),
                       style: const TextStyle(
                         fontSize: 18,
                         color: Colors.black,

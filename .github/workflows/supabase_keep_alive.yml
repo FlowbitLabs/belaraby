@@ -1,0 +1,42 @@
+name: Supabase Keep-Alive
+
+# Free-tier Supabase projects are paused after 7 days without API activity.
+# This pings the REST API every 3 days so BOTH the staging and prod projects
+# stay awake (each GitHub environment carries its own SUPABASE_URL /
+# SUPABASE_ANON_KEY secrets pointing at its own Supabase project).
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *" # every 3 days at 06:17 UTC
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Supabase REST API (${{ matrix.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment:
+          - staging
+          - prod
+    environment: ${{ matrix.environment }}
+
+    steps:
+      - name: Query one lesson row
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          status=$(curl --silent --show-error --output /tmp/keep_alive_body \
+            --write-out "%{http_code}" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            "$SUPABASE_URL/rest/v1/lessons?select=id&limit=1")
+          echo "HTTP $status"
+          cat /tmp/keep_alive_body
+          echo
+          if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
+            echo "::error::Supabase keep-alive ping (${{ matrix.environment }}) failed with HTTP $status" >&2
+            exit 1
+          fi

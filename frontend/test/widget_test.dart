@@ -1,29 +1,70 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:belaraby/app/app.dart';
-import 'package:flutter/material.dart';
+import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
+import 'package:belaraby/app/lesson/cubit/lesson_cubit.dart';
+import 'package:belaraby/app/my_library/cubit/my_library_cubit.dart';
+import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const BelArabyApp());
+  group('SubscriptionState', () {
+    test('has sensible defaults', () {
+      const state = SubscriptionState();
+      expect(state.status, SubscriptionStatus.initial);
+      expect(state.isPremium, isFalse);
+      expect(state.isBillingAvailable, isTrue);
+      expect(state.packages, isEmpty);
+      expect(state.errorMessage, isEmpty);
+      expect(state.infoMessage, isEmpty);
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('copyWith overrides only the given fields', () {
+      const state = SubscriptionState();
+      final updated = state.copyWith(
+        status: SubscriptionStatus.success,
+        isPremium: true,
+      );
+      expect(updated.status, SubscriptionStatus.success);
+      expect(updated.isPremium, isTrue);
+      expect(updated.isBillingAvailable, state.isBillingAvailable);
+      expect(updated.errorMessage, state.errorMessage);
+    });
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  group('FavoriteState', () {
+    test('isFavorite reflects favoriteIds', () {
+      const state = FavoriteState(favoriteIds: {'a', 'b'});
+      expect(state.isFavorite('a'), isTrue);
+      expect(state.isFavorite('c'), isFalse);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('copyWith replaces favoriteIds', () {
+      const state = FavoriteState();
+      final updated = state.copyWith(
+        status: FavoriteStatus.success,
+        favoriteIds: {'x'},
+      );
+      expect(updated.favoriteIds, {'x'});
+      expect(updated.status, FavoriteStatus.success);
+    });
+  });
+
+  group('LessonState', () {
+    test('copyWith toggles isLearned', () {
+      const state = LessonState();
+      expect(state.isLearned, isFalse);
+      final updated = state.copyWith(isLearned: true);
+      expect(updated.isLearned, isTrue);
+      expect(updated.status, state.status);
+    });
+  });
+
+  group('MyLibraryState', () {
+    test('sectionLessons follows the selected section', () {
+      const state = MyLibraryState();
+      expect(state.section, MyLibrarySection.favorites);
+      expect(state.sectionLessons, state.favorites);
+
+      final learned = state.copyWith(section: MyLibrarySection.learned);
+      expect(learned.sectionLessons, learned.learnedLessons);
+    });
   });
 }

@@ -1,0 +1,162 @@
+name: CI
+
+# Per-tree checks for PRs into dev/staging/prod and pushes to dev.
+# GitHub has no per-job `paths:` filter, so a cheap `changes` job
+# (dorny/paths-filter) detects which trees changed and each check job only
+# runs when its tree — or this workflow file — changed.
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - staging
+      - prod
+  push:
+    branches:
+      - dev
+
+jobs:
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      flutter: ${{ steps.filter.outputs.flutter }}
+      dashboard: ${{ steps.filter.outputs.dashboard }}
+      supabase: ${{ steps.filter.outputs.supabase }}
+      functions: ${{ steps.filter.outputs.functions }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            flutter:
+              - "frontend/**"
+              - ".github/workflows/ci.yml"
+            dashboard:
+              - "dashboard/**"
+              - ".github/workflows/ci.yml"
+            supabase:
+              - "supabase/**"
+              - ".github/workflows/ci.yml"
+            functions:
+              - "supabase/functions/**"
+              - ".github/workflows/ci.yml"
+
+  flutter:
+    name: Flutter analyze + test
+    needs: changes
+    if: needs.changes.outputs.flutter == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pinned to the same version as deploy_flutter.yml.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.2"
+          cache: true
+
+      - run: flutter pub get
+
+      # Very Good Analysis: fail on every diagnostic, not just errors.
+      - run: flutter analyze --fatal-infos
+
+      - run: flutter test
+
+  dashboard:
+    name: Dashboard type-check + lint + test + build
+    needs: changes
+    if: needs.changes.outputs.dashboard == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - run: npm ci
+
+      - run: npm run type-check
+
+      # NOT `npm run lint` — that script passes --fix and would silently
+      # rewrite files instead of failing the build.
+      - name: Lint (report-only)
+        run: npx eslint --ext .js,.jsx,.ts,.tsx ./src
+
+      # Vitest suite — the only CI coverage of the menu-hidden lesson-content
+      # views (exercises/options/grammar/keywords) and the compound
+      # primary-key map; a regression there would otherwise only surface in
+      # the deployed admin panel.
+      - run: npm run test
+
+      - run: npm run build
+
+  supabase:
+    name: Supabase migrations + db lint
+    needs: changes
+    if: needs.changes.outputs.supabase == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local database
+        run: supabase db start
+
+      - name: Apply all migrations from scratch (+ seed)
+        run: supabase db reset
+
+      - name: Lint database
+        run: supabase db lint
+
+  functions:
+    name: Edge functions check + lint + test
+    needs: changes
+    if: needs.changes.outputs.functions == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Deno must run from here to pick up supabase/functions/deno.json
+        # (npm:/jsr: resolution mode + lint rule config).
+        working-directory: supabase/functions
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deno 2 to match deno_version in supabase/config.toml.
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      # The function entrypoints pull in handler.ts and _shared/; the test
+      # files cover everything else (helpers, the tests themselves).
+      - name: Type-check edge functions
+        run: deno check revenuecat-webhook/index.ts delete-account/index.ts _tests/*.ts
+
+      - name: Lint edge functions
+        run: deno lint
+
+      # --allow-env: the guard tests set/unset REVENUECAT_WEBHOOK_AUTH and
+      # SUPABASE_* to exercise the misconfiguration branches.
+      - name: Test edge functions
+        run: deno test --allow-env

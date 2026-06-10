@@ -2,7 +2,7 @@
 
     <application
         android:name="${applicationName}"
-        android:label="frontend"
+        android:label="BelAraby"
         android:icon="@mipmap/ic_launcher"
         android:hardwareAccelerated="true">
 
@@ -34,7 +34,7 @@
             android:value="2" />
     </application>
 
-    <!-- Queries for Flutter plugins (e.g. text processing, TTS) -->
+    <!-- Queries for Flutter plugins (e.g. text processing, TTS, URLs) -->
     <queries>
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT" />
@@ -42,6 +42,11 @@
         </intent>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+        <!-- url_launcher: open https links (legal pages, store subscriptions) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
         </intent>
     </queries>
 

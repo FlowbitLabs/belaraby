@@ -1,3 +1,4 @@
+import 'package:belaraby/app/router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,6 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     return Container(
       color: const Color.fromARGB(255, 241, 241, 241),
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      alignment: Alignment.centerRight,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -32,8 +32,16 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
           Padding(
-            padding: const EdgeInsetsGeometry.only(left: 23, top: 5),
-            child: Icon(Icons.account_box, size: 40, color: Colors.yellow[800]),
+            padding: const EdgeInsetsDirectional.only(start: 23, top: 5),
+            child: IconButton(
+              icon: Icon(
+                Icons.account_box,
+                size: 40,
+                color: Colors.yellow[800],
+              ),
+              tooltip: 'settings_title'.tr(),
+              onPressed: () => navigateToSettings(context),
+            ),
           ),
         ],
       ),

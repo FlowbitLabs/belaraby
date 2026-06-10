@@ -46,7 +46,9 @@ class LessonControls extends StatelessWidget {
                     IconButton.filled(
                       onPressed: onRepeatToggle,
                       style: IconButton.styleFrom(
-                        backgroundColor: isRepeatEnabled ? Colors.blueAccent : Colors.grey,
+                        backgroundColor: isRepeatEnabled
+                            ? Colors.blueAccent
+                            : Colors.grey,
                         foregroundColor: Colors.white,
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(10),
@@ -70,8 +72,9 @@ class LessonControls extends StatelessWidget {
                     IconButton.filled(
                       onPressed: onPlay,
                       style: IconButton.styleFrom(
-                        backgroundColor:
-                            isPlaying ? Colors.orangeAccent : Colors.green,
+                        backgroundColor: isPlaying
+                            ? Colors.orangeAccent
+                            : Colors.green,
                         foregroundColor: Colors.white,
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(10),

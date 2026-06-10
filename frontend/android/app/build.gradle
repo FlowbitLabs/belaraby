@@ -22,6 +22,17 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
+// Release signing: android/key.properties is created by CI (see
+// .github/workflows/deploy_flutter.yml) or manually per DEPLOYMENT.md.
+// storeFile is resolved relative to this module (android/app/).
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader("UTF-8") { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
 android {
     namespace "com.belaraby.frontend"
     compileSdk flutter.compileSdkVersion
@@ -50,9 +61,23 @@ android {
         multiDexEnabled true
     }
 
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties["keyAlias"]
+                keyPassword keystoreProperties["keyPassword"]
+                storeFile file(keystoreProperties["storeFile"])
+                storePassword keystoreProperties["storePassword"]
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            // Signed with the upload keystore when key.properties exists
+            // (CI / store builds); falls back to debug signing so local
+            // `flutter run --release` works without store credentials.
+            signingConfig keystorePropertiesFile.exists() ? signingConfigs.release : signingConfigs.debug
         }
     }
 }

@@ -1,7 +1,12 @@
+import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
+import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:belaraby/app/util/convert_arabic_date.dart';
 import 'package:belaraby/app/util/get_level_color.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/models/lesson_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LessonCard extends StatelessWidget {
   const LessonCard({required this.lesson, super.key});
@@ -10,6 +15,10 @@ class LessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isPremium = context.select(
+      (SubscriptionCubit cubit) => cubit.state.isPremium,
+    );
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -21,7 +30,11 @@ class LessonCard extends StatelessWidget {
           children: [
             // Background image
             Positioned.fill(
-              child: Image.network(lesson.heroImage, fit: BoxFit.cover),
+              child: Image.network(
+                lesson.heroImage,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => const ColoredBox(color: grey140),
+              ),
             ),
 
             // Overlay content
@@ -49,7 +62,7 @@ class LessonCard extends StatelessWidget {
                     const SizedBox(height: 10),
                     // Body
                     Padding(
-                      padding: const EdgeInsetsGeometry.only(left: 15),
+                      padding: const EdgeInsetsDirectional.only(start: 15),
                       child: Text(
                         lesson.body,
                         maxLines: 2,
@@ -88,7 +101,10 @@ class LessonCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              formatArabicDate(lesson.date),
+                              formatLessonDate(
+                                lesson.date,
+                                context.locale.languageCode,
+                              ),
                               style: const TextStyle(
                                 fontSize: 16,
                                 color: Colors.black54,
@@ -97,12 +113,7 @@ class LessonCard extends StatelessWidget {
                           ],
                         ),
                         // Favorite icon
-                        IconButton(
-                          icon: const Icon(Icons.favorite_border),
-                          onPressed: () {
-                            // TODO: Implement add to favorites
-                          },
-                        ),
+                        _FavoriteButton(lessonId: lesson.id),
                       ],
                     ),
                   ],
@@ -110,7 +121,8 @@ class LessonCard extends StatelessWidget {
               ),
             ),
 
-            if (lesson.isPaid)
+            // Lock badge — premium users see no locks.
+            if (lesson.isPaid && !isPremium)
               Positioned(
                 top: 10,
                 right: 10,
@@ -134,6 +146,27 @@ class LessonCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _FavoriteButton extends StatelessWidget {
+  const _FavoriteButton({required this.lessonId});
+
+  final String lessonId;
+
+  @override
+  Widget build(BuildContext context) {
+    final isFavorite = context.select(
+      (FavoriteCubit cubit) => cubit.state.isFavorite(lessonId),
+    );
+    return IconButton(
+      icon: Icon(
+        isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: isFavorite ? red110 : null,
+      ),
+      tooltip: 'favorite_button_tooltip'.tr(),
+      onPressed: () => context.read<FavoriteCubit>().toggleFavorite(lessonId),
     );
   }
 }

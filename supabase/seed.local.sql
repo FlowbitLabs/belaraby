@@ -1,7 +1,8 @@
--- To apply this locally, run:
--- psql <Database URL> -f supabase/seed.local.sql
--- To locate the local Database URL; run `supabase status`
--- To run supabase locally, run `supabase start`
+-- Local development seed data — loaded AUTOMATICALLY by `supabase db reset`
+-- ([db.seed].sql_paths in supabase/config.toml points here). No manual psql
+-- step is needed. The inserts target the public.lessons view; the INSTEAD OF
+-- INSERT trigger (20260610150100_gate_premium_story_body.sql) writes the rows
+-- to private.lessons.
 -- =========================================================
 -- 🏫 Lessons
 -- =========================================================

@@ -1,107 +1,76 @@
 import 'package:belaraby/data/models/lesson_model.dart';
 import 'package:belaraby/data/supabase_client.dart';
-import 'package:flutter/foundation.dart';
 
 /// Repository for managing [Lesson] data.
 ///
-/// Handles interactions with Supabase tables:
-/// - `lessons`: Main lesson content.
-/// - `user_favorites`: User's favorite lessons.
-/// - `user_learned_lessons`: User's completed lessons.
+/// Handles interactions with the Supabase `lessons` table. The user's
+/// favorites and learned lessons live in `LibraryRepository`.
 class LessonRepository {
+  LessonRepository({List<Duration>? unlockRetryDelays})
+    : _unlockRetryDelays = unlockRetryDelays ?? defaultUnlockRetryDelays;
+
+  /// Backoff schedule used right after a purchase while waiting for the
+  /// RevenueCat webhook to activate the subscription server-side
+  /// (story bodies stay masked until then). Sums to ~9.5s.
+  static const List<Duration> defaultUnlockRetryDelays = [
+    Duration(milliseconds: 500),
+    Duration(seconds: 1),
+    Duration(seconds: 2),
+    Duration(seconds: 3),
+    Duration(seconds: 3),
+  ];
+
+  final List<Duration> _unlockRetryDelays;
+
+  /// Returns all lessons, newest first.
+  ///
+  /// Bodies of paid lessons arrive empty (masked server-side) unless the
+  /// caller has an active subscription.
   Future<List<Lesson>> getAllLessons() async {
-    return await supabase
+    return supabase
         .from('lessons')
         .select()
         .order('created_at', ascending: false)
         .withConverter((data) => data.map(Lesson.fromJson).toList());
   }
 
-  Future<List<Lesson>> getFavoriteLessons({required String userId}) async {
-    return await supabase
-        .from('user_favorites')
-        .select('lesson_id, lessons(*)')
-        .eq('user_id', userId)
-        .withConverter((data) {
-          return data.map((json) {
-            final lessonData = json['lessons'] as Map<String, dynamic>;
-            return Lesson.fromJson(lessonData);
-          }).toList();
-        });
-  }
-
-  Future<List<Lesson>> getLearnedLessons({required String userId}) async {
-    return await supabase
-        .from('user_learned_lessons')
-        .select('lesson_id, lessons(*)')
-        .eq('user_id', userId)
-        .withConverter((data) {
-          return data.map((json) {
-            final lessonData = json['lessons'] as Map<String, dynamic>;
-            return Lesson.fromJson(lessonData);
-          }).toList();
-        });
-  }
-
-  Future<bool> toggleFavoriteLesson({
-    required String userId,
-    required String lessonId,
-  }) =>
-      _toggleUserLesson(
-        table: 'user_favorites',
-        userId: userId,
-        lessonId: lessonId,
-      );
-
-  Future<bool> toggleLearnedLesson({
-    required String userId,
-    required String lessonId,
-  }) =>
-      _toggleUserLesson(
-        table: 'user_learned_lessons',
-        userId: userId,
-        lessonId: lessonId,
-      );
-
+  /// Returns the lesson with [id], or `null` when it does not exist.
   Future<Lesson?> getLessonById(String id) async {
-    return await supabase
+    return supabase
         .from('lessons')
         .select()
         .eq('id', id)
         .maybeSingle()
-        .withConverter(
-          (data) => data != null ? Lesson.fromJson(data) : null,
-        );
+        .withConverter((data) => data != null ? Lesson.fromJson(data) : null);
   }
 
-  Future<bool> _toggleUserLesson({
-    required String table,
-    required String userId,
-    required String lessonId,
-  }) async {
-    try {
-      final existing = await supabase
-          .from(table)
-          .select('user_id')
-          .eq('user_id', userId)
-          .eq('lesson_id', lessonId)
-          .maybeSingle();
-
-      if (existing != null) {
-        await supabase
-            .from(table)
-            .delete()
-            .eq('user_id', userId)
-            .eq('lesson_id', lessonId);
-      } else {
-        await supabase
-            .from(table)
-            .insert({'user_id': userId, 'lesson_id': lessonId});
-      }
-      return true;
-    } catch (e, st) {
-      debugPrint('[$table] toggleUserLesson error: $e\n$st');
-      return false;
+  /// Refetches the lesson until its body is no longer masked server-side.
+  ///
+  /// Retries with backoff (bounded by [defaultUnlockRetryDelays], ~10s in
+  /// total) and returns the last fetched lesson — which may still be masked
+  /// when the webhook has not landed yet; callers must check
+  /// [Lesson.isBodyMasked] and offer a manual retry.
+  Future<Lesson?> getUnlockedLessonById(String id) async {
+    var lesson = await getLessonById(id);
+    for (final delay in _unlockRetryDelays) {
+      if (lesson == null || !lesson.isBodyMasked) return lesson;
+      await Future<void>.delayed(delay);
+      lesson = await getLessonById(id);
     }
+    return lesson;
+  }
+
+  /// Refetches all lessons until no paid body is masked anymore.
+  ///
+  /// Same bounded backoff as [getUnlockedLessonById]; returns the last
+  /// fetched list even when some bodies are still masked.
+  Future<List<Lesson>> getAllLessonsUnlocked() async {
+    var lessons = await getAllLessons();
+    for (final delay in _unlockRetryDelays) {
+      if (!lessons.any((lesson) => lesson.isBodyMasked)) return lessons;
+      await Future<void>.delayed(delay);
+      lessons = await getAllLessons();
+    }
+    return lessons;
   }
 }

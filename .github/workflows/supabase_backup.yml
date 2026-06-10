@@ -1,0 +1,64 @@
+name: Supabase Backup
+
+# Weekly logical backup of the prod database (roles + schema + data),
+# stored as a GitHub Actions artifact for 90 days.
+#
+# data.sql is self-sufficient: the --data-only dump INCLUDES the managed
+# schemas' data (auth.*, storage.*, supabase_functions.*) alongside
+# private.lessons and public.*, with auth.users COPYed before every table
+# that FKs it — verified empirically against CLI v2.72.7 and v2.105.0. Only
+# the schema-DDL dump excludes the managed schemas. Do NOT add a separate
+# auth-schema data dump: restoring it next to data.sql loads every auth row
+# twice and the duplicate keys abort the restore transaction. Restore
+# runbook lives in DEPLOYMENT.md.
+#
+# Requires the SUPABASE_DB_URL secret on the `prod` environment:
+# the project's Postgres connection string, e.g.
+# postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+# (Supabase Dashboard -> Connect -> Session pooler URI). See DEPLOYMENT.md.
+
+on:
+  schedule:
+    - cron: "23 3 * * 1" # weekly, Mondays at 03:23 UTC
+  workflow_dispatch:
+
+jobs:
+  backup:
+    name: Dump prod database
+    runs-on: ubuntu-latest
+    environment: prod
+
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Dump roles
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f roles.sql --role-only
+
+      - name: Dump schema
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f schema.sql
+
+      # Includes auth.*, storage.* and private.lessons data — see the header
+      # comment. Treat the artifact as sensitive (unmasked premium bodies,
+      # user identities).
+      - name: Dump data
+        run: supabase db dump --db-url "$SUPABASE_DB_URL" -f data.sql --data-only --use-copy
+
+      - name: Upload backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ github.run_id }}
+          path: |
+            roles.sql
+            schema.sql
+            data.sql
+          retention-days: 90
+          if-no-files-found: error

@@ -17,14 +17,18 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^9.1.1
   flutter_tts: ^4.2.3
+  package_info_plus: ^8.3.0
   translator: ^1.0.0
   supabase_flutter: ^2.10.0
+  purchases_flutter: ^10.2.2
+  url_launcher: ^6.3.1
 
 dev_dependencies:
-  analyzer: ^8.2.0
+  bloc_test: ^10.0.0
   flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
+  mocktail: ^1.0.4
   very_good_analysis: 10.0.0
 
 flutter:

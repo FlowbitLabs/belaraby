@@ -1,17 +1,36 @@
-name: Deploy Supabase Migrations
+name: Deploy Supabase
 
 on:
   push:
     branches:
-      - dev
+      - staging
+      - prod
     paths:
       - "supabase/migrations/**"
+      - "supabase/config.toml"
+      - "supabase/functions/**"
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - prod
+
+# Serialize Supabase deploys per branch (db push + config push + functions
+# deploy must never interleave); never cancel a deploy in flight.
+concurrency:
+  group: deploy-supabase-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   deploy:
-    name: Apply Supabase Migrations
+    name: Deploy Supabase (${{ github.ref_name }})
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
 
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -31,3 +50,25 @@ jobs:
 
       - name: Push new migrations
         run: supabase db push
+
+      # config.toml carries local-dev auth URLs (127.0.0.1). Pushing those to
+      # the hosted project would break auth emails / redirect allow-lists, so
+      # substitute the environment's real public URL first — and fail loudly
+      # when it is not configured instead of clobbering the remote settings.
+      - name: Set environment auth URLs (never push localhost)
+        env:
+          AUTH_SITE_URL: ${{ vars.AUTH_SITE_URL }}
+        run: |
+          if [ -z "$AUTH_SITE_URL" ]; then
+            echo "::error::AUTH_SITE_URL is not set on this GitHub environment. Set it (Settings → Environments → ${{ github.ref_name }} → Variables) to the environment's public URL, e.g. the dashboard URL."
+            exit 1
+          fi
+          sed -i "s|^site_url = .*|site_url = \"${AUTH_SITE_URL}\"|" supabase/config.toml
+          sed -i "s|^additional_redirect_urls = .*|additional_redirect_urls = [\"${AUTH_SITE_URL}\"]|" supabase/config.toml
+          grep -E "^(site_url|additional_redirect_urls) = " supabase/config.toml
+
+      - name: Push project settings (config.toml is the source of truth)
+        run: supabase config push --yes
+
+      - name: Deploy edge functions
+        run: supabase functions deploy --use-api

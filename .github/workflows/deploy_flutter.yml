@@ -1,0 +1,144 @@
+name: Deploy Flutter
+
+on:
+  push:
+    branches:
+      - staging
+      - prod
+    # Supabase/dashboard-only pushes must not burn macOS IPA build minutes.
+    paths:
+      - "frontend/**"
+      - ".github/workflows/deploy_flutter.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - prod
+
+# Serialize store deploys per branch; never cancel an upload in flight.
+concurrency:
+  group: deploy-flutter-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android:
+    name: Android (${{ github.ref_name }})
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.2"
+
+      # storeFile is resolved by Gradle relative to android/app/, so it must
+      # point one directory up to match the decode location below.
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=upload" >> android/key.properties
+          echo "storeFile=../upload-keystore.jks" >> android/key.properties
+
+      - name: Decode keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
+
+      - run: flutter pub get
+
+      # Stores reject re-used build numbers (Play: versionCode, TestFlight:
+      # CFBundleVersion), and staging + prod share ONE sequence (same Play
+      # app / App Store app). github.run_number increases monotonically per
+      # workflow; the +10 offset leaves room for builds uploaded manually
+      # before CI took over. The marketing version (1.0.0) still comes from
+      # pubspec.yaml — bump it there for user-visible releases.
+      - name: Build app bundle
+        run: |
+          flutter build appbundle --release \
+            --build-number=$(( ${{ github.run_number }} + 10 )) \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=REVENUECAT_APPLE_API_KEY=${{ secrets.REVENUECAT_APPLE_API_KEY }} \
+            --dart-define=REVENUECAT_GOOGLE_API_KEY=${{ secrets.REVENUECAT_GOOGLE_API_KEY }}
+
+      - name: Upload to Play Store (staging → internal, prod → production)
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT }}
+          packageName: com.belaraby.frontend
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: ${{ github.ref_name == 'prod' && 'production' || 'internal' }}
+
+  ios:
+    name: iOS (${{ github.ref_name }})
+    runs-on: macos-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.2"
+
+      # A clean runner has no signing identities: install the distribution
+      # certificate and the App Store provisioning profile before building.
+      - name: Import distribution certificate
+        uses: apple-actions/import-codesign-certs@v7
+        with:
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+      - name: Download provisioning profiles
+        uses: apple-actions/download-provisioning-profiles@v6
+        with:
+          bundle-id: com.belaraby.belaraby
+          profile-type: IOS_APP_STORE
+          issuer-id: ${{ secrets.APPLE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPLE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPLE_API_PRIVATE_KEY }}
+
+      - run: flutter pub get
+
+      # Same build-number scheme as the Android job (see comment there) so
+      # both store uploads from one run carry the same build number.
+      - name: Build IPA
+        run: |
+          flutter build ipa --release \
+            --build-number=$(( ${{ github.run_number }} + 10 )) \
+            --export-options-plist=ios/ExportOptions.plist \
+            --dart-define=SUPABASE_URL=${{ secrets.SUPABASE_URL }} \
+            --dart-define=SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }} \
+            --dart-define=REVENUECAT_APPLE_API_KEY=${{ secrets.REVENUECAT_APPLE_API_KEY }} \
+            --dart-define=REVENUECAT_GOOGLE_API_KEY=${{ secrets.REVENUECAT_GOOGLE_API_KEY }}
+
+      # The IPA is named after the Xcode product (Runner.ipa today), not the
+      # pubspec name — resolve it instead of hardcoding a filename.
+      - name: Locate exported IPA
+        id: ipa
+        run: echo "path=$(ls build/ios/ipa/*.ipa | head -n 1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to TestFlight
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: frontend/${{ steps.ipa.outputs.path }}
+          issuer-id: ${{ secrets.APPLE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPLE_API_KEY_ID }}
+          api-private-key: ${{ secrets.APPLE_API_PRIVATE_KEY }}

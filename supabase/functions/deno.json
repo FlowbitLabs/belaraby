@@ -1,0 +1,20 @@
+{
+  // "none" resolves npm:/jsr: specifiers from the global Deno cache. Without
+  // it, a stray package.json in any ancestor directory flips Deno into
+  // node_modules mode and `deno check` / `deno test` fail asking for
+  // `deno install`. Run deno from this directory so this config is found.
+  "nodeModulesDir": "none",
+  // No lockfile: a deno.lock written by a newer Deno (lockfile v5) makes the
+  // local edge runtime (`supabase functions serve`, Deno 2.1.x) fail to boot
+  // with "Unsupported lockfile version". Dependencies are pinned by version
+  // tag in the import specifiers instead.
+  "lock": false,
+  "lint": {
+    "rules": {
+      // npm:/jsr: import prefixes are the documented Supabase edge-functions
+      // style and what `supabase functions deploy` bundles — keep them rather
+      // than an import map the deploy pipeline would also have to resolve.
+      "exclude": ["no-import-prefix"]
+    }
+  }
+}

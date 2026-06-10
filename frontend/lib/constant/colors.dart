@@ -53,7 +53,8 @@ const Color red100 = Color(0xFFFF6262);
 const Color red30 = Color(0xFFFFACAC);
 
 // Greys
-// 181818, 313030, 4A494A, 626162, 949294, D1CFD1, DDDBDD, F6F3F6, F8F6F8, FAF8FA, FFFFFF
+// 181818, 313030, 4A494A, 626162, 949294, D1CFD1, DDDBDD, F6F3F6, F8F6F8,
+// FAF8FA, FFFFFF
 const Color grey400 = Color(0xFF949294);
 const Color grey190 = Color(0xFF181818);
 const Color grey180 = Color(0xFF313030);

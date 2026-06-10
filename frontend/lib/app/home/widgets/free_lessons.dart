@@ -1,3 +1,4 @@
+import 'package:belaraby/app/router.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -10,6 +11,8 @@ class FreeLessons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (lessons.isEmpty) return const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -36,105 +39,118 @@ class FreeLessons extends StatelessWidget {
             height: 300,
             enlargeCenterPage: true,
             enableInfiniteScroll: false,
+            autoPlay: true,
             autoPlayInterval: const Duration(seconds: 3),
           ),
           itemCount: lessons.length,
           itemBuilder:
               (BuildContext context, int itemIndex, int pageViewIndex) {
-                final lesson = lessons[itemIndex];
-
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(lesson.heroImage),
-                        fit: BoxFit.cover,
-                      ),
-                      color: Colors.grey[300],
-                    ),
-                    child: Stack(
-                      children: [
-                        Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Container(
-                            width: double.infinity,
-                            margin: const EdgeInsets.all(10),
-                            padding: const EdgeInsets.all(5),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                topRight: Radius.circular(20),
-                                bottomLeft: Radius.circular(20),
-                                bottomRight: Radius.circular(20),
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                              ),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    lesson.title,
-                                    style: const TextStyle(
-                                      fontSize: 25,
-                                      color: Colors.black,
-                                      fontFamily: 'Cairo',
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    lesson.body,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: Colors.black.withAlpha(
-                                        (0.7 * 255).toInt(),
-                                      ),
-                                      fontSize: 18,
-                                      fontFamily: 'Cairo',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 10,
-                          right: 10,
-                          child: Container(
-                            width: 40,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white,
-                            ),
-                            child: Center(
-                              child: Text(
-                                lesson.level,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black.withAlpha(
-                                    (0.7 * 255).toInt(),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
+                return _FreeLessonCard(lesson: lessons[itemIndex]);
               },
         ),
       ],
+    );
+  }
+}
+
+class _FreeLessonCard extends StatelessWidget {
+  const _FreeLessonCard({required this.lesson});
+
+  final Lesson lesson;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(lesson.heroImage),
+            fit: BoxFit.cover,
+          ),
+          color: Colors.grey[300],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            // Free lessons are never gated — open them directly.
+            onTap: () => navigateToLesson(context, lesson),
+            child: Stack(
+              children: [
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Container(
+                    width: double.infinity,
+                    margin: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(5),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                        bottomLeft: Radius.circular(20),
+                        bottomRight: Radius.circular(20),
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lesson.title,
+                            style: const TextStyle(
+                              fontSize: 25,
+                              color: Colors.black,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            lesson.body,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.black.withAlpha(
+                                (0.7 * 255).toInt(),
+                              ),
+                              fontSize: 18,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                PositionedDirectional(
+                  top: 10,
+                  end: 10,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: Center(
+                      child: Text(
+                        lesson.level,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black.withAlpha((0.7 * 255).toInt()),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

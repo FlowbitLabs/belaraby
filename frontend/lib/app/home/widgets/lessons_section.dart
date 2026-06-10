@@ -1,6 +1,7 @@
 import 'package:belaraby/app/home/widgets/lesson_card.dart';
 import 'package:belaraby/app/router.dart';
 import 'package:belaraby/data/models/lesson_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class LessonsSection extends StatelessWidget {
@@ -11,10 +12,10 @@ class LessonsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (lessons.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'No lessons available',
-          style: TextStyle(fontSize: 16, color: Colors.grey),
+          'home_no_lessons'.tr(),
+          style: const TextStyle(fontSize: 16, color: Colors.grey),
         ),
       );
     }
@@ -25,14 +26,11 @@ class LessonsSection extends StatelessWidget {
       itemCount: lessons.length,
       itemBuilder: (context, index) {
         return InkWell(
-          onTap: () {
-            // Navigate to lesson
-            navigateToLesson(context, lessons[index]);
-          },
+          // Paid lessons go through the paywall for non-premium users.
+          onTap: () => navigateToLessonGated(context, lessons[index]),
           child: LessonCard(lesson: lessons[index]),
         );
       },
     );
   }
 }
-

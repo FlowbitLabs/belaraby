@@ -1,6 +1,4 @@
-
 part of 'lesson_page.dart';
-
 
 class LessonView extends StatefulWidget {
   const LessonView(this.lesson, {super.key});
@@ -15,19 +13,44 @@ class _LessonViewState extends State<LessonView> {
   String? _translatedText;
   bool _isTranslating = false;
   String? _translationError;
-  
+
   final TranslationHelper _translationHelper = TranslationHelper();
-  
+
+  final LessonPlayerController _controller = LessonPlayerController();
+  bool _isRepeatEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller
+      ..init(widget.lesson.body)
+      ..onRepeat = _handleRepeat;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   void _onWordSelected(String word) {
     setState(() {
       _selectedWord = word;
       _translatedText = null;
       _translationError = null;
     });
-    // Automatically translate the selected word
     _translateSelectedWord(word);
   }
-  
+
+  void _clearSelectedWord() {
+    setState(() {
+      _selectedWord = null;
+      _translatedText = null;
+      _translationError = null;
+      _isTranslating = false;
+    });
+  }
+
   Future<void> _translateSelectedWord(String word) async {
     await _translationHelper.translateWord(
       word,
@@ -58,8 +81,6 @@ class _LessonViewState extends State<LessonView> {
       },
     );
   }
-  final LessonPlayerController _controller = LessonPlayerController();
-  bool _isRepeatEnabled = false;
 
   Future<void> _handleRepeat() async {
     if (_isRepeatEnabled) {
@@ -67,21 +88,20 @@ class _LessonViewState extends State<LessonView> {
       setState(() {
         _isRepeatEnabled = false;
       });
-      _controller.setRepeatCallback(_handleRepeat);
+      _controller.onRepeat = _handleRepeat;
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.init(widget.lesson.body);
-    _controller.setRepeatCallback(_handleRepeat);
+  void _toggleRepeat() {
+    setState(() {
+      _isRepeatEnabled = !_isRepeatEnabled;
+    });
+    _controller.onRepeat = _handleRepeat;
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  Future<void> _stopAndPop() async {
+    await _controller.stop();
+    if (mounted) Navigator.of(context).pop();
   }
 
   @override
@@ -93,239 +113,29 @@ class _LessonViewState extends State<LessonView> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Hero(
-              tag: 'lessonImage-${widget.lesson.heroImage}',
-              child: Image.network(
-                widget.lesson.heroImage,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => const ColoredBox(color: grey140),
-              ),
-            ),
+            _LessonHeroImage(imageUrl: widget.lesson.heroImage),
             if (_selectedWord != null)
               Positioned(
                 left: 16,
                 right: 16,
                 bottom: 20,
-                child: Dismissible(
-                  key: ValueKey(_selectedWord),
-                  direction: DismissDirection.horizontal,
-                  onDismissed: (direction) {
-
-                    setState(() {
-                      _selectedWord = null;
-                      _translatedText = null;
-                      _translationError = null;
-                      _isTranslating = false;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _selectedWord!,
-                                    textAlign: TextAlign.start,
-                                    style: BTextStyles.of(context).title1.copyWith(fontWeight: FontWeight.bold, color: Colors.black87),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  // Translation result display
-                                  Builder(
-                                    builder: (context) {
-                                      if (_translatedText != null) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(top: 4),
-                                          child: Text(
-                                            _translatedText!,
-                                            style: BTextStyles.of(context).body1.copyWith(
-                                              color: Colors.blue.shade700,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        );
-                                      } else if (_isTranslating) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(top: 4),
-                                          child: Row(
-                                            children: [
-                                              const SizedBox(
-                                                width: 12,
-                                                height: 12,
-                                                child: CircularProgressIndicator(strokeWidth: 1.5),
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Text(
-                                                'translating'.tr(),
-                                                style: BTextStyles.of(context).caption.copyWith(
-                                                  color: Colors.grey.shade600,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      } else if (_translationError != null) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(top: 4),
-                                          child: Row(
-                                            children: [
-                                              Icon(
-                                                Icons.error_outline,
-                                                size: 12,
-                                                color: Colors.red.shade600,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  _translationError!,
-                                                  style: BTextStyles.of(context).caption.copyWith(
-                                                    color: Colors.red.shade600,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      }
-                                      return const SizedBox.shrink();
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.fitness_center, size: 20),
-                                  tooltip: 'Exercise',
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(
-                                    minWidth: 32,
-                                    minHeight: 32,
-                                  ),
-                                  onPressed: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Exercise for "$_selectedWord"',
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.volume_up, size: 20),
-                                  tooltip: 'Play',
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(
-                                    minWidth: 32,
-                                    minHeight: 32,
-                                  ),
-                                  onPressed: () {
-                                    WordSpeaker().speak(_selectedWord!);
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                child: _WordTranslationCard(
+                  word: _selectedWord!,
+                  translatedText: _translatedText,
+                  isTranslating: _isTranslating,
+                  errorMessage: _translationError,
+                  onDismissed: _clearSelectedWord,
                 ),
               ),
-            Positioned(
+            PositionedDirectional(
               top: 67,
-              left: 16,
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: const BoxDecoration(
-                  color: grey100,
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_forward, color: grey170, size: 20),
-                  onPressed: () async {
-                    await _controller.stop();
-                    if (context.mounted) Navigator.of(context).pop();
-                  },
-                  tooltip: 'back',
-                  padding: EdgeInsets.zero,
-                ),
-              ),
+              start: 16,
+              child: _LessonBackButton(onPressed: _stopAndPop),
             ),
-            Positioned(
+            const PositionedDirectional(
               top: 60,
-              right: 16,
-              child: BlocBuilder<LessonCubit, LessonState>(
-                builder: (context, lessonState) {
-                  final isLearnt = lessonState.learned ?? false;
-                  return ElevatedButton(
-                    onPressed: () {
-                      final userId = supabase.auth.currentUser?.id;
-                      if (userId == null) return;
-                      context.read<LessonCubit>().toggleLearnedLesson(
-                        userId: userId,
-                        lessonId: widget.lesson.id,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isLearnt ? yellow120 : Colors.white,
-                      foregroundColor: isLearnt ? Colors.white : yellow120,
-                      shape: const StadiumBorder(),
-                      side: const BorderSide(color: yellow120, width: 2),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 10,
-                      ),
-                      elevation: isLearnt ? 2 : 0,
-                      shadowColor: isLearnt
-                          ? green100.withValues(alpha: 0.2)
-                          : Colors.transparent,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'lesson_learnt_button'.tr(),
-                          style: TextStyle(
-                            color: isLearnt ? Colors.white : yellow120,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          isLearnt
-                              ? Icons.check_circle
-                              : Icons.check_circle_outline,
-                          color: isLearnt ? Colors.white : yellow120,
-                          size: 22,
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              end: 16,
+              child: _LearnedToggleButton(),
             ),
           ],
         ),
@@ -334,32 +144,7 @@ class _LessonViewState extends State<LessonView> {
         length: 4,
         child: Column(
           children: [
-            TabBar(
-              labelColor: grey0,
-              labelPadding: EdgeInsets.zero,
-              labelStyle: BTextStyles.of(context).title1.copyWith(color: grey0),
-              unselectedLabelColor: grey140,
-              indicator: BoxDecoration(
-                color: yellow120,
-                borderRadius: BorderRadius.circular(100),
-              ),
-              indicatorSize: TabBarIndicatorSize.label,
-              indicatorWeight: 1,
-              indicatorPadding: const EdgeInsets.symmetric(
-                horizontal: 5,
-                vertical: 8,
-              ),
-              indicatorAnimation: TabIndicatorAnimation.linear,
-              splashFactory: NoSplash.splashFactory,
-              dividerColor: grey110,
-              dividerHeight: 0.5,
-              tabs: [
-                _buildTab('lesson_tab_story'.tr()),
-                _buildTab('lesson_tab_quiz'.tr()),
-                _buildTab('lesson_tab_keywords'.tr()),
-                _buildTab('lesson_tab_grammar'.tr()),
-              ],
-            ),
+            const _LessonTabBar(),
             Expanded(
               child: TabBarView(
                 children: [
@@ -373,12 +158,7 @@ class _LessonViewState extends State<LessonView> {
                         speak: () => _controller.speak(widget.lesson.body),
                         stop: _controller.stop,
                         isRepeatEnabled: _isRepeatEnabled,
-                        onRepeatToggle: () {
-                          setState(() {
-                            _isRepeatEnabled = !_isRepeatEnabled;
-                          });
-                          _controller.setRepeatCallback(_handleRepeat);
-                        },
+                        onRepeatToggle: _toggleRepeat,
                         onWordSelected: _onWordSelected,
                         selectedWord: _selectedWord,
                       );
@@ -396,15 +176,7 @@ class _LessonViewState extends State<LessonView> {
     );
   }
 
-  /// Helper to build a consistent Tab widget
-  Widget _buildTab(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Tab(text: text),
-    );
-  }
-
-  /// Builds the rich text with the current word highlighted.
+  /// Builds the rich text with the currently spoken word highlighted.
   TextSpan _buildHighlightedText() {
     return TextSpan(
       children: List.generate(_controller.words.length, (index) {
@@ -427,6 +199,291 @@ class _LessonViewState extends State<LessonView> {
           ],
         );
       }),
+    );
+  }
+}
+
+class _LessonHeroImage extends StatelessWidget {
+  const _LessonHeroImage({required this.imageUrl});
+
+  final String imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    return Hero(
+      tag: 'lessonImage-$imageUrl',
+      child: Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => const ColoredBox(color: grey140),
+      ),
+    );
+  }
+}
+
+/// Floating card showing the tapped word with its English translation.
+class _WordTranslationCard extends StatelessWidget {
+  const _WordTranslationCard({
+    required this.word,
+    required this.translatedText,
+    required this.isTranslating,
+    required this.errorMessage,
+    required this.onDismissed,
+  });
+
+  final String word;
+  final String? translatedText;
+  final bool isTranslating;
+  final String? errorMessage;
+  final VoidCallback onDismissed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: ValueKey(word),
+      onDismissed: (_) => onDismissed(),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    word,
+                    textAlign: TextAlign.start,
+                    style: BTextStyles.of(context).title1.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  _TranslationStatusLine(
+                    translatedText: translatedText,
+                    isTranslating: isTranslating,
+                    errorMessage: errorMessage,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.volume_up, size: 20),
+              tooltip: 'tooltip_play'.tr(),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              onPressed: () => WordSpeaker().speak(word),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Result line of the word translation: the translated text, a progress
+/// indicator while translating, or the error message.
+class _TranslationStatusLine extends StatelessWidget {
+  const _TranslationStatusLine({
+    required this.translatedText,
+    required this.isTranslating,
+    required this.errorMessage,
+  });
+
+  final String? translatedText;
+  final bool isTranslating;
+  final String? errorMessage;
+
+  @override
+  Widget build(BuildContext context) {
+    if (translatedText != null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Text(
+          translatedText!,
+          style: BTextStyles.of(context).body1.copyWith(
+            color: Colors.blue.shade700,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+    if (isTranslating) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(strokeWidth: 1.5),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'translating'.tr(),
+              style: BTextStyles.of(
+                context,
+              ).caption.copyWith(color: Colors.grey.shade600),
+            ),
+          ],
+        ),
+      );
+    }
+    if (errorMessage != null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Row(
+          children: [
+            Icon(Icons.error_outline, size: 12, color: Colors.red.shade600),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                errorMessage!,
+                style: BTextStyles.of(
+                  context,
+                ).caption.copyWith(color: Colors.red.shade600),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}
+
+class _LessonBackButton extends StatelessWidget {
+  const _LessonBackButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: const BoxDecoration(color: grey100, shape: BoxShape.circle),
+      child: IconButton(
+        // Icons.arrow_back auto-mirrors with the text direction, so it
+        // points "back" in both RTL and LTR locales.
+        icon: const Icon(Icons.arrow_back, color: grey170, size: 20),
+        onPressed: onPressed,
+        tooltip: 'tooltip_back'.tr(),
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
+}
+
+/// Marks the lesson as learned (or unlearned) via [LessonCubit]; failures
+/// surface as a snackbar after the optimistic toggle is reverted.
+class _LearnedToggleButton extends StatelessWidget {
+  const _LearnedToggleButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<LessonCubit, LessonState>(
+      listenWhen: (previous, current) =>
+          previous.errorMessage != current.errorMessage &&
+          current.errorMessage.isNotEmpty,
+      listener: (context, lessonState) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(lessonState.errorMessage.tr())),
+        );
+      },
+      builder: (context, lessonState) {
+        final isLearnt = lessonState.isLearned;
+        return ElevatedButton(
+          onPressed: () => context.read<LessonCubit>().toggleLearned(),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isLearnt ? yellow120 : Colors.white,
+            foregroundColor: isLearnt ? Colors.white : yellow120,
+            shape: const StadiumBorder(),
+            side: const BorderSide(color: yellow120, width: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            elevation: isLearnt ? 2 : 0,
+            shadowColor: isLearnt
+                ? green100.withValues(alpha: 0.2)
+                : Colors.transparent,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'lesson_learnt_button'.tr(),
+                style: TextStyle(
+                  color: isLearnt ? Colors.white : yellow120,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                isLearnt ? Icons.check_circle : Icons.check_circle_outline,
+                color: isLearnt ? Colors.white : yellow120,
+                size: 22,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LessonTabBar extends StatelessWidget {
+  const _LessonTabBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return TabBar(
+      labelColor: grey0,
+      labelPadding: EdgeInsets.zero,
+      labelStyle: BTextStyles.of(context).title1.copyWith(color: grey0),
+      unselectedLabelColor: grey140,
+      indicator: BoxDecoration(
+        color: yellow120,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      indicatorSize: TabBarIndicatorSize.label,
+      indicatorWeight: 1,
+      indicatorPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+      indicatorAnimation: TabIndicatorAnimation.linear,
+      splashFactory: NoSplash.splashFactory,
+      dividerColor: grey110,
+      dividerHeight: 0.5,
+      tabs: [
+        _LessonTab(label: 'lesson_tab_story'.tr()),
+        _LessonTab(label: 'lesson_tab_quiz'.tr()),
+        _LessonTab(label: 'lesson_tab_keywords'.tr()),
+        _LessonTab(label: 'lesson_tab_grammar'.tr()),
+      ],
+    );
+  }
+}
+
+class _LessonTab extends StatelessWidget {
+  const _LessonTab({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Tab(text: label),
     );
   }
 }

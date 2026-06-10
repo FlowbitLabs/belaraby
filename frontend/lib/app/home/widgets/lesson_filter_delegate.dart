@@ -29,7 +29,7 @@ class LessonFilterDelegate extends SliverPersistentHeaderDelegate {
           child: Column(
             children: [
               LevelFilterBar(
-                levelsFilterList: levelsFilterList,
+                levelsFilterList: levelFilterKeys,
                 selected: state.filterBy,
                 onSelected: (level) {
                   context.read<HomeCubit>().filterBy(level);

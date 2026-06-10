@@ -3,10 +3,11 @@ import 'package:translator/translator.dart';
 
 /// Simple service for translating Arabic text to English.
 class TranslationService {
-  static final TranslationService _instance = TranslationService._internal();
+  /// Returns the shared singleton instance.
   factory TranslationService() => _instance;
 
   TranslationService._internal();
+  static final TranslationService _instance = TranslationService._internal();
 
   final GoogleTranslator _translator = GoogleTranslator();
 
@@ -23,7 +24,6 @@ class TranslationService {
       final translation = await _translator.translate(
         arabicText.trim(),
         from: 'ar',
-        to: 'en',
       );
 
       final result = translation.text;
@@ -38,7 +38,7 @@ class TranslationService {
       rethrow;
     } catch (e) {
       debugPrint('Translation error: $e');
-      throw TranslationException('Translation failed: ${e.toString()}');
+      throw TranslationException('Translation failed: $e');
     }
   }
 }
