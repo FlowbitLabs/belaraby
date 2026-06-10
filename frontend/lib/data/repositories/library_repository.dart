@@ -85,10 +85,13 @@ class LibraryRepository {
 
   Future<void> _add(String table, String lessonId) async {
     final userId = await _requireUserId();
-    await supabase.from(table).upsert({
-      'user_id': userId,
-      'lesson_id': lessonId,
-    });
+    // ignoreDuplicates (ON CONFLICT DO NOTHING) is required: the default
+    // merge behavior needs the UPDATE table privilege, which authenticated
+    // users intentionally do not have on these tables.
+    await supabase.from(table).upsert(
+      {'user_id': userId, 'lesson_id': lessonId},
+      ignoreDuplicates: true,
+    );
   }
 
   Future<void> _remove(String table, String lessonId) async {

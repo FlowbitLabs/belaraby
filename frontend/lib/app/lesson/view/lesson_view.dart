@@ -132,10 +132,10 @@ class _LessonViewState extends State<LessonView> {
               start: 16,
               child: _LessonBackButton(onPressed: _stopAndPop),
             ),
-            const PositionedDirectional(
+            PositionedDirectional(
               top: 60,
               end: 16,
-              child: _LearnedToggleButton(),
+              child: _LearnedToggleButton(lessonId: widget.lesson.id),
             ),
           ],
         ),
@@ -387,26 +387,29 @@ class _LessonBackButton extends StatelessWidget {
   }
 }
 
-/// Marks the lesson as learned (or unlearned) via [LessonCubit]; failures
-/// surface as a snackbar after the optimistic toggle is reverted.
+/// Marks the lesson as learned (or unlearned) via the global [LearnedCubit];
+/// failures surface as a snackbar after the optimistic toggle is reverted.
 class _LearnedToggleButton extends StatelessWidget {
-  const _LearnedToggleButton();
+  const _LearnedToggleButton({required this.lessonId});
+
+  final String lessonId;
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LessonCubit, LessonState>(
+    return BlocConsumer<LearnedCubit, LearnedState>(
       listenWhen: (previous, current) =>
           previous.errorMessage != current.errorMessage &&
           current.errorMessage.isNotEmpty,
-      listener: (context, lessonState) {
+      listener: (context, learnedState) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(lessonState.errorMessage.tr())),
+          SnackBar(content: Text(learnedState.errorMessage.tr())),
         );
       },
-      builder: (context, lessonState) {
-        final isLearnt = lessonState.isLearned;
+      builder: (context, learnedState) {
+        final isLearnt = learnedState.isLearned(lessonId);
         return ElevatedButton(
-          onPressed: () => context.read<LessonCubit>().toggleLearned(),
+          onPressed: () =>
+              context.read<LearnedCubit>().toggleLearned(lessonId),
           style: ElevatedButton.styleFrom(
             backgroundColor: isLearnt ? yellow120 : Colors.white,
             foregroundColor: isLearnt ? Colors.white : yellow120,

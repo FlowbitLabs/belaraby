@@ -15,12 +15,30 @@
       }
     },
     {
-      "name": "frontend_flutter",
+      // iOS simulator / macOS — local Supabase stack (`supabase start`).
+      // The anon key is the public local-dev demo JWT; it is not a secret and
+      // only works against the local stack.
+      "name": "frontend (local · iOS sim/macOS)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "cwd": "${workspaceFolder}/frontend",
-      "args": ["-t", "lib/main.dart"]
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=http://127.0.0.1:54321",
+        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJFUzI1NiIsImtpZCI6ImI4MTI2OWYxLTIxZDgtNGYyZS1iNzE5LWMyMjQwYTg0MGQ5MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjIwOTY0NTM5NDh9.1oYsyQsGNYWJRZgKJlu7kiMrB6yTDy_hhlQeWLHIoBbOo9UqUiNSrzSrAByYmDKfbUBhLdjIsXNHs6HDEAidGQ"
+      ]
+    },
+    {
+      // Android emulator reaches the host machine via 10.0.2.2, not 127.0.0.1.
+      "name": "frontend (local · Android emulator)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "cwd": "${workspaceFolder}/frontend",
+      "toolArgs": [
+        "--dart-define=SUPABASE_URL=http://10.0.2.2:54321",
+        "--dart-define=SUPABASE_ANON_KEY=eyJhbGciOiJFUzI1NiIsImtpZCI6ImI4MTI2OWYxLTIxZDgtNGYyZS1iNzE5LWMyMjQwYTg0MGQ5MCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjIwOTY0NTM5NDh9.1oYsyQsGNYWJRZgKJlu7kiMrB6yTDy_hhlQeWLHIoBbOo9UqUiNSrzSrAByYmDKfbUBhLdjIsXNHs6HDEAidGQ"
+      ]
     }
   ]
 }

@@ -17,9 +17,13 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
+    // `alignment` makes the Container expand to fill the sliver's extent —
+    // a pinned persistent header must be exactly minExtent/maxExtent tall,
+    // or the sliver reports invalid geometry and rendering throws.
     return Container(
       color: const Color.fromARGB(255, 241, 241, 241),
       padding: const EdgeInsets.symmetric(horizontal: 16),
+      alignment: Alignment.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

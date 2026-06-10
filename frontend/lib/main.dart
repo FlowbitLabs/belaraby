@@ -26,6 +26,14 @@ Future<void> main() async {
   // See DEPLOYMENT.md for per-environment values.
   const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
   const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  if (supabaseUrl.isEmpty || supabaseAnonKey.isEmpty) {
+    throw StateError(
+      'SUPABASE_URL / SUPABASE_ANON_KEY dart-defines are missing. '
+      'Launch via a "frontend (local …)" configuration in VS Code, or run: '
+      'flutter run --dart-define=SUPABASE_URL=… '
+      '--dart-define=SUPABASE_ANON_KEY=… (see DEPLOYMENT.md §4).',
+    );
+  }
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
   // Every user gets an (anonymous) Supabase identity so favorites, learned

@@ -19,6 +19,13 @@ class MyLibraryView extends StatelessWidget {
             listener: (context, _) =>
                 context.read<MyLibraryCubit>().loadLibrary(),
           ),
+          // Same for learned toggles (the lesson page "Lesson Learnt" pill).
+          BlocListener<LearnedCubit, LearnedState>(
+            listenWhen: (previous, current) =>
+                previous.syncCount != current.syncCount,
+            listener: (context, _) =>
+                context.read<MyLibraryCubit>().loadLibrary(),
+          ),
           BlocListener<MyLibraryCubit, MyLibraryState>(
             listenWhen: (previous, current) =>
                 previous.error != current.error && current.error.isNotEmpty,

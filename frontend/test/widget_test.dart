@@ -1,5 +1,5 @@
 import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
-import 'package:belaraby/app/lesson/cubit/lesson_cubit.dart';
+import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/my_library/cubit/my_library_cubit.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -47,13 +47,22 @@ void main() {
     });
   });
 
-  group('LessonState', () {
-    test('copyWith toggles isLearned', () {
-      const state = LessonState();
-      expect(state.isLearned, isFalse);
-      final updated = state.copyWith(isLearned: true);
-      expect(updated.isLearned, isTrue);
-      expect(updated.status, state.status);
+  group('LearnedState', () {
+    test('isLearned reflects learnedIds', () {
+      const state = LearnedState(learnedIds: {'a'});
+      expect(state.isLearned('a'), isTrue);
+      expect(state.isLearned('b'), isFalse);
+    });
+
+    test('copyWith replaces learnedIds and keeps the rest', () {
+      const state = LearnedState();
+      final updated = state.copyWith(
+        status: LearnedStatus.success,
+        learnedIds: {'x'},
+      );
+      expect(updated.learnedIds, {'x'});
+      expect(updated.status, LearnedStatus.success);
+      expect(updated.syncCount, state.syncCount);
     });
   });
 

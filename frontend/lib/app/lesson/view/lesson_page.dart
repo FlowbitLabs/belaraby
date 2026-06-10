@@ -2,7 +2,6 @@ import 'package:belaraby/app/lesson/controller/lesson_player_controller.dart';
 import 'package:belaraby/app/lesson/cubit/grammar_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/keywords_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
-import 'package:belaraby/app/lesson/cubit/lesson_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/quiz_cubit.dart';
 import 'package:belaraby/app/lesson/tab_views/grammar_tab_view.dart';
 import 'package:belaraby/app/lesson/tab_views/keywords_tab_view.dart';
@@ -29,9 +28,6 @@ class LessonPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => LessonCubit(lessonId: lesson.id)..loadLearnedStatus(),
-        ),
-        BlocProvider(
           create: (_) => QuizCubit(lessonId: lesson.id)..loadExercises(),
         ),
         BlocProvider(
@@ -41,17 +37,7 @@ class LessonPage extends StatelessWidget {
           create: (_) => GrammarCubit(lessonId: lesson.id)..loadGrammar(),
         ),
       ],
-      // Mirror the per-lesson learned toggle into the global LearnedCubit
-      // so the home screen "Hide Learned" filter stays in sync.
-      child: BlocListener<LessonCubit, LessonState>(
-        listenWhen: (previous, current) =>
-            previous.isLearned != current.isLearned,
-        listener: (context, state) => context.read<LearnedCubit>().setLearned(
-          lesson.id,
-          isLearned: state.isLearned,
-        ),
-        child: LessonView(lesson),
-      ),
+      child: LessonView(lesson),
     );
   }
 }
