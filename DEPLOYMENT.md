@@ -9,8 +9,8 @@ feature/* ──► dev ──► staging ──► prod
 | Branch | Environment | Auto-deploys |
 |---|---|---|
 | `dev` | Local development | Nothing (manual `supabase start`) |
-| `staging` | Staging | Supabase staging, Vercel preview, Flutter internal/TestFlight |
-| `prod` | Production | Supabase prod, Vercel production, Flutter production/App Store |
+| `staging` | Staging | Supabase staging, Cloudflare Workers staging, Flutter internal/TestFlight |
+| `prod` | Production | Supabase prod, Cloudflare Workers prod, Flutter production/App Store |
 
 ### CI
 
@@ -123,35 +123,49 @@ stores). Design:
 
 ---
 
-## 2. Dashboard → Vercel
+## 2. Dashboard → Cloudflare Workers
 
-Vercel handles environments natively via branch deployments. No workflow file needed.
+Workflow: `.github/workflows/deploy_dashboard.yml`
+Triggers on push to `staging` or `prod` when `dashboard/**` changes.
 
-**Project settings in Vercel:**
-```
-Framework:        Vite
-Root directory:   dashboard
-Build command:    npm run build
-Output directory: dist
-```
+The dashboard is served as Workers **static assets** — on the Cloudflare free
+plan static-asset requests are free and unmetered, and commercial use is
+permitted (unlike Vercel's Hobby plan, which is non-commercial only and
+cannot connect to org-owned repos). Config lives in `dashboard/wrangler.toml`
+with two environments:
 
-> `npm run build` is a plain `vite build`; the output directory is `dist/`.
-
-**Branch → environment mapping in Vercel:**
-- `prod` → Production deployment
-- `staging` → Preview deployment (pin to branch)
-- `dev` → Preview deployment
-
-**Environment variables** — set per environment in Vercel → Settings → Environment Variables:
-
-| Variable | staging | prod |
+| Branch | Worker | URL |
 |---|---|---|
-| `VITE_SUPABASE_URL` | staging project URL | prod project URL |
-| `VITE_SUPABASE_KEY` | staging anon JWT key | prod anon JWT key |
+| `staging` | `belaraby-admin-staging` | `https://belaraby-admin-staging.<your-subdomain>.workers.dev` |
+| `prod` | `belaraby-admin-prod` | `https://belaraby-admin-prod.<your-subdomain>.workers.dev` |
 
-> Both are read at **build time** (`dashboard/src/App.tsx`). The key must be
-> the anon JWT format (`eyJ...`) — ra-supabase does not work with the
-> `sb_publishable_` format.
+**One-time setup:**
+1. Create a Cloudflare account (free, no card).
+2. Dashboard → My Profile → API Tokens → Create Token → use the
+   **"Edit Cloudflare Workers"** template.
+3. Add to GitHub repo secrets (shared, not per-environment):
+   `CLOUDFLARE_API_TOKEN` (the token) and `CLOUDFLARE_ACCOUNT_ID`
+   (Cloudflare dashboard → Workers & Pages → right sidebar).
+
+**Environment variables** — Vite bakes `VITE_SUPABASE_URL` /
+`VITE_SUPABASE_KEY` in at **build time** (`dashboard/src/App.tsx`). The
+workflow reuses the existing `SUPABASE_URL` / `SUPABASE_ANON_KEY` GitHub
+environment secrets (same values the Flutter build uses), so there is
+nothing extra to configure per environment.
+
+> The key must be the anon JWT format (`eyJ...`) — ra-supabase does not work
+> with the `sb_publishable_` format.
+
+**Optional hardening — Cloudflare Access:** the Zero Trust free tier (up to
+50 users) can put an email/SSO login wall in front of the admin Workers
+before React Admin's own login even loads: Zero Trust → Access →
+Applications → add the two `workers.dev` hostnames and an allow-policy for
+your admin emails. Note: Zero Trust signup asks for payment details even on
+the free plan (it does not charge).
+
+**Optional:** map a custom domain (e.g. `admin.belaraby.app`) to the prod
+Worker via a `routes` entry in `wrangler.toml` once the domain is on
+Cloudflare.
 
 The dashboard login is ra-supabase's email/password page; `/forgot-password`
 and `/set-password` handle the Supabase invite/recovery email callbacks. For
@@ -531,8 +545,8 @@ The local anon key is printed by `supabase start` or available in the Supabase S
 
 ```
 feature/* ──► dev        local dev + testing
-dev ──► staging          staging deploy (Supabase + Vercel + Flutter internal)
-staging ──► prod         production deploy (Supabase + Vercel + Flutter production)
+dev ──► staging          staging deploy (Supabase + Dashboard + Flutter internal)
+staging ──► prod         production deploy (Supabase + Dashboard + Flutter production)
 ```
 
 **To release:**
@@ -583,12 +597,14 @@ staging ──► prod         production deploy (Supabase + Vercel + Flutter pr
 - [ ] Run `supabase secrets set REVENUECAT_WEBHOOK_AUTH=<value>` for staging and prod projects (same value as the webhook Authorization header)
 - [ ] Send the RevenueCat test webhook event and verify a 200 response
 
-### Dashboard (Vercel)
-- [ ] Connect GitHub repo to Vercel
-- [ ] Set root directory to `dashboard`
-- [ ] Set `prod` branch as Production in Vercel
-- [ ] Add `VITE_SUPABASE_URL` + `VITE_SUPABASE_KEY` for staging environment in Vercel (key = anon JWT `eyJ...`, **not** `sb_publishable_`)
-- [ ] Add `VITE_SUPABASE_URL` + `VITE_SUPABASE_KEY` for production environment in Vercel
+### Dashboard (Cloudflare Workers)
+- [ ] Create a Cloudflare account (free)
+- [ ] Create an API token with the "Edit Cloudflare Workers" template
+- [ ] Add `CLOUDFLARE_API_TOKEN` secret to GitHub (shared)
+- [ ] Add `CLOUDFLARE_ACCOUNT_ID` secret to GitHub (shared)
+- [ ] Push to `staging` (or dispatch Deploy Dashboard) and verify `belaraby-admin-staging.<subdomain>.workers.dev` loads
+- [ ] Optional: gate both Workers behind Cloudflare Access (Zero Trust free tier)
+- [ ] Optional: remove the old Vercel project once Cloudflare is confirmed working
 - [ ] Create an admin user in each Supabase project (Auth → Users)
 - [ ] Promote it: `update public.profiles set is_admin = true where id = '<user-uuid>';` (required for the first admin — the dashboard `is_admin` checkbox only works for existing admins)
 - [ ] Confirm dashboard login works and content is editable

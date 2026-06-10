@@ -1,0 +1,67 @@
+name: Deploy Dashboard
+
+on:
+  push:
+    branches:
+      - staging
+      - prod
+    paths:
+      - "dashboard/**"
+      - ".github/workflows/deploy_dashboard.yml"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - prod
+
+# Serialize deploys per branch; never cancel an in-flight production deploy.
+concurrency:
+  group: deploy-dashboard-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Dashboard (${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }})
+    runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+
+    defaults:
+      run:
+        working-directory: dashboard
+
+    env:
+      # Vite bakes these in at build time (dashboard/src/App.tsx). They are
+      # the same values the Flutter build uses, so the existing GitHub
+      # environment secrets are reused — no separate VITE_* secrets needed.
+      VITE_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      VITE_SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: dashboard
+          command: deploy --env ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
