@@ -3,21 +3,11 @@ name: Deploy Dashboard
 on:
   push:
     branches:
-      - staging
-      - prod
+      - main
     paths:
       - "dashboard/**"
       - ".github/workflows/deploy_dashboard.yml"
   workflow_dispatch:
-    inputs:
-      environment:
-        description: Target environment
-        required: true
-        default: staging
-        type: choice
-        options:
-          - staging
-          - prod
 
 # Serialize deploys per branch; never cancel an in-flight production deploy.
 concurrency:
@@ -26,9 +16,9 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy Dashboard (${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }})
+    name: Deploy Dashboard
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+    environment: production
 
     defaults:
       run:
@@ -64,4 +54,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: dashboard
-          command: deploy --env ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+          command: deploy

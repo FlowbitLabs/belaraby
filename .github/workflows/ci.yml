@@ -1,6 +1,6 @@
 name: CI
 
-# Per-tree checks for PRs into dev/staging/prod and pushes to dev.
+# Per-tree checks for PRs into dev/main and pushes to dev.
 # GitHub has no per-job `paths:` filter, so a cheap `changes` job
 # (dorny/paths-filter) detects which trees changed and each check job only
 # runs when its tree — or this workflow file — changed.
@@ -9,8 +9,7 @@ on:
   pull_request:
     branches:
       - dev
-      - staging
-      - prod
+      - main
   push:
     branches:
       - dev

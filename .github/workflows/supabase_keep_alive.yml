@@ -1,9 +1,9 @@
 name: Supabase Keep-Alive
 
 # Free-tier Supabase projects are paused after 7 days without API activity.
-# This pings the REST API every 3 days so BOTH the staging and prod projects
-# stay awake (each GitHub environment carries its own SUPABASE_URL /
-# SUPABASE_ANON_KEY secrets pointing at its own Supabase project).
+# This pings the REST API every 3 days so the project stays awake (the
+# production GitHub environment carries the SUPABASE_URL / SUPABASE_ANON_KEY
+# secrets).
 
 on:
   schedule:
@@ -12,15 +12,9 @@ on:
 
 jobs:
   ping:
-    name: Ping Supabase REST API (${{ matrix.environment }})
+    name: Ping Supabase REST API
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        environment:
-          - staging
-          - prod
-    environment: ${{ matrix.environment }}
+    environment: production
 
     steps:
       - name: Query one lesson row
@@ -37,6 +31,6 @@ jobs:
           cat /tmp/keep_alive_body
           echo
           if [ "$status" -lt 200 ] || [ "$status" -ge 300 ]; then
-            echo "::error::Supabase keep-alive ping (${{ matrix.environment }}) failed with HTTP $status" >&2
+            echo "::error::Supabase keep-alive ping failed with HTTP $status" >&2
             exit 1
           fi

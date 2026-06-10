@@ -12,7 +12,7 @@ name: Supabase Backup
 # twice and the duplicate keys abort the restore transaction. Restore
 # runbook lives in DEPLOYMENT.md.
 #
-# Requires the SUPABASE_DB_URL secret on the `prod` environment:
+# Requires the SUPABASE_DB_URL secret on the `production` environment:
 # the project's Postgres connection string, e.g.
 # postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres
 # (Supabase Dashboard -> Connect -> Session pooler URI). See DEPLOYMENT.md.
@@ -26,7 +26,7 @@ jobs:
   backup:
     name: Dump prod database
     runs-on: ubuntu-latest
-    environment: prod
+    environment: production
 
     env:
       SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}

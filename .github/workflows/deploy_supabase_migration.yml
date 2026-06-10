@@ -3,22 +3,12 @@ name: Deploy Supabase
 on:
   push:
     branches:
-      - staging
-      - prod
+      - main
     paths:
       - "supabase/migrations/**"
       - "supabase/config.toml"
       - "supabase/functions/**"
   workflow_dispatch:
-    inputs:
-      environment:
-        description: Target environment
-        required: true
-        default: staging
-        type: choice
-        options:
-          - staging
-          - prod
 
 # Serialize Supabase deploys per branch (db push + config push + functions
 # deploy must never interleave); never cancel a deploy in flight.
@@ -30,7 +20,7 @@ jobs:
   deploy:
     name: Deploy Supabase (${{ github.ref_name }})
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+    environment: production
 
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -46,7 +36,11 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned to the version config.toml is authored against. A newer
+          # CLI knows newer config sections whose defaults then get pushed
+          # (e.g. paid-tier vector buckets -> HTTP 402). Bump deliberately,
+          # together with the local CLI and a config push dry-check.
+          version: 2.72.7
 
       - name: Link Supabase project
         run: supabase link --project-ref $SUPABASE_PROJECT_ID
@@ -63,7 +57,7 @@ jobs:
           AUTH_SITE_URL: ${{ vars.AUTH_SITE_URL }}
         run: |
           if [ -z "$AUTH_SITE_URL" ]; then
-            echo "::error::AUTH_SITE_URL is not set on this GitHub environment. Set it (Settings → Environments → ${{ github.ref_name }} → Variables) to the environment's public URL, e.g. the dashboard URL."
+            echo "::error::AUTH_SITE_URL is not set on this GitHub environment. Set it (Settings → Environments → production → Variables) to the environment's public URL, e.g. the dashboard URL."
             exit 1
           fi
           sed -i "s|^site_url = .*|site_url = \"${AUTH_SITE_URL}\"|" supabase/config.toml

@@ -3,22 +3,12 @@ name: Deploy Flutter
 on:
   push:
     branches:
-      - staging
-      - prod
+      - main
     # Supabase/dashboard-only pushes must not burn macOS IPA build minutes.
     paths:
       - "frontend/**"
       - ".github/workflows/deploy_flutter.yml"
   workflow_dispatch:
-    inputs:
-      environment:
-        description: Target environment
-        required: true
-        default: staging
-        type: choice
-        options:
-          - staging
-          - prod
 
 # Serialize store deploys per branch; never cancel an upload in flight.
 concurrency:
@@ -29,7 +19,7 @@ jobs:
   android:
     name: Android (${{ github.ref_name }})
     runs-on: ubuntu-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+    environment: production
     defaults:
       run:
         working-directory: frontend
@@ -86,7 +76,7 @@ jobs:
   ios:
     name: iOS (${{ github.ref_name }})
     runs-on: macos-latest
-    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || github.ref_name }}
+    environment: production
     defaults:
       run:
         working-directory: frontend

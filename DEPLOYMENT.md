@@ -3,18 +3,22 @@
 ## Branching strategy
 
 ```
-feature/* ──► dev ──► staging ──► prod
+feature/* ──► dev ──► main
 ```
 
-| Branch | Environment | Auto-deploys |
+| Branch | Role | Auto-deploys |
 |---|---|---|
-| `dev` | Local development | Nothing (manual `supabase start`) |
-| `staging` | Staging | Supabase staging, Cloudflare Workers staging, Flutter internal/TestFlight |
-| `prod` | Production | Supabase prod, Cloudflare Workers prod, Flutter production/App Store |
+| `dev` | Default branch, day-to-day work | Nothing (manual `supabase start` for local dev) |
+| `main` | Production — pushing deploys | Supabase, Cloudflare Worker dashboard, Flutter internal track / TestFlight |
+
+There is a **single deployment environment**. One GitHub environment named
+`production`, one Supabase project (ref `hmgwrovvqeezkyfiqula`), one
+Cloudflare Worker. A staging branch/environment can be reintroduced later if
+the project ever needs one.
 
 ### CI
 
-`.github/workflows/ci.yml` runs on every PR into `dev`/`staging`/`prod` and
+`.github/workflows/ci.yml` runs on every PR into `dev`/`main` and
 every push to `dev`. Jobs are path-filtered (each runs only when its tree —
 or the workflow file — changed):
 
@@ -23,12 +27,37 @@ or the workflow file — changed):
 - **supabase** — `supabase db start` + `supabase db reset` (proves all migrations apply from scratch) + `supabase db lint`
 - **functions** — `deno check` + `deno lint` + `deno test` over the edge functions (unit tests in `supabase/functions/_tests/` cover every RevenueCat event-type mapping and the HTTP guard branches)
 
+### Secrets and variables — overview
+
+**GitHub environment `production`** (Settings → Environments):
+
+| Name | Kind | Used by |
+|---|---|---|
+| `SUPABASE_URL` | secret | Flutter + dashboard builds, keep-alive |
+| `SUPABASE_ANON_KEY` | secret | Flutter + dashboard builds, keep-alive |
+| `SUPABASE_DB_PASSWORD` | secret | Supabase deploy |
+| `SUPABASE_DB_URL` | secret | weekly backups |
+| `AUTH_SITE_URL` | variable | Supabase deploy (`config push`) |
+| Android/Apple/RevenueCat secrets | secret | Flutter deploy (added when store setup happens — see sections 3–4) |
+
+**Repo-level (shared) secrets:** `SUPABASE_ACCESS_TOKEN`,
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
+**Repo-level variable:** `SUPABASE_PROJECT_ID` (= `hmgwrovvqeezkyfiqula`).
+
+All deploy workflows (`deploy_supabase_migration.yml`,
+`deploy_dashboard.yml`, `deploy_flutter.yml`) trigger on push to `main`
+plus plain `workflow_dispatch`, and run with `environment: production`.
+The keep-alive and backup workflows also run against `production`.
+
 ---
 
 ## 1. Supabase
 
 Workflow: `.github/workflows/deploy_supabase_migration.yml` (display name: **Deploy Supabase**)
-Triggers on push to `staging` or `prod` when files under `supabase/migrations/`, `supabase/functions/` or `supabase/config.toml` change.
+Triggers on push to `main` (and manual dispatch) when files under
+`supabase/migrations/`, `supabase/functions/` or `supabase/config.toml`
+change. The Supabase CLI is pinned to **2.72.7** — the version
+`config.toml` is authored against.
 
 It runs, in order:
 
@@ -36,19 +65,18 @@ It runs, in order:
 2. `supabase config push --yes` — applies `supabase/config.toml` to the project
 3. `supabase functions deploy --use-api` — deploys all edge functions
 
-Deploys are serialized per branch via a `concurrency` group
+Deploys are serialized via a `concurrency` group
 (`deploy-supabase-<ref>`, `cancel-in-progress: false`) so two pushes can
 never interleave their db/config/functions steps.
 
-Each environment needs its own Supabase project and corresponding GitHub environment variables.
+There is **one** Supabase project: ref `hmgwrovvqeezkyfiqula`.
 
-**GitHub environments** (Settings → Environments): create `staging` and `prod`.
-
-| Variable/Secret | `staging` value | `prod` value |
+| Name | Where | Value |
 |---|---|---|
-| `SUPABASE_ACCESS_TOKEN` (secret, shared) | same token | same token |
-| `SUPABASE_PROJECT_ID` (var) | staging project ref | prod project ref |
-| `AUTH_SITE_URL` (var) | staging public URL (e.g. the staging dashboard URL) | prod public URL |
+| `SUPABASE_ACCESS_TOKEN` | repo secret | personal access token |
+| `SUPABASE_PROJECT_ID` | repo variable | `hmgwrovvqeezkyfiqula` |
+| `SUPABASE_DB_PASSWORD` | `production` secret | the project's database password |
+| `AUTH_SITE_URL` | `production` variable | `https://belaraby-admin.mahongru-dev.workers.dev` |
 
 ### Settings as code (`config.toml`)
 
@@ -60,11 +88,11 @@ and expect them to survive: edit `config.toml` instead.
 Notes:
 
 - `site_url` / `additional_redirect_urls` in `config.toml` are **local-dev
-  values** (127.0.0.1). The deploy workflow substitutes the environment's
-  `AUTH_SITE_URL` GitHub variable before pushing, so the hosted projects
-  never get localhost auth URLs (which would break admin invite/recovery
-  email links and redirect allow-lists). The deploy **fails loudly** when
-  `AUTH_SITE_URL` is not set on the GitHub environment.
+  values** (127.0.0.1). The deploy workflow substitutes the `AUTH_SITE_URL`
+  GitHub variable before pushing, so the hosted project never gets localhost
+  auth URLs (which would break admin invite/recovery email links and
+  redirect allow-lists). The deploy **fails loudly** when `AUTH_SITE_URL`
+  is not set on the `production` environment.
 - Sections that reference `env(...)` variables (Twilio SMS, Apple OAuth,
   experimental S3, Studio OpenAI key) are commented out so `config push`
   works in CI without those env vars. Each block has a comment explaining how
@@ -126,18 +154,17 @@ stores). Design:
 ## 2. Dashboard → Cloudflare Workers
 
 Workflow: `.github/workflows/deploy_dashboard.yml`
-Triggers on push to `staging` or `prod` when `dashboard/**` changes.
+Triggers on push to `main` (and manual dispatch) when `dashboard/**` changes,
+and runs a plain `wrangler deploy` (no `--env`).
 
 The dashboard is served as Workers **static assets** — on the Cloudflare free
 plan static-asset requests are free and unmetered, and commercial use is
-permitted (unlike Vercel's Hobby plan, which is non-commercial only and
-cannot connect to org-owned repos). Config lives in `dashboard/wrangler.toml`
-with two environments:
+permitted. Config lives in `dashboard/wrangler.toml`; there is a single
+Worker:
 
-| Branch | Worker | URL |
-|---|---|---|
-| `staging` | `belaraby-admin-staging` | `https://belaraby-admin-staging.<your-subdomain>.workers.dev` |
-| `prod` | `belaraby-admin-prod` | `https://belaraby-admin-prod.<your-subdomain>.workers.dev` |
+| Worker | URL |
+|---|---|
+| `belaraby-admin` | `https://belaraby-admin.mahongru-dev.workers.dev` |
 
 **One-time setup:**
 1. Create a Cloudflare account (free, no card).
@@ -149,30 +176,29 @@ with two environments:
 
 **Environment variables** — Vite bakes `VITE_SUPABASE_URL` /
 `VITE_SUPABASE_KEY` in at **build time** (`dashboard/src/App.tsx`). The
-workflow reuses the existing `SUPABASE_URL` / `SUPABASE_ANON_KEY` GitHub
-environment secrets (same values the Flutter build uses), so there is
-nothing extra to configure per environment.
+workflow reuses the existing `SUPABASE_URL` / `SUPABASE_ANON_KEY` secrets on
+the `production` GitHub environment (same values the Flutter build uses), so
+there is nothing extra to configure.
 
 > The key must be the anon JWT format (`eyJ...`) — ra-supabase does not work
 > with the `sb_publishable_` format.
 
 **Optional hardening — Cloudflare Access:** the Zero Trust free tier (up to
-50 users) can put an email/SSO login wall in front of the admin Workers
+50 users) can put an email/SSO login wall in front of the admin Worker
 before React Admin's own login even loads: Zero Trust → Access →
-Applications → add the two `workers.dev` hostnames and an allow-policy for
-your admin emails. Note: Zero Trust signup asks for payment details even on
-the free plan (it does not charge).
+Applications → add the `belaraby-admin.mahongru-dev.workers.dev` hostname
+and an allow-policy for your admin emails. Note: Zero Trust signup asks for
+payment details even on the free plan (it does not charge).
 
-**Optional:** map a custom domain (e.g. `admin.belaraby.app`) to the prod
-Worker via a `routes` entry in `wrangler.toml` once the domain is on
-Cloudflare.
+**Optional:** map a custom domain (e.g. `admin.belaraby.app`) to the Worker
+via a `routes` entry in `wrangler.toml` once the domain is on Cloudflare.
 
 The dashboard login is ra-supabase's email/password page; `/forgot-password`
 and `/set-password` handle the Supabase invite/recovery email callbacks. For
 those links to work, the Supabase Auth redirect allow-list must include the
-dashboard origin — set the `AUTH_SITE_URL` GitHub variable (section 1) to the
-environment's dashboard URL so the deploy workflow pushes it into
-`site_url`/`additional_redirect_urls`.
+dashboard origin — the `AUTH_SITE_URL` GitHub variable (section 1) is set to
+`https://belaraby-admin.mahongru-dev.workers.dev` so the deploy workflow
+pushes it into `site_url`/`additional_redirect_urls`.
 
 ### Making a dashboard admin
 
@@ -204,12 +230,12 @@ non-admin write.
 ## 3. Flutter → App Store + Play Store
 
 Workflow: `.github/workflows/deploy_flutter.yml`
-Triggers on push to `staging` or `prod` **only when `frontend/**` (or the
-workflow file itself) changed** — Supabase/dashboard-only pushes do not burn
-macOS IPA build minutes. Deploys are serialized per branch via a
+Triggers on push to `main` (and manual dispatch) **only when `frontend/**`
+(or the workflow file itself) changed** — Supabase/dashboard-only pushes do
+not burn macOS IPA build minutes. Deploys are serialized via a
 `concurrency` group (`deploy-flutter-<ref>`, `cancel-in-progress: false`).
 
-Supabase credentials are injected at build time via `--dart-define` so each environment points to the right backend.
+Supabase credentials are injected at build time via `--dart-define`.
 
 Four `--dart-define` values are passed to every CI build: `SUPABASE_URL`,
 `SUPABASE_ANON_KEY`, `REVENUECAT_APPLE_API_KEY` (public Apple SDK key,
@@ -219,32 +245,31 @@ with billing disabled (the paywall shows "purchases unavailable"), so local
 and dev builds need no store credentials.
 
 **Build numbers:** both stores reject a re-used build number (Play:
-`versionCode`, TestFlight: `CFBundleVersion`), and staging + prod share **one
-sequence** (staging → internal and prod → production are the *same* Play app;
-both branches upload to the same TestFlight app). CI therefore passes
+`versionCode`, TestFlight: `CFBundleVersion`). CI passes
 `--build-number=$(( github.run_number + 10 ))` to both builds — monotonically
 increasing, no manual step. The **marketing version** (`1.0.0`) still comes
 from `pubspec.yaml`: bump it there for user-visible releases (see section 8).
 If you ever upload a build manually, keep its build number below the current
 CI sequence or raise the `+10` offset in the workflow.
 
-**GitHub environment secrets** — set on both `staging` and `prod` environments:
+**GitHub environment secrets** — set on the `production` environment (the
+store/RevenueCat ones get added when store setup happens):
 
-| Secret | staging | prod |
-|---|---|---|
-| `SUPABASE_URL` | staging project URL | prod project URL |
-| `SUPABASE_ANON_KEY` | staging anon key | prod anon key |
-| `REVENUECAT_APPLE_API_KEY` | public Apple SDK key | public Apple SDK key |
-| `REVENUECAT_GOOGLE_API_KEY` | public Google SDK key | public Google SDK key |
-| `ANDROID_KEYSTORE_BASE64` | same | same |
-| `ANDROID_STORE_PASSWORD` | same | same |
-| `ANDROID_KEY_PASSWORD` | same | same |
-| `PLAY_STORE_SERVICE_ACCOUNT` | same | same |
-| `APPLE_ISSUER_ID` | same | same |
-| `APPLE_API_KEY_ID` | same | same |
-| `APPLE_API_PRIVATE_KEY` | same | same |
-| `APPLE_CERTIFICATE_BASE64` | same | same |
-| `APPLE_CERTIFICATE_PASSWORD` | same | same |
+| Secret | Value |
+|---|---|
+| `SUPABASE_URL` | Supabase project URL |
+| `SUPABASE_ANON_KEY` | Supabase anon key |
+| `REVENUECAT_APPLE_API_KEY` | public Apple SDK key |
+| `REVENUECAT_GOOGLE_API_KEY` | public Google SDK key |
+| `ANDROID_KEYSTORE_BASE64` | base64 of the upload keystore |
+| `ANDROID_STORE_PASSWORD` | keystore store password |
+| `ANDROID_KEY_PASSWORD` | keystore key password |
+| `PLAY_STORE_SERVICE_ACCOUNT` | Play service-account JSON |
+| `APPLE_ISSUER_ID` | App Store Connect API issuer |
+| `APPLE_API_KEY_ID` | App Store Connect API key id |
+| `APPLE_API_PRIVATE_KEY` | App Store Connect API private key |
+| `APPLE_CERTIFICATE_BASE64` | base64 of the distribution cert `.p12` |
+| `APPLE_CERTIFICATE_PASSWORD` | `.p12` export password |
 
 `APPLE_CERTIFICATE_BASE64` is the base64 of the Apple **distribution
 certificate** exported as `.p12` (Keychain Access → export, then
@@ -253,11 +278,11 @@ chosen at export. The iOS job imports the certificate into the runner
 keychain and downloads the App Store provisioning profile for
 `com.belaraby.belaraby` via the App Store Connect API before building.
 
-**Play Store track per branch:**
-- `staging` → internal track
-- `prod` → production track
-
-**iOS:** Both branches upload to TestFlight. Promote to App Store manually from App Store Connect.
+**Store tracks:** pushes to `main` upload Android to the Play **internal
+track** and iOS to **TestFlight**. Promote manually from there (Play Console
+internal → production; App Store Connect TestFlight → App Store). If the
+project later needs a separate pre-production pipeline, a staging
+branch/environment can be reintroduced — for now one environment is enough.
 
 ---
 
@@ -350,9 +375,9 @@ The app sells the `premium` entitlement via two products:
    `offerings.current.availablePackages`, so without a current offering it
    shows "no plans available".
 5. **SDK keys → GitHub secrets:** copy the *public* Apple and Google SDK keys
-   (RevenueCat → Project → API keys) into the GitHub environment secrets
-   `REVENUECAT_APPLE_API_KEY` and `REVENUECAT_GOOGLE_API_KEY` on **both**
-   `staging` and `prod`. They are injected at build time via `--dart-define`.
+   (RevenueCat → Project → API keys) into the GitHub `production` environment
+   secrets `REVENUECAT_APPLE_API_KEY` and `REVENUECAT_GOOGLE_API_KEY`.
+   They are injected at build time via `--dart-define`.
    The app sets the RevenueCat `appUserID` to the Supabase auth user id
    (`Purchases.configure` at boot + `Purchases.logIn` on every auth change),
    so webhook user resolution can rely on `app_user_id` being
@@ -361,20 +386,19 @@ The app sells the `premium` entitlement via two products:
    webhook pointing at:
 
    ```
-   https://<project-ref>.supabase.co/functions/v1/revenuecat-webhook
+   https://hmgwrovvqeezkyfiqula.supabase.co/functions/v1/revenuecat-webhook
    ```
 
    Set an **Authorization header value** (generate a long random string, e.g.
    `openssl rand -hex 32` — prefix it however you like; the function compares
-   the header verbatim). Then set the *same* value once per Supabase project:
+   the header verbatim). Then set the *same* value on the Supabase project:
 
    ```bash
-   supabase secrets set REVENUECAT_WEBHOOK_AUTH=<value> --project-ref <project-ref>
+   supabase secrets set REVENUECAT_WEBHOOK_AUTH=<value> --project-ref hmgwrovvqeezkyfiqula
    ```
 
    The function returns 401 for any request without that exact header and
-   500 if the secret is unset (it never runs open). Repeat for staging and
-   prod (use the RevenueCat sandbox/production environments accordingly).
+   500 if the secret is unset (it never runs open).
 
 Premium access is derived **only** from `subscriptions.expires_at` (via
 `public.has_active_subscription()`); `status` and `will_renew` are
@@ -398,19 +422,16 @@ Cancellations and expirations flow back through the RevenueCat webhook.
 Workflow: `.github/workflows/supabase_keep_alive.yml`
 Free-tier Supabase projects pause after 7 days without API activity. The
 workflow curls `GET $SUPABASE_URL/rest/v1/lessons?select=id&limit=1` against
-**both** the `staging` and `prod` GitHub environments (a job matrix, so the
-free-tier staging project never pauses either) every 3 days and on manual
-dispatch, using each environment's existing `SUPABASE_URL` /
-`SUPABASE_ANON_KEY` secrets, and fails loudly on any non-2xx response. The
-matrix uses `fail-fast: false` — a staging failure does not skip the prod
-ping or vice versa.
+the `production` GitHub environment every 3 days and on manual dispatch,
+using the environment's existing `SUPABASE_URL` / `SUPABASE_ANON_KEY`
+secrets, and fails loudly on any non-2xx response.
 
 ### Weekly backups
 
 Workflow: `.github/workflows/supabase_backup.yml`
-Runs weekly (and on manual dispatch) against the `prod` environment. It dumps
-**three** files with `supabase db dump --db-url ...` and uploads them as a
-GitHub artifact with **90-day retention**:
+Runs weekly (and on manual dispatch) against the `production` environment. It
+dumps **three** files with `supabase db dump --db-url ...` and uploads them
+as a GitHub artifact with **90-day retention**:
 
 | File | Contents |
 |---|---|
@@ -425,11 +446,11 @@ Do **not** add a separate auth-schema dump next to it — restoring both loads
 every auth row twice, and the duplicate keys abort the whole restore
 transaction.
 
-It needs one new secret on the `prod` GitHub environment:
+It needs one secret on the `production` GitHub environment:
 
 | Secret | Value |
 |---|---|
-| `SUPABASE_DB_URL` | the prod Postgres connection string, e.g. `postgresql://postgres.<project-ref>:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres` (Supabase Dashboard → Connect → Session pooler URI) |
+| `SUPABASE_DB_URL` | the Postgres connection string, e.g. `postgresql://postgres.hmgwrovvqeezkyfiqula:<db-password>@aws-0-<region>.pooler.supabase.com:5432/postgres` (Supabase Dashboard → Connect → Session pooler URI) |
 
 #### Restore runbook
 
@@ -476,8 +497,8 @@ It needs one new secret on the `prod` GitHub environment:
 | Database size | **500 MB** | per project |
 | Egress | **5 GB / month** | lesson list responses carry the **full Arabic story bodies**, so egress is the ceiling that falls first as usage grows |
 | Monthly active users | **50K MAU** | **includes anonymous users** — every install creates one (the pg_cron cleanup below keeps this in check) |
-| Projects | **2 per org** | staging + prod already uses both |
-| Pausing | after **7 days** idle | the keep-alive workflow pings staging + prod every 3 days |
+| Projects | **2 per org** | only one is used — the second slot is free for scratch/restore tests |
+| Pausing | after **7 days** idle | the keep-alive workflow pings the project every 3 days |
 | Log retention | **~1 day** | debug webhook/function incidents the same day or lose the logs |
 | PITR | **none** | the weekly 90-day GitHub backup artifact is the **only** recovery path — a restore loses up to **7 days** of data |
 
@@ -544,43 +565,45 @@ The local anon key is printed by `supabase start` or available in the Supabase S
 ## 8. Release flow
 
 ```
-feature/* ──► dev        local dev + testing
-dev ──► staging          staging deploy (Supabase + Dashboard + Flutter internal)
-staging ──► prod         production deploy (Supabase + Dashboard + Flutter production)
+feature/* ──► dev        local dev + testing (CI on PRs and pushes)
+dev ──► main             production deploy (Supabase + Dashboard + Flutter internal/TestFlight)
 ```
+
+A push to `main` deploys everything relevant: each deploy workflow has a
+paths filter, so only the parts that actually changed run (Supabase,
+dashboard, Flutter). Every deploy workflow also supports manual
+`workflow_dispatch`.
 
 **To release:**
 1. For a user-visible version change, bump the **marketing version** in
    `frontend/pubspec.yaml` (e.g. `1.1.0+1`) — the build *number* is
    CI-generated per upload (see *Build numbers* in section 3), so it never
    needs a manual bump
-2. Open a PR from `staging` → `prod`
+2. Open a PR from `dev` → `main`
 3. Review and merge
-4. All three production deployments trigger automatically
-5. Promote iOS build from TestFlight → App Store in App Store Connect
+4. The relevant deployments trigger automatically (paths-filtered)
+5. Promote the Android build from the Play internal track to production, and
+   the iOS build from TestFlight → App Store in App Store Connect
 
 ---
 
 ## 9. Setup checklist
 
 ### Supabase
-- [ ] Create a staging Supabase project
-- [ ] Create a prod Supabase project
-- [ ] Add `SUPABASE_ACCESS_TOKEN` secret to GitHub (shared)
-- [ ] Add `SUPABASE_PROJECT_ID` var to GitHub `staging` environment
-- [ ] Add `SUPABASE_PROJECT_ID` var to GitHub `prod` environment
-- [ ] Add `AUTH_SITE_URL` var to GitHub `staging` environment (public URL — the deploy fails without it)
-- [ ] Add `AUTH_SITE_URL` var to GitHub `prod` environment
-- [ ] Verify "Allow anonymous sign-ins" is enabled on both projects (Auth → Sign In / Providers) — the app bootstraps every user with `signInAnonymously()`
-- [ ] Verify the Deploy Supabase workflow runs on push to `staging` (migrations + config + functions)
-- [ ] Verify the Deploy Supabase workflow runs on push to `prod` (migrations + config + functions)
-- [ ] Add `SUPABASE_DB_URL` secret to GitHub `prod` environment (Postgres session-pooler connection string, for backups)
+- [ ] Add `SUPABASE_ACCESS_TOKEN` secret to GitHub (repo-level, shared)
+- [ ] Add `SUPABASE_PROJECT_ID` repo variable (`hmgwrovvqeezkyfiqula`)
+- [ ] Create the GitHub `production` environment (Settings → Environments)
+- [ ] Add `SUPABASE_DB_PASSWORD` secret to the `production` environment
+- [ ] Add `AUTH_SITE_URL` var to the `production` environment (`https://belaraby-admin.mahongru-dev.workers.dev` — the deploy fails without it)
+- [ ] Verify "Allow anonymous sign-ins" is enabled on the project (Auth → Sign In / Providers) — the app bootstraps every user with `signInAnonymously()`
+- [ ] Verify the Deploy Supabase workflow runs on push to `main` (migrations + config + functions)
+- [ ] Add `SUPABASE_DB_URL` secret to the `production` environment (Postgres session-pooler connection string, for backups)
 - [ ] Manually dispatch the Supabase Backup workflow once and check the artifact contains `roles.sql`, `schema.sql` and `data.sql`
 - [ ] Restore-test the backup once against a scratch project (see the restore runbook — backups have never been restore-tested)
-- [ ] Manually dispatch the Supabase Keep-Alive workflow once and check **both** the staging and prod pings pass (the job is a matrix over both environments; staging needs its `SUPABASE_URL`/`SUPABASE_ANON_KEY` secrets too)
+- [ ] Manually dispatch the Supabase Keep-Alive workflow once and check the ping passes
 - [ ] Enable Supabase spend/usage email alerts on the organization (see Operations runbook) and diarize a weekly usage check
 - [ ] After the first deploy, verify the `delete-stale-anonymous-users` pg_cron job exists: `select jobname, schedule from cron.job;`
-- [ ] E2E-verify account deletion on staging: with a real user JWT, `curl -X POST https://<staging-ref>.supabase.co/functions/v1/delete-account -H "Authorization: Bearer <jwt>" -H "apikey: <anon-key>"` must return **200** and the user's `profiles`/`subscriptions`/`user_favorites`/`user_learned_lessons` rows must be gone (the function runs with `verify_jwt = false` because the gateway cannot verify ES256 user JWTs — the handler enforces auth itself)
+- [ ] E2E-verify account deletion: with a real user JWT, `curl -X POST https://hmgwrovvqeezkyfiqula.supabase.co/functions/v1/delete-account -H "Authorization: Bearer <jwt>" -H "apikey: <anon-key>"` must return **200** and the user's `profiles`/`subscriptions`/`user_favorites`/`user_learned_lessons` rows must be gone (the function runs with `verify_jwt = false` because the gateway cannot verify ES256 user JWTs — the handler enforces auth itself)
 
 ### RevenueCat
 - [ ] Create the RevenueCat project
@@ -591,21 +614,21 @@ staging ──► prod         production deploy (Supabase + Dashboard + Flutter
 - [ ] Create `belaraby_premium_monthly` + `belaraby_premium_yearly` in Play Console
 - [ ] Create entitlement `premium`, attach both products to it
 - [ ] Create the default (current) offering with the monthly + yearly packages
-- [ ] Add `REVENUECAT_APPLE_API_KEY` secret to GitHub `staging` + `prod`
-- [ ] Add `REVENUECAT_GOOGLE_API_KEY` secret to GitHub `staging` + `prod`
-- [ ] Configure the webhook to `https://<project-ref>.supabase.co/functions/v1/revenuecat-webhook` with an Authorization header value (per Supabase project)
-- [ ] Run `supabase secrets set REVENUECAT_WEBHOOK_AUTH=<value>` for staging and prod projects (same value as the webhook Authorization header)
+- [ ] Add `REVENUECAT_APPLE_API_KEY` secret to the GitHub `production` environment
+- [ ] Add `REVENUECAT_GOOGLE_API_KEY` secret to the GitHub `production` environment
+- [ ] Configure the webhook to `https://hmgwrovvqeezkyfiqula.supabase.co/functions/v1/revenuecat-webhook` with an Authorization header value
+- [ ] Run `supabase secrets set REVENUECAT_WEBHOOK_AUTH=<value> --project-ref hmgwrovvqeezkyfiqula` (same value as the webhook Authorization header)
 - [ ] Send the RevenueCat test webhook event and verify a 200 response
 
 ### Dashboard (Cloudflare Workers)
 - [ ] Create a Cloudflare account (free)
 - [ ] Create an API token with the "Edit Cloudflare Workers" template
-- [ ] Add `CLOUDFLARE_API_TOKEN` secret to GitHub (shared)
-- [ ] Add `CLOUDFLARE_ACCOUNT_ID` secret to GitHub (shared)
-- [ ] Push to `staging` (or dispatch Deploy Dashboard) and verify `belaraby-admin-staging.<subdomain>.workers.dev` loads
-- [ ] Optional: gate both Workers behind Cloudflare Access (Zero Trust free tier)
-- [ ] Optional: remove the old Vercel project once Cloudflare is confirmed working
-- [ ] Create an admin user in each Supabase project (Auth → Users)
+- [ ] Add `CLOUDFLARE_API_TOKEN` secret to GitHub (repo-level, shared)
+- [ ] Add `CLOUDFLARE_ACCOUNT_ID` secret to GitHub (repo-level, shared)
+- [ ] Push to `main` (or dispatch Deploy Dashboard) and verify `https://belaraby-admin.mahongru-dev.workers.dev` loads
+- [ ] Optional: gate the Worker behind Cloudflare Access (Zero Trust free tier)
+- [ ] Delete the old Vercel project + uninstall the Vercel GitHub App (Settings → Integrations)
+- [ ] Create an admin user in the Supabase project (Auth → Users)
 - [ ] Promote it: `update public.profiles set is_admin = true where id = '<user-uuid>';` (required for the first admin — the dashboard `is_admin` checkbox only works for existing admins)
 - [ ] Confirm dashboard login works and content is editable
 
@@ -616,10 +639,10 @@ staging ──► prod         production deploy (Supabase + Dashboard + Flutter
 - [ ] Create app in Google Play Console (package: `com.belaraby.frontend`)
 - [ ] Do first manual upload to Play Console (required before API uploads)
 - [ ] Create Play Store service account and grant it release permissions
-- [ ] Add `ANDROID_KEYSTORE_BASE64` secret to GitHub `staging` + `prod`
-- [ ] Add `ANDROID_STORE_PASSWORD` secret to GitHub `staging` + `prod`
-- [ ] Add `ANDROID_KEY_PASSWORD` secret to GitHub `staging` + `prod`
-- [ ] Add `PLAY_STORE_SERVICE_ACCOUNT` secret to GitHub `staging` + `prod`
+- [ ] Add `ANDROID_KEYSTORE_BASE64` secret to the GitHub `production` environment
+- [ ] Add `ANDROID_STORE_PASSWORD` secret to the GitHub `production` environment
+- [ ] Add `ANDROID_KEY_PASSWORD` secret to the GitHub `production` environment
+- [ ] Add `PLAY_STORE_SERVICE_ACCOUNT` secret to the GitHub `production` environment
 
 ### iOS
 - [ ] Enroll in Apple Developer Program
@@ -630,24 +653,22 @@ staging ──► prod         production deploy (Supabase + Dashboard + Flutter
 - [ ] Verify `frontend/ios/ExportOptions.plist` (committed) has the right `teamID`
 - [ ] Test locally: `flutter build ipa --release --export-options-plist=ios/ExportOptions.plist --dart-define=...`
 - [ ] Generate App Store Connect API key
-- [ ] Add `APPLE_ISSUER_ID` secret to GitHub `staging` + `prod`
-- [ ] Add `APPLE_API_KEY_ID` secret to GitHub `staging` + `prod`
-- [ ] Add `APPLE_API_PRIVATE_KEY` secret to GitHub `staging` + `prod`
-- [ ] Export the distribution certificate as `.p12` and add `APPLE_CERTIFICATE_BASE64` secret to GitHub `staging` + `prod`
-- [ ] Add `APPLE_CERTIFICATE_PASSWORD` secret to GitHub `staging` + `prod`
+- [ ] Add `APPLE_ISSUER_ID` secret to the GitHub `production` environment
+- [ ] Add `APPLE_API_KEY_ID` secret to the GitHub `production` environment
+- [ ] Add `APPLE_API_PRIVATE_KEY` secret to the GitHub `production` environment
+- [ ] Export the distribution certificate as `.p12` and add `APPLE_CERTIFICATE_BASE64` secret to the GitHub `production` environment
+- [ ] Add `APPLE_CERTIFICATE_PASSWORD` secret to the GitHub `production` environment
 
 ### Flutter env vars
-- [ ] Add `SUPABASE_URL` secret to GitHub `staging` environment
-- [ ] Add `SUPABASE_ANON_KEY` secret to GitHub `staging` environment
-- [ ] Add `SUPABASE_URL` secret to GitHub `prod` environment
-- [ ] Add `SUPABASE_ANON_KEY` secret to GitHub `prod` environment
+- [ ] Add `SUPABASE_URL` secret to the GitHub `production` environment
+- [ ] Add `SUPABASE_ANON_KEY` secret to the GitHub `production` environment
 
 ### CI/CD
 - [ ] Open a PR into `dev` and verify the CI workflow runs only the jobs whose paths changed
-- [ ] Push a migration to `staging` and verify Supabase workflow runs
-- [ ] Dispatch the Deploy Flutter workflow once against `staging` to prove the iOS signing chain (certificate import + manual profile) end-to-end **before** relying on it for a release — it has never run on a clean runner
-- [ ] Merge a change to `staging` and verify Flutter workflow runs (internal track + TestFlight) — note it only triggers when `frontend/**` changed
-- [ ] Merge `staging` → `prod` and verify all production deployments succeed
+- [ ] Push a migration to `main` and verify the Deploy Supabase workflow runs
+- [ ] Dispatch the Deploy Flutter workflow once to prove the iOS signing chain (certificate import + manual profile) end-to-end **before** relying on it for a release — it has never run on a clean runner
+- [ ] Merge a change to `main` and verify the Flutter workflow runs (internal track + TestFlight) — note it only triggers when `frontend/**` changed
+- [ ] Merge a change to `main` touching `dashboard/**` and verify the Deploy Dashboard workflow runs
 
 ### Store submission (blocking — both stores reject without these)
 - [ ] **REQUIRED:** replace the placeholder app icons — `frontend/android/app/src/main/res/mipmap-*/ic_launcher.png` and `frontend/ios/Runner/Assets.xcassets/AppIcon.appiconset/` still contain the **stock Flutter template logo**. Apple rejects placeholder icons (Guideline 2.3.8) and Play would ship the generic Flutter "F". Generate branded icons for every density (e.g. with the `flutter_launcher_icons` package) and add an Android **adaptive icon**
