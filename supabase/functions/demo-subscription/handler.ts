@@ -22,13 +22,15 @@
 // Demo rows never touch RevenueCat-managed rows (store != 'demo').
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { json } from "../_shared/http.ts";
+import { json, preflight } from "../_shared/http.ts";
 
 const DEMO_ENTITLEMENT = "premium";
 const DEMO_STORE = "demo";
 const DEMO_DURATION_MS = 30 * 24 * 60 * 60 * 1000;
 
 export async function handler(req: Request): Promise<Response> {
+  const preflightResponse = preflight(req);
+  if (preflightResponse) return preflightResponse;
   if (req.method !== "POST") {
     return json(405, { ok: false, message: "Method not allowed" });
   }

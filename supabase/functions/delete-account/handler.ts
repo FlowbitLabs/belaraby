@@ -20,9 +20,11 @@
 // then signOut() and start a fresh anonymous session.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { json } from "../_shared/http.ts";
+import { json, preflight } from "../_shared/http.ts";
 
 export async function handler(req: Request): Promise<Response> {
+  const preflightResponse = preflight(req);
+  if (preflightResponse) return preflightResponse;
   if (req.method !== "POST") {
     return json(405, { ok: false, message: "Method not allowed" });
   }
