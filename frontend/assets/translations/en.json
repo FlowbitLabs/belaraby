@@ -38,6 +38,7 @@
     "lesson_quiz_empty": "No quiz for this story yet — check back soon!",
     "lesson_keywords_empty": "No keywords for this story yet — check back soon!",
     "lesson_grammar_empty": "No grammar notes for this story yet — check back soon!",
+    "lesson_grammar_example": "Example",
     "lesson_content_error": "Could not load the content. Check your internet connection.",
     "quiz_score": "You answered {} out of {} correctly",
     "quiz_retake": "Retake quiz",

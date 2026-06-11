@@ -133,7 +133,9 @@ void main() {
     const item = LessonGrammarItem(
       id: 'gr-1',
       lessonId: 'a',
+      title: 'الضمائر',
       explanation: 'شرح',
+      example: 'أنا أدرس',
     );
 
     GrammarCubit buildCubit() =>

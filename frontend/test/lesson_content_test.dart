@@ -1,9 +1,11 @@
 import 'package:belaraby/app/lesson/cubit/grammar_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/keywords_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/quiz_cubit.dart';
+import 'package:belaraby/app/lesson/tab_views/grammar_tab_view.dart';
 import 'package:belaraby/data/models/lesson_exercise_model.dart';
 import 'package:belaraby/data/models/lesson_grammar_model.dart';
 import 'package:belaraby/data/models/lesson_keyword_model.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -65,9 +67,60 @@ void main() {
       final grammar = LessonGrammarItem.fromJson(const {
         'id': 'g1',
         'lesson_id': 'l1',
+        'title': 'الضمائر',
         'explanation': 'شرح القاعدة',
+        'example': 'أنا أدرس',
       });
+      expect(grammar.title, 'الضمائر');
       expect(grammar.explanation, 'شرح القاعدة');
+      expect(grammar.example, 'أنا أدرس');
+
+      // Rows authored before the title/example columns existed.
+      final legacy = LessonGrammarItem.fromJson(const {
+        'id': 'g2',
+        'lesson_id': 'l1',
+        'explanation': 'شرح',
+      });
+      expect(legacy.title, isEmpty);
+      expect(legacy.example, isNull);
+    });
+  });
+
+
+  group('GrammarCard', () {
+    Future<void> pump(WidgetTester tester, LessonGrammarItem item) {
+      return tester.pumpWidget(
+        MaterialApp(home: Scaffold(body: GrammarCard(item: item))),
+      );
+    }
+
+    testWidgets('renders title, explanation and example', (tester) async {
+      const item = LessonGrammarItem(
+        id: 'g1',
+        lessonId: 'l1',
+        title: 'الضمائر',
+        explanation: 'شرح القاعدة',
+        example: 'أنا أدرس',
+      );
+      await pump(tester, item);
+      expect(find.text('الضمائر'), findsOneWidget);
+      expect(find.text('شرح القاعدة'), findsOneWidget);
+      expect(find.text('أنا أدرس'), findsOneWidget);
+    });
+
+    testWidgets('hides the heading and example box for legacy rows', (
+      tester,
+    ) async {
+      const item = LessonGrammarItem(
+        id: 'g2',
+        lessonId: 'l1',
+        title: '',
+        explanation: 'شرح',
+      );
+      await pump(tester, item);
+      expect(find.text('شرح'), findsOneWidget);
+      expect(find.byIcon(Icons.lightbulb_outline), findsNothing);
+      expect(find.byType(Container), findsNothing);
     });
   });
 
