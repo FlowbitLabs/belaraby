@@ -124,5 +124,10 @@
   "auth_error_weak_password": "Password must be at least 8 characters.",
   "auth_error_invalid_email": "Please enter a valid email address.",
   "auth_error_generic": "Something went wrong. Please try again.",
-  "about_legal": "Legal"
+  "about_legal": "Legal",
+  "profile_demo_enable": "Enable demo premium",
+  "profile_demo_disable": "Disable demo premium",
+  "profile_demo_enabled": "Demo premium enabled — UI now behaves as a paid account.",
+  "profile_demo_disabled": "Demo premium disabled.",
+  "profile_demo_description": "Web demo only: simulates a paid account to preview the premium interface without a real purchase. Nothing is saved to the server, and paid story texts remain locked."
 }

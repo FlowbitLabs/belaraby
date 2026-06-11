@@ -17,8 +17,10 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit({
     required PurchasesService purchasesService,
     AuthRepository? authRepository,
+    bool demoPremiumAllowed = kIsWeb,
   }) : _purchasesService = purchasesService,
        _authRepository = authRepository ?? AuthRepository(),
+       _demoPremiumAllowed = demoPremiumAllowed,
        super(const SubscriptionState()) {
     _customerInfoSubscription = _purchasesService.customerInfoStream.listen(
       _onCustomerInfoUpdated,
@@ -27,6 +29,10 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   final PurchasesService _purchasesService;
   final AuthRepository _authRepository;
+
+  /// Whether the demo-premium toggle is available (web builds only;
+  /// overridable in tests).
+  final bool _demoPremiumAllowed;
   late final StreamSubscription<CustomerInfo> _customerInfoSubscription;
 
   /// Makes sure the purchase is attributed to the Supabase user id.
@@ -49,6 +55,26 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     }
     await _purchasesService.logIn(userId);
     return true;
+  }
+
+  /// WEB DEMO ONLY: locally simulates a premium account so the premium UI
+  /// states (tier badge, unlocked paywall gate) can be demonstrated without
+  /// a store purchase. Purely client-side — nothing is written server-side,
+  /// so paid story bodies stay masked by the backend. No-op outside web.
+  void toggleDemoPremium() {
+    if (!_demoPremiumAllowed) return;
+    final enabled = !state.isDemoPremium;
+    emit(
+      state.copyWith(
+        status: SubscriptionStatus.success,
+        isDemoPremium: enabled,
+        isPremium: enabled,
+        errorMessage: '',
+        infoMessage: enabled
+            ? 'profile_demo_enabled'
+            : 'profile_demo_disabled',
+      ),
+    );
   }
 
   void _onCustomerInfoUpdated(CustomerInfo customerInfo) {
@@ -199,6 +225,7 @@ class SubscriptionState extends Equatable {
   const SubscriptionState({
     this.status = SubscriptionStatus.initial,
     this.isPremium = false,
+    this.isDemoPremium = false,
     this.isBillingAvailable = true,
     this.packages = const [],
     this.errorMessage = '',
@@ -207,6 +234,9 @@ class SubscriptionState extends Equatable {
 
   final SubscriptionStatus status;
   final bool isPremium;
+
+  /// Whether [isPremium] is only simulated by the web demo toggle.
+  final bool isDemoPremium;
   final bool isBillingAvailable;
   final List<Package> packages;
 
@@ -220,6 +250,7 @@ class SubscriptionState extends Equatable {
   List<Object?> get props => [
     status,
     isPremium,
+    isDemoPremium,
     isBillingAvailable,
     packages,
     errorMessage,
@@ -229,6 +260,7 @@ class SubscriptionState extends Equatable {
   SubscriptionState copyWith({
     SubscriptionStatus? status,
     bool? isPremium,
+    bool? isDemoPremium,
     bool? isBillingAvailable,
     List<Package>? packages,
     String? errorMessage,
@@ -237,6 +269,7 @@ class SubscriptionState extends Equatable {
     return SubscriptionState(
       status: status ?? this.status,
       isPremium: isPremium ?? this.isPremium,
+      isDemoPremium: isDemoPremium ?? this.isDemoPremium,
       isBillingAvailable: isBillingAvailable ?? this.isBillingAvailable,
       packages: packages ?? this.packages,
       errorMessage: errorMessage ?? this.errorMessage,

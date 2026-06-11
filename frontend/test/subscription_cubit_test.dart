@@ -42,6 +42,43 @@ void main() {
   SubscriptionCubit buildCubit() =>
       SubscriptionCubit(purchasesService: purchases, authRepository: auth);
 
+  group('demo premium', () {
+    blocTest<SubscriptionCubit, SubscriptionState>(
+      'toggles a simulated paid account when allowed (web)',
+      build: () => SubscriptionCubit(
+        purchasesService: purchases,
+        authRepository: auth,
+        demoPremiumAllowed: true,
+      ),
+      act: (cubit) => cubit
+        ..toggleDemoPremium()
+        ..toggleDemoPremium(),
+      expect: () => [
+        const SubscriptionState(
+          status: SubscriptionStatus.success,
+          isPremium: true,
+          isDemoPremium: true,
+          infoMessage: 'profile_demo_enabled',
+        ),
+        const SubscriptionState(
+          status: SubscriptionStatus.success,
+          infoMessage: 'profile_demo_disabled',
+        ),
+      ],
+    );
+
+    blocTest<SubscriptionCubit, SubscriptionState>(
+      'is a no-op outside web',
+      build: () => SubscriptionCubit(
+        purchasesService: purchases,
+        authRepository: auth,
+        demoPremiumAllowed: false,
+      ),
+      act: (cubit) => cubit.toggleDemoPremium(),
+      expect: () => <SubscriptionState>[],
+    );
+  });
+
   group('load', () {
     final package = buildPackage();
 
