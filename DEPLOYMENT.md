@@ -159,12 +159,18 @@ and runs a plain `wrangler deploy` (no `--env`).
 
 The dashboard is served as Workers **static assets** — on the Cloudflare free
 plan static-asset requests are free and unmetered, and commercial use is
-permitted. Config lives in `dashboard/wrangler.toml`; there is a single
-Worker:
+permitted. Config lives in `dashboard/wrangler.toml` and `frontend/wrangler.toml`:
 
-| Worker | URL |
-|---|---|
-| `admin` | `https://admin.belaraby.workers.dev` |
+| Worker | URL | Deployed by |
+|---|---|---|
+| `admin` | `https://admin.belaraby.workers.dev` | `deploy_dashboard.yml` |
+| `app` | `https://app.belaraby.workers.dev` | `deploy_flutter_web.yml` |
+
+The `app` Worker is the Flutter web build (`flutter build web`), useful as a
+shareable demo before the store apps ship. Billing is intentionally disabled
+there: `purchases_flutter` has no web implementation, so no RevenueCat keys
+are passed to the web build and premium content stays locked
+(`PurchasesService._platformApiKey` returns `''` on web).
 
 **One-time setup:**
 1. Create a Cloudflare account (free, no card).

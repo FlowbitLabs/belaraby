@@ -56,6 +56,10 @@ class PurchasesService {
           PurchasesErrorCode.purchaseCancelledError;
 
   String get _platformApiKey {
+    // purchases_flutter has no web implementation, and on web
+    // defaultTargetPlatform reports the browser's OS — so without this guard
+    // a web build could wrongly pick a store key and crash on configure.
+    if (kIsWeb) return '';
     if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
       return _appleApiKey;

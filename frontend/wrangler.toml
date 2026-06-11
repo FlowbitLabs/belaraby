@@ -1,0 +1,13 @@
+# Cloudflare Workers config for the Flutter web build (static assets only —
+# no Worker script, so requests are free and unmetered on the free plan).
+# Deployed by .github/workflows/deploy_flutter_web.yml:
+#   flutter build web && npx wrangler deploy
+# Billing (RevenueCat) is disabled on web; premium content stays locked.
+
+name = "app"
+compatibility_date = "2026-06-10"
+
+[assets]
+directory = "./build/web"
+# Serve index.html for unknown paths so client-side routes deep-link cleanly.
+not_found_handling = "single-page-application"

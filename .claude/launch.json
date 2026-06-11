@@ -2,6 +2,12 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "flutter-web-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4174", "--directory", "frontend/build/web"],
+      "port": 4174
+    },
+    {
       "name": "dashboard-preview",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "serve", "--prefix", "dashboard", "--", "--port", "4173", "--strictPort"],
