@@ -38,9 +38,11 @@ class QuizTabView extends StatelessWidget {
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            for (final exercise in state.exercises)
+            for (final (index, exercise) in state.exercises.indexed)
               _ExerciseCard(
                 exercise: exercise,
+                questionNumber: index + 1,
+                totalCount: state.exercises.length,
                 selectedOptionId: state.selectedOptionId(exercise.id),
               ),
             const SizedBox(height: 24),
@@ -52,9 +54,16 @@ class QuizTabView extends StatelessWidget {
 }
 
 class _ExerciseCard extends StatelessWidget {
-  const _ExerciseCard({required this.exercise, required this.selectedOptionId});
+  const _ExerciseCard({
+    required this.exercise,
+    required this.questionNumber,
+    required this.totalCount,
+    required this.selectedOptionId,
+  });
 
   final LessonExercise exercise;
+  final int questionNumber;
+  final int totalCount;
   final String? selectedOptionId;
 
   @override
@@ -69,12 +78,37 @@ class _ExerciseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              exercise.question,
-              style: BTextStyles.of(context).title1.copyWith(
-                color: grey190,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  margin: const EdgeInsetsDirectional.only(end: 10),
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: purple10,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '$questionNumber',
+                    style: const TextStyle(
+                      color: purple140,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    exercise.question,
+                    style: BTextStyles.of(context).title1.copyWith(
+                      color: grey190,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             for (final option in exercise.options)
@@ -180,6 +214,16 @@ class _QuizSummary extends StatelessWidget {
 
   final QuizState state;
 
+  /// Result message tier: celebrate >=80%, encourage >=50%, console below.
+  String get _resultMessageKey {
+    final fraction = state.exercises.isEmpty
+        ? 0.0
+        : state.correctCount / state.exercises.length;
+    if (fraction >= 0.8) return 'quiz_result_excellent';
+    if (fraction >= 0.5) return 'quiz_result_good';
+    return 'quiz_result_poor';
+  }
+
   @override
   Widget build(BuildContext context) {
     final correct = state.correctCount;
@@ -199,9 +243,10 @@ class _QuizSummary extends StatelessWidget {
             child: Column(
               children: [
                 Text(
-                  'quiz_summary_title'.tr(),
+                  _resultMessageKey.tr(),
                   style: BTextStyles.of(context).title1.copyWith(
                     color: grey190,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -276,7 +321,11 @@ class _ScoreRing extends StatelessWidget {
               strokeCap: StrokeCap.round,
               backgroundColor: grey110,
               valueColor: AlwaysStoppedAnimation<Color>(
-                fraction >= 0.5 ? green115 : yellow120,
+                fraction >= 0.8
+                    ? green115
+                    : fraction >= 0.5
+                    ? yellow120
+                    : red110,
               ),
             ),
           ),

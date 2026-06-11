@@ -78,14 +78,15 @@ void main() {
   ) async {
     final cubit = await pumpQuizTab(tester);
     expect(find.text('سؤال ١'), findsOneWidget);
-    expect(find.text('quiz_summary_title'), findsNothing);
+    expect(find.text('quiz_result_good'), findsNothing);
 
     cubit
       ..selectOption('ex1', 'op2') // wrong
       ..selectOption('ex2', 'op3'); // correct
     await tester.pumpAndSettle();
 
-    expect(find.text('quiz_summary_title'), findsOneWidget);
+    // 1/2 correct -> the middle result tier.
+    expect(find.text('quiz_result_good'), findsOneWidget);
     expect(find.text('1/2'), findsOneWidget);
     // The wrong answer's review row spells out the correct answer.
     expect(find.text('quiz_correct_answer'), findsOneWidget);
@@ -102,12 +103,13 @@ void main() {
       ..selectOption('ex1', 'op1')
       ..selectOption('ex2', 'op3');
     await tester.pumpAndSettle();
-    expect(find.text('quiz_summary_title'), findsOneWidget);
+    // 2/2 correct -> the top result tier.
+    expect(find.text('quiz_result_excellent'), findsOneWidget);
 
     await tester.tap(find.text('quiz_retake'));
     await tester.pumpAndSettle();
 
-    expect(find.text('quiz_summary_title'), findsNothing);
+    expect(find.text('quiz_result_excellent'), findsNothing);
     expect(find.text('سؤال ١'), findsOneWidget);
     expect(cubit.state.selectedOptions, isEmpty);
   });

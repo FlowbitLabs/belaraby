@@ -124,14 +124,24 @@ class _LessonViewState extends State<LessonView>
           fit: StackFit.expand,
           children: [
             _LessonHeroImage(imageUrl: widget.lesson.heroImage),
-            // Quiz progress over the hero image while the quiz tab is active.
+            // While the quiz tab is active the hero photo is covered by a
+            // solid backdrop with the quiz progress ring centered on it.
             ListenableBuilder(
               listenable: _tabController,
-              builder: (context, _) => AnimatedOpacity(
-                opacity: _tabController.index == _quizTabIndex ? 1 : 0,
-                duration: const Duration(milliseconds: 200),
-                child: const Center(child: QuizProgressRing()),
-              ),
+              builder: (context, _) {
+                final isQuizTab = _tabController.index == _quizTabIndex;
+                return AnimatedOpacity(
+                  opacity: isQuizTab ? 1 : 0,
+                  duration: const Duration(milliseconds: 200),
+                  child: IgnorePointer(
+                    ignoring: !isQuizTab,
+                    child: const ColoredBox(
+                      color: purple140,
+                      child: Center(child: QuizProgressRing()),
+                    ),
+                  ),
+                );
+              },
             ),
             if (_selectedWord != null)
               Positioned(
@@ -154,7 +164,15 @@ class _LessonViewState extends State<LessonView>
             PositionedDirectional(
               top: 60,
               end: 16,
-              child: _LearnedToggleButton(lessonId: widget.lesson.id),
+              // The learned toggle belongs to the story context — hide it
+              // while the quiz tab owns the hero section.
+              child: ListenableBuilder(
+                listenable: _tabController,
+                builder: (context, _) => Visibility(
+                  visible: _tabController.index != _quizTabIndex,
+                  child: _LearnedToggleButton(lessonId: widget.lesson.id),
+                ),
+              ),
             ),
           ],
         ),

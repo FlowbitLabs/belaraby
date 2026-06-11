@@ -18,15 +18,11 @@ class QuizProgressRing extends StatelessWidget {
         if (state.status != QuizStatus.success || state.exercises.isEmpty) {
           return const SizedBox.shrink();
         }
-        return Container(
-          width: 76,
-          height: 76,
-          padding: const EdgeInsets.all(7),
-          decoration: BoxDecoration(
-            // Dark scrim so the ring reads on any hero photo.
-            color: Colors.black.withValues(alpha: 0.45),
-            shape: BoxShape.circle,
-          ),
+        // Sits on the solid quiz backdrop of the hero section (no scrim
+        // needed — the backdrop already guarantees contrast).
+        return SizedBox(
+          width: 84,
+          height: 84,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -36,7 +32,7 @@ class QuizProgressRing extends StatelessWidget {
                 curve: Curves.easeOutCubic,
                 builder: (context, value, _) => CircularProgressIndicator(
                   value: value,
-                  strokeWidth: 5,
+                  strokeWidth: 6,
                   strokeCap: StrokeCap.round,
                   backgroundColor: Colors.white24,
                   valueColor: const AlwaysStoppedAnimation<Color>(yellow100),
