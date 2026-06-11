@@ -42,8 +42,6 @@
     "lesson_content_error": "Could not load the content. Check your internet connection.",
     "quiz_score": "You answered {} out of {} correctly",
     "quiz_retake": "Retake quiz",
-    "quiz_summary_title": "Quiz results",
-    "quiz_correct_answer": "Correct answer: {}",
     "translation_error": "Translation failed. Please try again.",
     "translating": "Translating...",
     "tooltip_play": "Play",

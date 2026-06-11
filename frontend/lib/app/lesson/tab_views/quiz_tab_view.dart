@@ -30,6 +30,11 @@ class QuizTabView extends StatelessWidget {
             icon: Icons.quiz_outlined,
           );
         }
+        // Once every question is answered the tab becomes a summary page
+        // with the score and a per-question review.
+        if (state.isCompleted) {
+          return _QuizSummary(state: state);
+        }
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -37,11 +42,6 @@ class QuizTabView extends StatelessWidget {
               _ExerciseCard(
                 exercise: exercise,
                 selectedOptionId: state.selectedOptionId(exercise.id),
-              ),
-            if (state.isCompleted)
-              _QuizResult(
-                correctCount: state.correctCount,
-                totalCount: state.exercises.length,
               ),
             const SizedBox(height: 24),
           ],
@@ -172,42 +172,192 @@ class _OptionRow extends StatelessWidget {
   }
 }
 
-class _QuizResult extends StatelessWidget {
-  const _QuizResult({required this.correctCount, required this.totalCount});
+/// Post-quiz summary: overall score ring, a per-question review (with the
+/// correct answer spelled out under wrongly answered questions) and a
+/// retake button that clears the answers.
+class _QuizSummary extends StatelessWidget {
+  const _QuizSummary({required this.state});
+
+  final QuizState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final correct = state.correctCount;
+    final total = state.exercises.length;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Card(
+          margin: EdgeInsets.zero,
+          color: yellow15,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                Text(
+                  'quiz_summary_title'.tr(),
+                  style: BTextStyles.of(context).title1.copyWith(
+                    color: grey190,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _ScoreRing(correctCount: correct, totalCount: total),
+                const SizedBox(height: 16),
+                Text(
+                  'quiz_score'.tr(args: ['$correct', '$total']),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: grey180,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: () => context.read<QuizCubit>().resetAnswers(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: yellow120,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
+                  icon: const Icon(Icons.refresh),
+                  label: Text(
+                    'quiz_retake'.tr(),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        for (final exercise in state.exercises)
+          _ReviewCard(
+            exercise: exercise,
+            selectedOptionId: state.selectedOptionId(exercise.id),
+          ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+}
+
+/// Circular correct/total score, mirroring the hero progress ring style.
+class _ScoreRing extends StatelessWidget {
+  const _ScoreRing({required this.correctCount, required this.totalCount});
 
   final int correctCount;
   final int totalCount;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: yellow15,
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(
-              'quiz_score'.tr(
-                args: ['$correctCount', '$totalCount'],
-              ),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: grey180,
+    final fraction = totalCount == 0 ? 0.0 : correctCount / totalCount;
+    return SizedBox(
+      width: 96,
+      height: 96,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: fraction),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) => CircularProgressIndicator(
+              value: value,
+              strokeWidth: 7,
+              strokeCap: StrokeCap.round,
+              backgroundColor: grey110,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                fraction >= 0.5 ? green115 : yellow120,
               ),
             ),
-            const SizedBox(height: 10),
-            TextButton(
-              onPressed: () => context.read<QuizCubit>().resetAnswers(),
-              child: Text(
-                'quiz_retake'.tr(),
-                style: const TextStyle(
-                  color: yellow140,
-                  fontWeight: FontWeight.w600,
-                ),
+          ),
+          Center(
+            child: Text(
+              '$correctCount/$totalCount',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: grey190,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One reviewed question: result icon, question text and — when answered
+/// wrong — the correct answer.
+class _ReviewCard extends StatelessWidget {
+  const _ReviewCard({required this.exercise, required this.selectedOptionId});
+
+  final LessonExercise exercise;
+  final String? selectedOptionId;
+
+  bool get _isCorrect => exercise.options.any(
+    (option) => option.id == selectedOptionId && option.isCorrect,
+  );
+
+  String get _correctAnswerText => exercise.options
+      .firstWhere(
+        (option) => option.isCorrect,
+        orElse: () => exercise.options.first,
+      )
+      .optionText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      color: Colors.white,
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsetsDirectional.only(end: 10, top: 2),
+              child: Icon(
+                _isCorrect ? Icons.check_circle : Icons.cancel,
+                color: _isCorrect ? green115 : red110,
+                size: 22,
+              ),
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    exercise.question,
+                    style: BTextStyles.of(context).body1.copyWith(
+                      color: grey190,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (!_isCorrect) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'quiz_correct_answer'.tr(args: [_correctAnswerText]),
+                      style: BTextStyles.of(context).body1.copyWith(
+                        color: green140,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],
