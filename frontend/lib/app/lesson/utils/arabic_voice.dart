@@ -66,19 +66,27 @@ Future<Map<String, String>?> _findBestArabicVoice(FlutterTts tts) async {
     if (entry is! Map) continue;
     final name = entry['name']?.toString() ?? '';
     final locale = entry['locale']?.toString() ?? '';
-    final haystack = '$name $locale'.toLowerCase();
-    if (!haystack.contains('ar-') &&
-        !haystack.startsWith('ar') &&
-        !haystack.contains('arabic')) {
-      continue;
-    }
-    final score = _qualityScore(haystack);
+    if (!_isArabic(name: name, locale: locale)) continue;
+    final score = _qualityScore('$name $locale'.toLowerCase());
     if (score > bestScore) {
       bestScore = score;
       best = {'name': name, 'locale': locale};
     }
   }
   return best;
+}
+
+/// Whether a voice is Arabic, judged by its locale tag (`ar`, `ar-SA`,
+/// `ar_001`, …) or an explicit "Arabic" in its name.
+///
+/// Deliberately strict: an earlier fuzzy match on the NAME selected the
+/// English voice "Arthur" (starts with "ar"), which read the Arabic story
+/// as "dot dot dot".
+bool _isArabic({required String name, required String locale}) {
+  final tag = locale.toLowerCase().replaceAll('_', '-');
+  if (tag == 'ar' || tag.startsWith('ar-')) return true;
+  final lowerName = name.toLowerCase();
+  return lowerName.contains('arabic') || name.contains('العربية');
 }
 
 /// Heuristic quality ranking from hints vendors put in voice names.

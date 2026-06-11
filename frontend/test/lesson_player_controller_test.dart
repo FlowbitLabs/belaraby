@@ -35,6 +35,9 @@ void main() {
     when(() => tts.setErrorHandler(any())).thenReturn(null);
     when(() => tts.getVoices).thenAnswer(
       (_) async => [
+        // "Arthur" must NOT match as Arabic (regression: name starts
+        // with "ar", which once beat the real Arabic voices).
+        {'name': 'Arthur', 'locale': 'en-GB'},
         {'name': 'Basic Arabic', 'locale': 'ar-EG'},
         {'name': 'Google العربية', 'locale': 'ar-SA'},
         {'name': 'English Voice', 'locale': 'en-US'},
