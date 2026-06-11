@@ -24,6 +24,9 @@ class MockSubscriptionRepository extends Mock
 
 class MockProfileRepository extends Mock implements ProfileRepository {}
 
+class MockPracticeRepository extends Mock
+    implements PracticeRepository {}
+
 class MockPurchasesService extends Mock implements PurchasesService {}
 
 class MockCustomerInfo extends Mock implements CustomerInfo {}

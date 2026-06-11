@@ -1,5 +1,6 @@
 import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
+import 'package:belaraby/app/practice/cubit/practice_cubit.dart';
 import 'package:belaraby/app/router.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:belaraby/app/widgets/web_frame.dart';
@@ -54,6 +55,7 @@ class BelArabyApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => FavoriteCubit()..loadFavorites()),
         BlocProvider(create: (_) => LearnedCubit()..loadLearned()),
+        BlocProvider(create: (_) => PracticeCubit()..loadPractice()),
       ],
       child: MaterialApp(
         title: 'BelAraby',

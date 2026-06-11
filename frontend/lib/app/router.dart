@@ -4,6 +4,7 @@ import 'package:belaraby/app/lesson/view/lesson_page.dart';
 import 'package:belaraby/app/lesson/view/lesson_unlock_page.dart';
 import 'package:belaraby/app/my_library/view/my_library_page.dart';
 import 'package:belaraby/app/paywall/view/paywall_page.dart';
+import 'package:belaraby/app/practice/view/practice_page.dart';
 import 'package:belaraby/app/settings/view/settings_page.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:belaraby/constant/colors.dart';
@@ -32,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
 
   static const List<Widget> _pages = [
     HomePage(),
+    PracticePage(),
     MyLibraryPage(),
   ];
 
@@ -76,6 +78,10 @@ class _MainScreenState extends State<MainScreen> {
             BottomNavigationBarItem(
               icon: const Icon(Icons.library_books),
               label: 'navbar_stories'.tr(),
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.style),
+              label: 'navbar_practice'.tr(),
             ),
             BottomNavigationBarItem(
               icon: const Icon(Icons.menu_book),
