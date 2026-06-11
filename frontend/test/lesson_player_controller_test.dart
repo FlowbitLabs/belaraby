@@ -148,6 +148,26 @@ void main() {
     expect(repeats, 1);
   });
 
+  test('pause survives the web cancel echo and resumes from the word',
+      () async {
+    // On web, cancelling an utterance fires the COMPLETION handler
+    // synchronously inside stop() — that echo must not reset the pause.
+    when(() => tts.stop()).thenAnswer((_) async {
+      completionHandler!();
+      return 1;
+    });
+
+    await controller.speak(story);
+    progressHandler!(story, 5, 9, 'أولى');
+
+    await controller.speak(story); // pause
+    expect(controller.isPaused, isTrue);
+    expect(controller.highlightedIndex, 1);
+
+    await controller.speak(story); // resume — from "أولى", not the start
+    verify(() => tts.speak(story.substring(5))).called(1);
+  });
+
   test('controls stay responsive while the utterance future is in flight',
       () async {
     // With awaitSpeakCompletion(true) the speak() future resolves only

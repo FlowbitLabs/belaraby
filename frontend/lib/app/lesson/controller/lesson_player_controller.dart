@@ -184,31 +184,39 @@ class LessonPlayerController extends ChangeNotifier {
     if (_isPlaying) {
       final fromWord = _highlightedIndex >= 0 ? _highlightedIndex : 0;
       _utteranceGeneration++;
+      _isPlaying = false; // see [stop] — guards the web cancel callback
       await _tts.stop();
       await _startFrom(fromWord);
     }
   }
 
   /// Stops playback completely and clears highlight + resume state.
+  ///
+  /// State is cleared BEFORE the engine stop: on web, cancelling an
+  /// utterance fires the completion handler synchronously inside
+  /// `_tts.stop()`, and the handler must already see `isPlaying == false`
+  /// so it doesn't treat the cancellation as a natural completion.
   Future<void> stop() async {
     _utteranceGeneration++;
-    await _tts.stop();
     _isPlaying = false;
     _isPaused = false;
     _highlightedIndex = -1;
     _resumeWordIndex = 0;
     _charOffset = 0;
     notifyListeners();
+    await _tts.stop();
   }
 
   Future<void> _pause() async {
     // Resume from the word being spoken (or the start when unknown).
     _resumeWordIndex = _highlightedIndex >= 0 ? _highlightedIndex : 0;
     _utteranceGeneration++;
-    await _tts.stop();
+    // Same ordering as [stop]: flip the state before the engine stop so
+    // the synchronous web completion callback can't wipe the pause state.
     _isPlaying = false;
     _isPaused = true;
     notifyListeners();
+    await _tts.stop();
   }
 
   Future<void> _startFrom(int wordIndex) async {
@@ -235,8 +243,11 @@ class LessonPlayerController extends ChangeNotifier {
 
   /// Natural end of the utterance: reset and fire the repeat hook.
   Future<void> _onNaturalCompletion(int generation) async {
-    // A completion fired by a cancelled utterance (stop/pause/speed change
-    // bumps the generation first) must not reset state or trigger repeat.
+    // Completions fired by cancelled utterances must not reset state or
+    // trigger repeat. Stop/pause/speed-change all flip _isPlaying to false
+    // BEFORE cancelling the engine, so anything arriving while not playing
+    // is a cancellation echo, not a natural end.
+    if (!_isPlaying) return;
     if (generation != _utteranceGeneration) return;
 
     _isPlaying = false;
@@ -256,6 +267,7 @@ class LessonPlayerController extends ChangeNotifier {
   }
 
   void _onErrorOrCancel(int generation) {
+    if (!_isPlaying) return;
     if (generation != _utteranceGeneration) return;
     _isPlaying = false;
     _isPaused = false;
