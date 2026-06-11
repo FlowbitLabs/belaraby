@@ -8,6 +8,7 @@ import 'helpers.dart';
 
 void main() {
   late MockPracticeRepository repository;
+  late MockLocalPracticeStore localStore;
 
   const hardWord = PracticeWord(
     id: 'p1',
@@ -33,9 +34,12 @@ void main() {
 
   setUp(() {
     repository = MockPracticeRepository();
+    localStore = MockLocalPracticeStore();
+    when(localStore.fetchWords).thenAnswer((_) async => const []);
   });
 
-  PracticeCubit buildCubit() => PracticeCubit(repository: repository);
+  PracticeCubit buildCubit() =>
+      PracticeCubit(repository: repository, localStore: localStore);
 
   test('PracticeWord.fromJson maps the joined keyword', () {
     final word = PracticeWord.fromJson(const {
@@ -96,6 +100,33 @@ void main() {
         errorMessage: 'practice_update_error',
       ),
       const PracticeState(status: PracticeStatus.success, words: [hardWord]),
+    ],
+  );
+
+  blocTest<PracticeCubit, PracticeState>(
+    'toggleCustomWord stores a device-local word and removes it again',
+    setUp: () {
+      when(() => localStore.addWord('قمر', 'moon')).thenAnswer((_) async {});
+      when(() => localStore.removeWord('قمر')).thenAnswer((_) async {});
+    },
+    build: buildCubit,
+    act: (cubit) async {
+      await cubit.toggleCustomWord('قمر', 'moon');
+      await cubit.toggleCustomWord('قمر', 'moon');
+    },
+    expect: () => [
+      isA<PracticeState>()
+          .having((state) => state.customWords, 'customWords', {'قمر'})
+          .having(
+            (state) => state.words.single.isCustom,
+            'isCustom',
+            isTrue,
+          ),
+      isA<PracticeState>().having(
+        (state) => state.words,
+        'words',
+        isEmpty,
+      ),
     ],
   );
 

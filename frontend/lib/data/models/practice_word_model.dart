@@ -49,6 +49,10 @@ class PracticeWord {
   final String meaning;
   final PracticeDifficulty difficulty;
 
+  /// Whether this entry is a device-local custom word (added from a story)
+  /// rather than a server-side curated keyword.
+  bool get isCustom => id.startsWith('local:');
+
   PracticeWord copyWith({PracticeDifficulty? difficulty}) => PracticeWord(
     id: id,
     keywordId: keywordId,

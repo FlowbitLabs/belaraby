@@ -22,6 +22,7 @@ dependencies:
   supabase_flutter: ^2.10.0
   purchases_flutter: ^10.2.2
   url_launcher: ^6.3.1
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   bloc_test: ^10.0.0

@@ -333,7 +333,7 @@ class _PracticeWordCard extends StatelessWidget {
               ),
               tooltip: 'practice_remove_tooltip'.tr(),
               onPressed: () =>
-                  context.read<PracticeCubit>().toggleWord(word.keywordId),
+                  context.read<PracticeCubit>().removeEntry(word),
             ),
           ],
         ),

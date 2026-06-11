@@ -323,6 +323,36 @@ class _WordTranslationCard extends StatelessWidget {
               constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
               onPressed: () => WordSpeaker().speak(word),
             ),
+            // Add the tapped story word to the practice deck (stored on
+            // this device; the translation becomes the card meaning).
+            Builder(
+              builder: (context) {
+                final isInPractice = context.select(
+                  (PracticeCubit cubit) =>
+                      cubit.state.customWords.contains(word),
+                );
+                return IconButton(
+                  icon: Icon(
+                    isInPractice
+                        ? Icons.bookmark_added
+                        : Icons.bookmark_add_outlined,
+                    size: 20,
+                    color: isInPractice ? green115 : grey160,
+                  ),
+                  tooltip: isInPractice
+                      ? 'practice_remove_tooltip'.tr()
+                      : 'practice_add_tooltip'.tr(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                  onPressed: () => context
+                      .read<PracticeCubit>()
+                      .toggleCustomWord(word, translatedText ?? ''),
+                );
+              },
+            ),
           ],
         ),
       ),
