@@ -2,10 +2,27 @@ import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/router.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
+import 'package:belaraby/app/widgets/web_frame.dart';
 import 'package:belaraby/data/services/purchases_service.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+/// Allows drag-scrolling with any pointer, not just touch — without this
+/// the carousels and lists don't respond to mouse drags on web/desktop.
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  const _AppScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => const {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.trackpad,
+  };
+}
 
 /// The root widget of the application.
 ///
@@ -42,6 +59,12 @@ class BelArabyApp extends StatelessWidget {
         locale: context.locale,
 
         theme: ThemeData(useMaterial3: true),
+        scrollBehavior: const _AppScrollBehavior(),
+        // On wide web viewports the app is centered in a phone-width frame
+        // instead of stretching the mobile layout across the window.
+        builder: kIsWeb
+            ? (context, child) => WebFrame(child: child!)
+            : null,
         home: const MainScreen(),
       ),
     );
