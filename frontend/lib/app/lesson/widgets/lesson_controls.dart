@@ -60,7 +60,7 @@ class LessonControls extends StatelessWidget {
                     IconButton.filled(
                       onPressed: onStop,
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
+                        backgroundColor: navy140,
                         foregroundColor: Colors.white,
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(10),
@@ -72,9 +72,7 @@ class LessonControls extends StatelessWidget {
                     IconButton.filled(
                       onPressed: onPlay,
                       style: IconButton.styleFrom(
-                        backgroundColor: isPlaying
-                            ? yellow140
-                            : Colors.green,
+                        backgroundColor: isPlaying ? yellow140 : yellow120,
                         foregroundColor: Colors.white,
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(10),

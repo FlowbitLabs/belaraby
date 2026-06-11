@@ -1,6 +1,7 @@
 import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/practice/cubit/practice_cubit.dart';
+import 'package:belaraby/app/util/convert_arabic_digits.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/models/practice_word_model.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -124,7 +125,7 @@ class LearningProgressCard extends StatelessWidget {
                   builder: (context, value, _) => LinearProgressIndicator(
                     value: value,
                     minHeight: 10,
-                    backgroundColor: grey100,
+                    backgroundColor: grey110,
                     valueColor: const AlwaysStoppedAnimation<Color>(yellow100),
                   ),
                 ),
@@ -134,7 +135,10 @@ class LearningProgressCard extends StatelessWidget {
                 next == null
                     ? 'profile_all_milestones'.tr()
                     : 'profile_next_milestone'.tr(
-                        args: ['$learnedCount', '$next'],
+                        args: [
+                          convertToArabicDigits(number: learnedCount),
+                          convertToArabicDigits(number: next),
+                        ],
                       ),
                 style: const TextStyle(fontSize: 13, color: grey160),
               ),
@@ -162,21 +166,21 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
         color: appBackground,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(width: 8),
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 6),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$value',
+                  convertToArabicDigits(number: value),
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -186,7 +190,13 @@ class _StatChip extends StatelessWidget {
                 ),
                 Text(
                   labelKey.tr(),
-                  style: const TextStyle(fontSize: 12, color: grey160),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: grey160,
+                    height: 1.3,
+                  ),
                 ),
               ],
             ),
