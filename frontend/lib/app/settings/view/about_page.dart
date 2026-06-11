@@ -2,7 +2,7 @@ import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/settings/cubit/settings_cubit.dart';
 import 'package:belaraby/app/settings/view/legal_page.dart';
-import 'package:belaraby/app/settings/widgets/delete_account_dialog.dart';
+import 'package:belaraby/app/settings/widgets/delete_account_tile.dart';
 import 'package:belaraby/app/settings/widgets/settings_section.dart';
 import 'package:belaraby/app/settings/widgets/settings_tile.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
@@ -114,44 +114,12 @@ class _AboutView extends StatelessWidget {
             ),
             SettingsSection(
               title: 'settings_section_account'.tr(),
-              children: const [_DeleteAccountTile()],
+              children: const [DeleteAccountTile()],
             ),
             const SizedBox(height: 24),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _DeleteAccountTile extends StatelessWidget {
-  const _DeleteAccountTile();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDeleting = context.select(
-      (SettingsCubit cubit) => cubit.state.status == SettingsStatus.loading,
-    );
-    return SettingsTile(
-      icon: Icons.delete_forever_outlined,
-      iconColor: red110,
-      labelColor: red110,
-      label: 'settings_delete_account'.tr(),
-      trailing: isDeleting
-          ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: red110),
-            )
-          : null,
-      onTap: isDeleting
-          ? null
-          : () async {
-              final confirmed = await showDeleteAccountDialog(context);
-              if (confirmed && context.mounted) {
-                await context.read<SettingsCubit>().deleteAccount();
-              }
-            },
     );
   }
 }

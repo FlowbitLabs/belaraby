@@ -1,21 +1,16 @@
-import 'dart:async';
-
-import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
-import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
-import 'package:belaraby/app/router.dart';
 import 'package:belaraby/app/settings/cubit/auth_cubit.dart';
 import 'package:belaraby/app/settings/cubit/settings_cubit.dart';
 import 'package:belaraby/app/settings/view/about_page.dart';
-import 'package:belaraby/app/settings/view/auth_page.dart';
+import 'package:belaraby/app/settings/widgets/account_header.dart';
+import 'package:belaraby/app/settings/widgets/account_tiles.dart';
 import 'package:belaraby/app/settings/widgets/learning_progress_card.dart';
+import 'package:belaraby/app/settings/widgets/manage_subscription_tile.dart';
+import 'package:belaraby/app/settings/widgets/restore_purchases_tile.dart';
 import 'package:belaraby/app/settings/widgets/settings_section.dart';
 import 'package:belaraby/app/settings/widgets/settings_tile.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
-import 'package:belaraby/app/util/launch_external_url.dart';
 import 'package:belaraby/constant/colors.dart';
-import 'package:belaraby/constant/store_links.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
