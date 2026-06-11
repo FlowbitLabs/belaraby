@@ -143,19 +143,6 @@ class _LessonViewState extends State<LessonView>
                 );
               },
             ),
-            if (_selectedWord != null)
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 12,
-                child: _WordTranslationCard(
-                  word: _selectedWord!,
-                  translatedText: _translatedText,
-                  isTranslating: _isTranslating,
-                  errorMessage: _translationError,
-                  onDismissed: _clearSelectedWord,
-                ),
-              ),
             PositionedDirectional(
               top: 67,
               start: 16,
@@ -166,14 +153,12 @@ class _LessonViewState extends State<LessonView>
               end: 16,
               // The learned toggle shows everywhere except the quiz tab,
               // whose hero is the progress backdrop.
-              // Hidden on the quiz tab (progress backdrop) and while a
-              // tapped word's translation card occupies the hero.
+              // The learned toggle shows everywhere except the quiz tab,
+              // whose hero is the progress backdrop.
               child: ListenableBuilder(
                 listenable: _tabController,
                 builder: (context, _) => Visibility(
-                  visible:
-                      _tabController.index != _quizTabIndex &&
-                      _selectedWord == null,
+                  visible: _tabController.index != _quizTabIndex,
                   child: _LearnedToggleButton(lessonId: widget.lesson.id),
                 ),
               ),
@@ -181,33 +166,61 @@ class _LessonViewState extends State<LessonView>
           ],
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          _LessonTabBar(controller: _tabController),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                ListenableBuilder(
-                  listenable: _controller,
-                  builder: (context, _) {
-                    return LessonTabView(
-                      lesson: widget.lesson,
-                      textSpan: _buildHighlightedText(),
-                      isPlaying: _controller.isPlaying,
-                      speak: () => _controller.speak(widget.lesson.body),
-                      stop: _controller.stop,
-                      isRepeatEnabled: _isRepeatEnabled,
-                      onRepeatToggle: _toggleRepeat,
-                      onWordSelected: _onWordSelected,
-                      selectedWord: _selectedWord,
-                    );
-                  },
+          Column(
+            children: [
+              _LessonTabBar(controller: _tabController),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    ListenableBuilder(
+                      listenable: _controller,
+                      builder: (context, _) {
+                        return LessonTabView(
+                          lesson: widget.lesson,
+                          textSpan: _buildHighlightedText(),
+                          isPlaying: _controller.isPlaying,
+                          speak: () => _controller.speak(widget.lesson.body),
+                          stop: _controller.stop,
+                          isRepeatEnabled: _isRepeatEnabled,
+                          onRepeatToggle: _toggleRepeat,
+                          onWordSelected: _onWordSelected,
+                          selectedWord: _selectedWord,
+                        );
+                      },
+                    ),
+                    const QuizTabView(),
+                    const KeywordsTabView(),
+                    const GrammarTabView(),
+                  ],
                 ),
-                const QuizTabView(),
-                const KeywordsTabView(),
-                const GrammarTabView(),
-              ],
+              ),
+            ],
+          ),
+          // Floating translation card for the tapped story word: slides up
+          // from the bottom over the content, leaving the hero (back /
+          // learned buttons) untouched.
+          PositionedDirectional(
+            start: 16,
+            end: 16,
+            bottom: 16,
+            child: AnimatedSlide(
+              offset: _selectedWord != null
+                  ? Offset.zero
+                  : const Offset(0, 1.5),
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutCubic,
+              child: _selectedWord == null
+                  ? const SizedBox.shrink()
+                  : _WordTranslationCard(
+                      word: _selectedWord!,
+                      translatedText: _translatedText,
+                      isTranslating: _isTranslating,
+                      errorMessage: _translationError,
+                      onDismissed: _clearSelectedWord,
+                    ),
             ),
           ),
         ],
@@ -286,13 +299,14 @@ class _WordTranslationCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.97),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: grey110),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black12,
-              blurRadius: 8,
-              offset: Offset(0, 2),
+              color: Colors.black26,
+              blurRadius: 16,
+              offset: Offset(0, 4),
             ),
           ],
         ),
