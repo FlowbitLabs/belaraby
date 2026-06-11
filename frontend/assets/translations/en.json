@@ -127,7 +127,8 @@
   "about_legal": "Legal",
   "profile_demo_enable": "Enable demo premium",
   "profile_demo_disable": "Disable demo premium",
-  "profile_demo_enabled": "Demo premium enabled — UI now behaves as a paid account.",
-  "profile_demo_disabled": "Demo premium disabled.",
-  "profile_demo_description": "Web demo only: simulates a paid account to preview the premium interface without a real purchase. Nothing is saved to the server, and paid story texts remain locked."
+  "profile_demo_enabled": "Demo subscription activated — all stories are now unlocked.",
+  "profile_demo_disabled": "Demo subscription cancelled — back to the free tier.",
+  "profile_demo_description": "Web demo for authorized test accounts: activates a real 30-day subscription on your account so all paid stories unlock — no payment involved. Press again anytime to cancel it.",
+  "profile_demo_error": "Could not change the demo subscription. This account may not be authorized."
 }

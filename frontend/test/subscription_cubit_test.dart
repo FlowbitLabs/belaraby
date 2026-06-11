@@ -12,6 +12,7 @@ import 'helpers.dart';
 void main() {
   late MockPurchasesService purchases;
   late MockAuthRepository auth;
+  late MockSubscriptionRepository subscriptions;
   late StreamController<CustomerInfo> customerInfoController;
 
   // The numeric PlatformException codes RevenueCat reports; mapped by
@@ -26,6 +27,8 @@ void main() {
   setUp(() {
     purchases = MockPurchasesService();
     auth = MockAuthRepository();
+    subscriptions = MockSubscriptionRepository();
+    when(subscriptions.hasActiveSubscription).thenAnswer((_) async => false);
     customerInfoController = StreamController<CustomerInfo>();
     when(
       () => purchases.customerInfoStream,
@@ -39,26 +42,48 @@ void main() {
     await customerInfoController.close();
   });
 
-  SubscriptionCubit buildCubit() =>
-      SubscriptionCubit(purchasesService: purchases, authRepository: auth);
+  SubscriptionCubit buildCubit() => SubscriptionCubit(
+    purchasesService: purchases,
+    authRepository: auth,
+    subscriptionRepository: subscriptions,
+  );
 
   group('demo premium', () {
+    SubscriptionCubit buildDemoCubit({bool allowed = true}) =>
+        SubscriptionCubit(
+          purchasesService: purchases,
+          authRepository: auth,
+          subscriptionRepository: subscriptions,
+          demoPremiumAllowed: allowed,
+        );
+
     blocTest<SubscriptionCubit, SubscriptionState>(
-      'toggles a simulated paid account when allowed (web)',
-      build: () => SubscriptionCubit(
-        purchasesService: purchases,
-        authRepository: auth,
-        demoPremiumAllowed: true,
-      ),
-      act: (cubit) => cubit
-        ..toggleDemoPremium()
-        ..toggleDemoPremium(),
+      'subscribes and unsubscribes through the edge function',
+      setUp: () {
+        when(
+          () => subscriptions.setDemoSubscription(subscribe: true),
+        ).thenAnswer((_) async => true);
+        when(
+          () => subscriptions.setDemoSubscription(subscribe: false),
+        ).thenAnswer((_) async => false);
+      },
+      build: buildDemoCubit,
+      act: (cubit) async {
+        await cubit.toggleDemoPremium();
+        await cubit.toggleDemoPremium();
+      },
       expect: () => [
+        const SubscriptionState(status: SubscriptionStatus.loading),
         const SubscriptionState(
           status: SubscriptionStatus.success,
           isPremium: true,
           isDemoPremium: true,
           infoMessage: 'profile_demo_enabled',
+        ),
+        const SubscriptionState(
+          status: SubscriptionStatus.loading,
+          isPremium: true,
+          isDemoPremium: true,
         ),
         const SubscriptionState(
           status: SubscriptionStatus.success,
@@ -68,12 +93,26 @@ void main() {
     );
 
     blocTest<SubscriptionCubit, SubscriptionState>(
+      'emits error when the account is not allowlisted',
+      setUp: () {
+        when(
+          () => subscriptions.setDemoSubscription(subscribe: true),
+        ).thenThrow(Exception('403'));
+      },
+      build: buildDemoCubit,
+      act: (cubit) => cubit.toggleDemoPremium(),
+      expect: () => [
+        const SubscriptionState(status: SubscriptionStatus.loading),
+        const SubscriptionState(
+          status: SubscriptionStatus.error,
+          errorMessage: 'profile_demo_error',
+        ),
+      ],
+    );
+
+    blocTest<SubscriptionCubit, SubscriptionState>(
       'is a no-op outside web',
-      build: () => SubscriptionCubit(
-        purchasesService: purchases,
-        authRepository: auth,
-        demoPremiumAllowed: false,
-      ),
+      build: () => buildDemoCubit(allowed: false),
       act: (cubit) => cubit.toggleDemoPremium(),
       expect: () => <SubscriptionState>[],
     );
@@ -107,6 +146,7 @@ void main() {
       'without calling the store',
       setUp: () {
         when(() => purchases.isBillingAvailable).thenReturn(false);
+        when(subscriptions.hasActiveSubscription).thenAnswer((_) async => true);
       },
       build: buildCubit,
       act: (cubit) => cubit.load(),
@@ -114,6 +154,8 @@ void main() {
         const SubscriptionState(
           status: SubscriptionStatus.success,
           isBillingAvailable: false,
+          // The server-side subscription row is the source of truth here.
+          isPremium: true,
         ),
       ],
       verify: (_) {

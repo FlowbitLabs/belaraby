@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:belaraby/data/repositories/auth_repository.dart';
+import 'package:belaraby/data/repositories/subscription_repository.dart';
 import 'package:belaraby/data/services/purchases_service.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
@@ -17,9 +18,12 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit({
     required PurchasesService purchasesService,
     AuthRepository? authRepository,
+    SubscriptionRepository? subscriptionRepository,
     bool demoPremiumAllowed = kIsWeb,
   }) : _purchasesService = purchasesService,
        _authRepository = authRepository ?? AuthRepository(),
+       _subscriptionRepository =
+           subscriptionRepository ?? SubscriptionRepository(),
        _demoPremiumAllowed = demoPremiumAllowed,
        super(const SubscriptionState()) {
     _customerInfoSubscription = _purchasesService.customerInfoStream.listen(
@@ -29,6 +33,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   final PurchasesService _purchasesService;
   final AuthRepository _authRepository;
+  final SubscriptionRepository _subscriptionRepository;
 
   /// Whether the demo-premium toggle is available (web builds only;
   /// overridable in tests).
@@ -57,24 +62,44 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     return true;
   }
 
-  /// WEB DEMO ONLY: locally simulates a premium account so the premium UI
-  /// states (tier badge, unlocked paywall gate) can be demonstrated without
-  /// a store purchase. Purely client-side — nothing is written server-side,
-  /// so paid story bodies stay masked by the backend. No-op outside web.
-  void toggleDemoPremium() {
+  /// WEB DEMO ONLY: toggles a REAL server-side subscription through the
+  /// `demo-subscription` edge function, so paid stories actually unlock —
+  /// and can be cancelled again with the same toggle. The endpoint only
+  /// accepts allowlisted demo accounts (DEMO_PREMIUM_EMAILS); everyone
+  /// else gets a not-authorized error. No-op outside web.
+  Future<void> toggleDemoPremium() async {
     if (!_demoPremiumAllowed) return;
-    final enabled = !state.isDemoPremium;
+    final subscribe = !state.isDemoPremium;
     emit(
       state.copyWith(
-        status: SubscriptionStatus.success,
-        isDemoPremium: enabled,
-        isPremium: enabled,
+        status: SubscriptionStatus.loading,
         errorMessage: '',
-        infoMessage: enabled
-            ? 'profile_demo_enabled'
-            : 'profile_demo_disabled',
+        infoMessage: '',
       ),
     );
+    try {
+      final subscribed = await _subscriptionRepository.setDemoSubscription(
+        subscribe: subscribe,
+      );
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.success,
+          isDemoPremium: subscribed,
+          isPremium: subscribed,
+          infoMessage: subscribed
+              ? 'profile_demo_enabled'
+              : 'profile_demo_disabled',
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('SubscriptionCubit.toggleDemoPremium failed: $error');
+      emit(
+        state.copyWith(
+          status: SubscriptionStatus.error,
+          errorMessage: 'profile_demo_error',
+        ),
+      );
+    }
   }
 
   void _onCustomerInfoUpdated(CustomerInfo customerInfo) {
@@ -88,10 +113,22 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// Loads the premium status and the available store packages.
   Future<void> load() async {
     if (!_purchasesService.isBillingAvailable) {
+      // No store billing (web): the server-side subscription row is the
+      // only source of truth — the same gate that unmasks paid stories.
+      var isPremium = state.isPremium;
+      try {
+        isPremium = await _subscriptionRepository.hasActiveSubscription();
+      } on Exception catch (error) {
+        debugPrint('SubscriptionCubit.load (server check) failed: $error');
+      }
       emit(
         state.copyWith(
           status: SubscriptionStatus.success,
           isBillingAvailable: false,
+          isPremium: isPremium,
+          // On web only demo subscriptions exist, so server premium means
+          // the demo toggle is on.
+          isDemoPremium: _demoPremiumAllowed && isPremium,
         ),
       );
       return;

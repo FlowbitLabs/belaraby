@@ -19,6 +19,9 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockAppInfoService extends Mock implements AppInfoService {}
 
+class MockSubscriptionRepository extends Mock
+    implements SubscriptionRepository {}
+
 class MockPurchasesService extends Mock implements PurchasesService {}
 
 class MockCustomerInfo extends Mock implements CustomerInfo {}
