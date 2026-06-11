@@ -48,6 +48,7 @@
     "quiz_result_excellent": "عمل ممتاز!",
     "quiz_result_good": "أحسنت!",
     "quiz_result_poor": "واصل التدريب!",
+    "quiz_your_answer": "إجابتك: {}",
     "quiz_correct_answer": "الإجابة الصحيحة: {}",
     "translation_error": "فشلت الترجمة. يرجى المحاولة مرة أخرى.",
     "translating": "جاري الترجمة...",

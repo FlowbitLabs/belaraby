@@ -346,7 +346,7 @@ class _ScoreRing extends StatelessWidget {
 }
 
 /// One reviewed question: result icon, question text and — when answered
-/// wrong — the correct answer.
+/// wrong — the user's answer next to the correct one.
 class _ReviewCard extends StatelessWidget {
   const _ReviewCard({required this.exercise, required this.selectedOptionId});
 
@@ -360,6 +360,13 @@ class _ReviewCard extends StatelessWidget {
   String get _correctAnswerText => exercise.options
       .firstWhere(
         (option) => option.isCorrect,
+        orElse: () => exercise.options.first,
+      )
+      .optionText;
+
+  String get _selectedAnswerText => exercise.options
+      .firstWhere(
+        (option) => option.id == selectedOptionId,
         orElse: () => exercise.options.first,
       )
       .optionText;
@@ -398,6 +405,14 @@ class _ReviewCard extends StatelessWidget {
                   ),
                   if (!_isCorrect) ...[
                     const SizedBox(height: 6),
+                    Text(
+                      'quiz_your_answer'.tr(args: [_selectedAnswerText]),
+                      style: BTextStyles.of(context).body1.copyWith(
+                        color: red110,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
                     Text(
                       'quiz_correct_answer'.tr(args: [_correctAnswerText]),
                       style: BTextStyles.of(context).body1.copyWith(

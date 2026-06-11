@@ -88,7 +88,8 @@ void main() {
     // 1/2 correct -> the middle result tier.
     expect(find.text('quiz_result_good'), findsOneWidget);
     expect(find.text('1/2'), findsOneWidget);
-    // The wrong answer's review row spells out the correct answer.
+    // The wrong answer's review row shows the chosen and correct answers.
+    expect(find.text('quiz_your_answer'), findsOneWidget);
     expect(find.text('quiz_correct_answer'), findsOneWidget);
     // Both questions appear in the review list.
     expect(find.text('سؤال ١'), findsOneWidget);

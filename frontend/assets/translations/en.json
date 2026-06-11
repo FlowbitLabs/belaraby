@@ -45,6 +45,7 @@
     "quiz_result_excellent": "Excellent work!",
     "quiz_result_good": "Well done!",
     "quiz_result_poor": "Keep practicing!",
+    "quiz_your_answer": "Your answer: {}",
     "quiz_correct_answer": "Correct answer: {}",
     "translation_error": "Translation failed. Please try again.",
     "translating": "Translating...",
