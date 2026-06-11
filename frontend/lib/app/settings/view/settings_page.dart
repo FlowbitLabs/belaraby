@@ -2,7 +2,6 @@ import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/settings/cubit/settings_cubit.dart';
 import 'package:belaraby/app/settings/widgets/delete_account_dialog.dart';
-import 'package:belaraby/app/settings/widgets/language_selector.dart';
 import 'package:belaraby/app/settings/widgets/settings_section.dart';
 import 'package:belaraby/app/settings/widgets/settings_tile.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';

@@ -69,8 +69,8 @@ extension BelarabyTextStyles on TextTheme {
   TextStyle get title1 => _baseAmiri.copyWith(
     fontSize: 18,
     fontWeight: FontWeight.w500,
-    height: 1.3,
-    letterSpacing: 0.15,
+    height: 1.4,
+    letterSpacing: 0,
   );
   TextStyle get title2Bold => _baseCairo.copyWith(
     fontSize: 14,
@@ -112,48 +112,48 @@ extension BelarabyTextStyles on TextTheme {
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 1.5,
-    letterSpacing: 0.15,
+    letterSpacing: 0,
   );
   TextStyle get body1Medium => _baseAmiri.copyWith(
     fontSize: 16,
     fontWeight: FontWeight.w500,
     height: 1.5,
-    letterSpacing: 0.15,
+    letterSpacing: 0,
   );
   TextStyle get body1Regular => _baseAmiri.copyWith(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
-    letterSpacing: 0.15,
+    letterSpacing: 0,
   );
   TextStyle get body2Medium => _baseAmiri.copyWith(
     fontSize: 14,
     fontWeight: FontWeight.w500,
-    height: 1.3,
+    height: 1.45,
     letterSpacing: 0,
   );
   TextStyle get body2Regular => _baseAmiri.copyWith(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.3,
+    height: 1.45,
     letterSpacing: 0,
   );
   TextStyle get body3Semibold => _baseAmiri.copyWith(
     fontSize: 13,
     fontWeight: FontWeight.w600,
-    height: 1.3,
+    height: 1.45,
     letterSpacing: 0,
   );
   TextStyle get body3Medium => _baseAmiri.copyWith(
     fontSize: 13,
     fontWeight: FontWeight.w500,
-    height: 1.3,
+    height: 1.45,
     letterSpacing: 0,
   );
   TextStyle get body3Regular => _baseAmiri.copyWith(
     fontSize: 13,
     fontWeight: FontWeight.w400,
-    height: 1.3,
+    height: 1.45,
     letterSpacing: 0,
   );
   TextStyle get buttonLarge => _baseCairo.copyWith(
@@ -178,7 +178,7 @@ extension BelarabyTextStyles on TextTheme {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.3,
-    letterSpacing: 0.15,
+    letterSpacing: 0,
   );
   TextStyle get inputValueSmall => _baseAmiri.copyWith(
     fontSize: 14,
@@ -199,7 +199,7 @@ extension BelarabyTextStyles on TextTheme {
     letterSpacing: 0,
   );
   TextStyle get label => _baseCairo.copyWith(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w400,
     height: 21 / 10,
     letterSpacing: 0.5,
@@ -211,7 +211,7 @@ extension BelarabyTextStyles on TextTheme {
     letterSpacing: 0,
   );
   TextStyle get caption => _baseAmiri.copyWith(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w500,
     height: 1.3,
     letterSpacing: 0,

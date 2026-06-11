@@ -91,7 +91,7 @@ class _LibraryButton extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsetsDirectional.only(start: 18, end: 5),
-              child: Icon(trailingIcon, size: 40, color: Colors.yellow[800]),
+              child: Icon(trailingIcon, size: 40, color: yellow120),
             ),
             Expanded(
               child: Column(
@@ -106,7 +106,7 @@ class _LibraryButton extends StatelessWidget {
                   ),
                   Text(
                     itemCount,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    style: const TextStyle(fontSize: 14, color: grey140),
                   ),
                 ],
               ),

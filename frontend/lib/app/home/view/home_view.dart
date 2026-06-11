@@ -6,7 +6,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 241, 241, 241),
+      backgroundColor: appBackground,
       body: SafeArea(
         child: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
@@ -101,7 +101,7 @@ class _HomeError extends StatelessWidget {
             Text(
               'home_load_error'.tr(),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(color: red110),
             ),
             const SizedBox(height: 16),
             ElevatedButton(

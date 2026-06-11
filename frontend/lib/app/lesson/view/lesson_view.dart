@@ -118,7 +118,7 @@ class _LessonViewState extends State<LessonView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 241, 241, 241),
+      backgroundColor: appBackground,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(180),
         child: Stack(
@@ -371,7 +371,7 @@ class _TranslationStatusLine extends StatelessWidget {
               'translating'.tr(),
               style: BTextStyles.of(
                 context,
-              ).caption.copyWith(color: Colors.grey.shade600),
+              ).caption.copyWith(color: grey160),
             ),
           ],
         ),
@@ -382,14 +382,14 @@ class _TranslationStatusLine extends StatelessWidget {
         padding: const EdgeInsets.only(top: 4),
         child: Row(
           children: [
-            Icon(Icons.error_outline, size: 12, color: Colors.red.shade600),
+            const Icon(Icons.error_outline, size: 12, color: red130),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
                 errorMessage!,
                 style: BTextStyles.of(
                   context,
-                ).caption.copyWith(color: Colors.red.shade600),
+                ).caption.copyWith(color: red130),
               ),
             ),
           ],
@@ -443,38 +443,58 @@ class _LearnedToggleButton extends StatelessWidget {
       },
       builder: (context, learnedState) {
         final isLearnt = learnedState.isLearned(lessonId);
-        return ElevatedButton(
-          onPressed: () =>
-              context.read<LearnedCubit>().toggleLearned(lessonId),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isLearnt ? yellow120 : Colors.white,
-            foregroundColor: isLearnt ? Colors.white : yellow120,
-            shape: const StadiumBorder(),
-            side: const BorderSide(color: yellow120, width: 2),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-            elevation: isLearnt ? 2 : 0,
-            shadowColor: isLearnt
-                ? green100.withValues(alpha: 0.2)
-                : Colors.transparent,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'lesson_learnt_button'.tr(),
-                style: TextStyle(
-                  color: isLearnt ? Colors.white : yellow120,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                ),
+        // Learnt = success green, not-yet = neutral white pill on the hero
+        // photo. AnimatedContainer makes the toggle feel responsive.
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(100),
+            onTap: () =>
+                context.read<LearnedCubit>().toggleLearned(lessonId),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 8,
               ),
-              const SizedBox(width: 8),
-              Icon(
-                isLearnt ? Icons.check_circle : Icons.check_circle_outline,
-                color: isLearnt ? Colors.white : yellow120,
-                size: 22,
+              decoration: BoxDecoration(
+                color: isLearnt
+                    ? green115
+                    : Colors.white.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(100),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isLearnt
+                        ? Icons.check_circle
+                        : Icons.check_circle_outline,
+                    color: isLearnt ? Colors.white : grey160,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'lesson_learnt_button'.tr(),
+                    style: TextStyle(
+                      color: isLearnt ? Colors.white : grey180,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      height: 1,
+                      fontFamily: 'Cairo',
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -489,19 +509,26 @@ class _LessonTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // height: 1 keeps the Arabic glyphs vertically centered inside the
+    // pill indicator — the fonts' default line metrics push them below
+    // the visual center.
+    final labelStyle = BTextStyles.of(
+      context,
+    ).title1.copyWith(color: grey0, height: 1);
     return TabBar(
       controller: controller,
       labelColor: grey0,
       labelPadding: EdgeInsets.zero,
-      labelStyle: BTextStyles.of(context).title1.copyWith(color: grey0),
+      labelStyle: labelStyle,
       unselectedLabelColor: grey140,
+      unselectedLabelStyle: labelStyle,
       indicator: BoxDecoration(
         color: yellow120,
         borderRadius: BorderRadius.circular(100),
       ),
       indicatorSize: TabBarIndicatorSize.label,
       indicatorWeight: 1,
-      indicatorPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+      indicatorPadding: const EdgeInsets.symmetric(horizontal: 5, vertical: 7),
       indicatorAnimation: TabIndicatorAnimation.linear,
       splashFactory: NoSplash.splashFactory,
       dividerColor: grey110,
@@ -525,7 +552,10 @@ class _LessonTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Tab(text: label),
+      child: Tab(
+        height: 46,
+        child: Center(child: Text(label, textAlign: TextAlign.center)),
+      ),
     );
   }
 }

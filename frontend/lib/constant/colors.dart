@@ -67,3 +67,11 @@ const Color grey100 = Color(0xFFF6F3F6);
 const Color grey75 = Color(0xFFF8F6F8);
 const Color grey50 = Color(0xFFFAF8FA);
 const Color grey0 = Color(0xFFFFFFFF);
+
+// Semantic aliases — prefer these in widgets so the palette stays unified:
+// purple is the brand color, yellow the accent, green success, red danger.
+/// Page background used by every scaffold and pinned header.
+const Color appBackground = Color(0xFFF1F1F1);
+
+/// Soft red tint for wrong-answer surfaces.
+const Color red10 = Color(0xFFFDEDED);

@@ -1,5 +1,6 @@
 import 'package:belaraby/app/home/widgets/lesson_card.dart';
 import 'package:belaraby/app/router.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/models/lesson_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class LessonsSection extends StatelessWidget {
       return Center(
         child: Text(
           'home_no_lessons'.tr(),
-          style: const TextStyle(fontSize: 16, color: Colors.grey),
+          style: const TextStyle(fontSize: 16, color: grey160),
         ),
       );
     }

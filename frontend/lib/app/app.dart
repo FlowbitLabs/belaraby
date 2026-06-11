@@ -3,6 +3,7 @@ import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/router.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:belaraby/app/widgets/web_frame.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/services/purchases_service.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
@@ -58,7 +59,28 @@ class BelArabyApp extends StatelessWidget {
         supportedLocales: context.supportedLocales,
         locale: context.locale,
 
-        theme: ThemeData(useMaterial3: true),
+        // One palette everywhere: purple is the brand color, yellow the
+        // accent (see constant/colors.dart for the semantic aliases).
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: purple140,
+            primary: purple140,
+            secondary: yellow120,
+          ),
+          scaffoldBackgroundColor: appBackground,
+          fontFamily: 'Cairo',
+          progressIndicatorTheme: const ProgressIndicatorThemeData(
+            color: yellow120,
+          ),
+          snackBarTheme: const SnackBarThemeData(
+            backgroundColor: grey180,
+            contentTextStyle: TextStyle(
+              color: Colors.white,
+              fontFamily: 'Cairo',
+            ),
+          ),
+        ),
         scrollBehavior: const _AppScrollBehavior(),
         // On wide web viewports the app is centered in a phone-width frame
         // instead of stretching the mobile layout across the window.

@@ -31,7 +31,7 @@ class LessonUnlockView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F1F1),
+      backgroundColor: appBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

@@ -1,4 +1,5 @@
 import 'package:belaraby/app/router.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -21,7 +22,7 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     // a pinned persistent header must be exactly minExtent/maxExtent tall,
     // or the sliver reports invalid geometry and rendering throws.
     return Container(
-      color: const Color.fromARGB(255, 241, 241, 241),
+      color: appBackground,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       alignment: Alignment.center,
       child: Row(
@@ -38,10 +39,10 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 23, top: 5),
             child: IconButton(
-              icon: Icon(
+              icon: const Icon(
                 Icons.account_box,
                 size: 40,
-                color: Colors.yellow[800],
+                color: yellow120,
               ),
               tooltip: 'settings_title'.tr(),
               onPressed: () => navigateToSettings(context),

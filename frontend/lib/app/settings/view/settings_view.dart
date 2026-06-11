@@ -6,7 +6,7 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F1F1),
+      backgroundColor: appBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -43,10 +43,6 @@ class SettingsView extends StatelessWidget {
         ],
         child: ListView(
           children: [
-            SettingsSection(
-              title: 'settings_section_language'.tr(),
-              children: const [LanguageSelector()],
-            ),
             SettingsSection(
               title: 'settings_section_subscription'.tr(),
               children: const [

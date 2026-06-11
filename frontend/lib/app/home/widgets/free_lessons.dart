@@ -1,4 +1,5 @@
 import 'package:belaraby/app/router.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -68,7 +69,7 @@ class _FreeLessonCard extends StatelessWidget {
             image: NetworkImage(lesson.heroImage),
             fit: BoxFit.cover,
           ),
-          color: Colors.grey[300],
+          color: grey110,
         ),
         child: Material(
           color: Colors.transparent,

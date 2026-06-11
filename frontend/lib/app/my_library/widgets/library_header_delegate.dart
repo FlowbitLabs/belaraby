@@ -1,3 +1,4 @@
+import 'package:belaraby/constant/colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -5,7 +6,7 @@ class LibraryHeaderDelegate extends SliverPersistentHeaderDelegate {
   const LibraryHeaderDelegate();
 
   static const double _headerHeight = 60;
-  static const Color _backgroundColor = Color(0xFFF1F1F1);
+  static const Color _backgroundColor = appBackground;
 
   @override
   double get minExtent => _headerHeight;

@@ -209,7 +209,7 @@ class _LessonFavoriteIcon extends StatelessWidget {
       onTap: () => context.read<FavoriteCubit>().toggleFavorite(lessonId),
       child: Icon(
         isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: isFavorite ? Colors.red : Colors.grey,
+        color: isFavorite ? red110 : grey140,
         size: 30,
       ),
     );
@@ -230,7 +230,7 @@ class _TranslateToggleIcon extends StatelessWidget {
       onTap: onTap,
       child: Icon(
         Icons.translate,
-        color: isTranslated ? Colors.blueAccent : Colors.grey,
+        color: isTranslated ? purple110 : grey140,
         size: 30,
       ),
     );

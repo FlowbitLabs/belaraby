@@ -141,7 +141,7 @@ class _OptionRow extends StatelessWidget {
   Color get _backgroundColor {
     if (!_isAnswered) return grey100;
     if (option.isCorrect) return green10;
-    if (_isSelected) return const Color(0xFFFDEDED);
+    if (_isSelected) return red10;
     return grey100;
   }
 

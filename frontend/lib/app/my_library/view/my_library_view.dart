@@ -6,7 +6,7 @@ class MyLibraryView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F1F1),
+      backgroundColor: appBackground,
       body: MultiBlocListener(
         listeners: [
           // Keep the library in sync when favorites are toggled anywhere.

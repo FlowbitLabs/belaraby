@@ -6,8 +6,10 @@ import 'package:belaraby/app/my_library/view/my_library_page.dart';
 import 'package:belaraby/app/paywall/view/paywall_page.dart';
 import 'package:belaraby/app/settings/view/settings_page.dart';
 import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -50,23 +52,23 @@ class _MainScreenState extends State<MainScreen> {
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          selectedIconTheme: IconThemeData(
+          selectedIconTheme: const IconThemeData(
             size: 25,
-            color: Colors.yellow[800],
+            color: yellow120,
           ),
           unselectedIconTheme: const IconThemeData(
             size: 22,
-            color: Colors.grey,
+            color: grey140,
           ),
-          selectedItemColor: Colors.yellow[800],
-          unselectedItemColor: Colors.grey,
+          selectedItemColor: yellow120,
+          unselectedItemColor: grey140,
           selectedLabelStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             height: 1.6,
           ),
           unselectedLabelStyle: const TextStyle(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.w400,
             height: 1.6,
           ),
@@ -142,7 +144,28 @@ Future<void> navigateToLessonGated(
 /// Opens the [PaywallPage].
 ///
 /// Resolves to `true` when the user ends up with an active subscription.
+/// On web — where store billing doesn't exist — a dialog explains that
+/// subscriptions are only available in the mobile app instead.
 Future<bool?> navigateToPaywall(BuildContext context) {
+  if (kIsWeb) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.phone_iphone, color: yellow120, size: 40),
+        title: Text('paywall_web_only_title'.tr()),
+        content: Text(
+          'paywall_web_only_message'.tr(),
+          textAlign: TextAlign.center,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('paywall_web_only_ok'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
   return Navigator.push<bool>(
     context,
     MaterialPageRoute<bool>(builder: (context) => const PaywallPage()),

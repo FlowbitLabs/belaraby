@@ -1,4 +1,5 @@
 import 'package:belaraby/app/util/get_level_color.dart';
+import 'package:belaraby/constant/colors.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -71,15 +72,20 @@ class _LevelFilterBarState extends State<LevelFilterBar> {
                   onTap: () => _onTap(level),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
+                      horizontal: 14,
+                      vertical: 8,
                     ),
                     child: Text(
                       level.tr(),
+                      textAlign: TextAlign.center,
+                      // height: 1 centers the label inside the chip (the
+                      // font's default line metrics sit below center).
                       style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
+                        fontSize: 16,
+                        height: 1,
+                        color: grey190,
                         fontFamily: 'Cairo',
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

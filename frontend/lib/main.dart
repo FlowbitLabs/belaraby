@@ -60,7 +60,8 @@ Future<void> main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('ar'), Locale('en')],
+      // Arabic-only by design — the learning content and UI are Arabic.
+      supportedLocales: const [Locale('ar')],
       path: 'assets/translations',
       fallbackLocale: const Locale('ar'),
       startLocale: const Locale('ar'),
