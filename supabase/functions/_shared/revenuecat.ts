@@ -59,7 +59,17 @@ export function msToIso(ms: unknown): string | null {
     : null;
 }
 
-export function planEvent(event: RevenueCatEvent): WebhookPlan {
+export interface PlanOptions {
+  // Sandbox/TestFlight purchases must not grant real premium access in
+  // production. Set the REVENUECAT_ALLOW_SANDBOX function secret to "true"
+  // during pre-launch store testing to let them through deliberately.
+  allowSandbox?: boolean;
+}
+
+export function planEvent(
+  event: RevenueCatEvent,
+  options: PlanOptions = {},
+): WebhookPlan {
   const type = event.type;
   const appUserId = typeof event.app_user_id === "string"
     ? event.app_user_id
@@ -67,6 +77,9 @@ export function planEvent(event: RevenueCatEvent): WebhookPlan {
 
   if (type === "TEST") {
     return { action: "ignore", reason: "TEST event ignored" };
+  }
+  if (event.environment === "SANDBOX" && !options.allowSandbox) {
+    return { action: "ignore", reason: "SANDBOX environment event ignored" };
   }
   // Purchases made before Purchases.logIn() ran arrive under RevenueCat's
   // device-generated alias; a later TRANSFER event moves them to the real id.
@@ -157,6 +170,12 @@ export function planEvent(event: RevenueCatEvent): WebhookPlan {
     case "SUBSCRIPTION_PAUSED":
       record.status = "paused";
       record.will_renew = false;
+      break;
+    // Play Store only: a refund was reversed and access is reinstated; the
+    // event carries the restored expiration. (Refunds themselves arrive as
+    // CANCELLATION/EXPIRATION with an updated expiration_at_ms.)
+    case "REFUND_REVERSED":
+      record.status = "active";
       break;
     default:
       return { action: "ignore", reason: `event type ${type} ignored` };

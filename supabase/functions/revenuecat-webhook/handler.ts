@@ -162,7 +162,9 @@ export async function handler(req: Request): Promise<Response> {
     `[revenuecat-webhook] event=${event.type} app_user_id=${event.app_user_id ?? ""}`,
   );
 
-  const plan = planEvent(event);
+  const plan = planEvent(event, {
+    allowSandbox: Deno.env.get("REVENUECAT_ALLOW_SANDBOX") === "true",
+  });
   if (plan.action === "ignore") {
     console.log(`[revenuecat-webhook] ${plan.reason}`);
     return ok(plan.reason);

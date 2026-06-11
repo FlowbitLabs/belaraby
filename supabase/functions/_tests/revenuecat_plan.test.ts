@@ -234,6 +234,30 @@ Deno.test("TEST events are ignored", () => {
   assertEquals(plan, { action: "ignore", reason: "TEST event ignored" });
 });
 
+Deno.test("SANDBOX environment events are ignored by default", () => {
+  const plan = planEvent(
+    event({ type: "INITIAL_PURCHASE", environment: "SANDBOX" }),
+  );
+  assertEquals(plan, {
+    action: "ignore",
+    reason: "SANDBOX environment event ignored",
+  });
+});
+
+Deno.test("SANDBOX events apply when allowSandbox is set", () => {
+  const plan = planEvent(
+    event({ type: "INITIAL_PURCHASE", environment: "SANDBOX" }),
+    { allowSandbox: true },
+  );
+  assertEquals(plan.action, "upsert");
+});
+
+Deno.test("REFUND_REVERSED reinstates access", () => {
+  const plan = asUpsert(event({ type: "REFUND_REVERSED" }));
+  assertEquals(plan.record.status, "active");
+  assertEquals(plan.record.expires_at, EXPIRY_ISO);
+});
+
 Deno.test("unknown event types are ignored", () => {
   const plan = planEvent(event({ type: "SOME_FUTURE_EVENT" }));
   assertEquals(plan, {
