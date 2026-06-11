@@ -1,13 +1,10 @@
 name: Deploy Flutter
 
+# Manual-only: store builds need signing secrets and burn macOS minutes, so
+# they never run on push. Trigger a release explicitly with:
+#   gh workflow run "Deploy Flutter" --ref main
+# or GitHub → Actions → Deploy Flutter → Run workflow.
 on:
-  push:
-    branches:
-      - main
-    # Supabase/dashboard-only pushes must not burn macOS IPA build minutes.
-    paths:
-      - "frontend/**"
-      - ".github/workflows/deploy_flutter.yml"
   workflow_dispatch:
 
 # Serialize store deploys per branch; never cancel an upload in flight.

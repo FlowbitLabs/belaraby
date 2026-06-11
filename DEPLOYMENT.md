@@ -44,9 +44,10 @@ or the workflow file — changed):
 `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 **Repo-level variable:** `SUPABASE_PROJECT_ID` (= `hmgwrovvqeezkyfiqula`).
 
-All deploy workflows (`deploy_supabase_migration.yml`,
-`deploy_dashboard.yml`, `deploy_flutter.yml`) trigger on push to `main`
-plus plain `workflow_dispatch`, and run with `environment: production`.
+The Supabase, dashboard and Flutter-web deploy workflows trigger on push
+to `main` plus plain `workflow_dispatch`; the store builds
+(`deploy_flutter.yml`) are **manual-only** (`workflow_dispatch`). All run
+with `environment: production`.
 The keep-alive and backup workflows also run against `production`.
 
 ---
@@ -236,10 +237,16 @@ non-admin write.
 ## 3. Flutter → App Store + Play Store
 
 Workflow: `.github/workflows/deploy_flutter.yml`
-Triggers on push to `main` (and manual dispatch) **only when `frontend/**`
-(or the workflow file itself) changed** — Supabase/dashboard-only pushes do
-not burn macOS IPA build minutes. Deploys are serialized via a
-`concurrency` group (`deploy-flutter-<ref>`, `cancel-in-progress: false`).
+**Manual-only** — store builds need the signing secrets and burn macOS IPA
+build minutes, so they never run on push. Trigger a release with:
+
+```bash
+gh workflow run "Deploy Flutter" --ref main
+```
+
+(or GitHub → Actions → Deploy Flutter → Run workflow). Deploys are
+serialized via a `concurrency` group (`deploy-flutter-<ref>`,
+`cancel-in-progress: false`).
 
 Supabase credentials are injected at build time via `--dart-define`.
 
