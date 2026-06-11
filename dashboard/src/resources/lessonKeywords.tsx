@@ -21,6 +21,15 @@ const keywordInputs = [
     inputProps={rtlInputProps}
     sx={arabicInputSx}
   />,
+  <TextInput
+    key="meaning"
+    source="meaning"
+    multiline
+    minRows={2}
+    fullWidth
+    inputProps={rtlInputProps}
+    sx={arabicInputSx}
+  />,
 ];
 
 export const LessonKeywordEdit = () => (

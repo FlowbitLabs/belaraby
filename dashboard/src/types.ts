@@ -39,6 +39,7 @@ export interface LessonKeyword {
   id: string;
   lesson_id: string;
   keyword: string;
+  meaning: string;
 }
 
 /**

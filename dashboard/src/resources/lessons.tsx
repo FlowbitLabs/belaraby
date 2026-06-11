@@ -193,6 +193,7 @@ export const LessonEdit = () => (
           addLabel="Add keyword"
         >
           <TextField source="keyword" />
+          <TextField source="meaning" />
         </ChildRecordsPanel>
       </TabbedForm.Tab>
     </TabbedForm>
