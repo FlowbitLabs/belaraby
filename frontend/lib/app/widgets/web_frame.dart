@@ -27,21 +27,28 @@ class WebFrame extends StatelessWidget {
         return ColoredBox(
           color: purple140,
           child: Center(
+            // Phone-style bezel: a dark rounded border with a thin
+            // highlight edge, so the app reads as a device mockup.
             child: Container(
               width: _frameWidth,
               margin: const EdgeInsets.symmetric(vertical: 24),
-              clipBehavior: Clip.antiAlias,
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
+                color: grey190,
+                borderRadius: BorderRadius.circular(44),
+                border: Border.all(color: grey170),
                 boxShadow: const [
                   BoxShadow(
-                    color: Colors.black38,
-                    blurRadius: 40,
-                    offset: Offset(0, 12),
+                    color: Colors.black45,
+                    blurRadius: 48,
+                    offset: Offset(0, 16),
                   ),
                 ],
               ),
-              child: child,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: child,
+              ),
             ),
           ),
         );
