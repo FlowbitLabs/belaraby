@@ -187,6 +187,8 @@ class _LessonViewState extends State<LessonView>
                           stop: _controller.stop,
                           isRepeatEnabled: _isRepeatEnabled,
                           onRepeatToggle: _toggleRepeat,
+                          speedLabel: _controller.speedLabel,
+                          onSpeedToggle: _controller.cycleSpeed,
                           onWordSelected: _onWordSelected,
                           selectedWord: _selectedWord,
                         );

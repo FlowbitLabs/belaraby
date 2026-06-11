@@ -1,24 +1,65 @@
 import 'dart:async';
+
+import 'package:belaraby/app/lesson/utils/arabic_voice.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Playback speed steps, as multiples of the platform's normal rate.
+const List<double> storySpeedFactors = [0.7, 1, 1.3];
+
+/// Arabic display labels for [storySpeedFactors].
+const List<String> storySpeedLabels = ['٠٫٧×', '١×', '١٫٣×'];
+
+/// Index of the default (normal) speed in [storySpeedFactors].
+const int _normalSpeedIndex = 1;
+
+const String _speedPrefsKey = 'story_speed_index';
 
 /// Manages Text-to-Speech (TTS) playback, word splitting, and karaoke
 /// highlighting.
 ///
-/// This controller handles the platform-specific quirks (especially for Web)
-/// to ensure the Arabic voice loads correctly and playback synchronizes with
-/// word highlighting.
+/// Handles the platform-specific quirks (especially for Web) to ensure the
+/// Arabic voice loads correctly and playback synchronizes with word
+/// highlighting. Supports pause/resume (implemented as stop + re-speak from
+/// the current word, which works on every platform) and a persisted
+/// playback-speed setting.
 class LessonPlayerController extends ChangeNotifier {
-  final FlutterTts _tts = FlutterTts();
+  LessonPlayerController({FlutterTts? tts, SharedPreferences? preferences})
+    : _tts = tts ?? FlutterTts(),
+      _preferences = preferences;
+
+  final FlutterTts _tts;
+  SharedPreferences? _preferences;
 
   // State
   List<WordInfo> _words = [];
+  String _text = '';
   int _highlightedIndex = -1;
   bool _isPlaying = false;
+  bool _isPaused = false;
+  int _speedIndex = _normalSpeedIndex;
 
-  // Internal flag to track if the TTS engine (audio context, voice
-  // selection) is ready.
-  bool _isEngineReady = false;
+  /// Word index playback resumes from after a pause.
+  int _resumeWordIndex = 0;
+
+  /// Character offset of the current utterance inside the full story —
+  /// non-zero after a resume, where only a suffix of the text is spoken.
+  int _charOffset = 0;
+
+  /// Incremented on every stop/pause so stale engine callbacks (the engines
+  /// fire completion for cancelled utterances too) can be ignored.
+  int _utteranceGeneration = 0;
+
+  /// Memoized engine setup so concurrent callers share one initialization.
+  Future<void>? _engineInit;
+
+  /// Guards against concurrent speak/pause calls from rapid taps.
+  bool _busy = false;
+
+  /// Invoked after playback completes naturally to optionally repeat the
+  /// lesson. Never invoked for manual stops, pauses or engine errors.
+  Future<void> Function()? onRepeat;
 
   /// The story split into words, in document order.
   List<WordInfo> get words => _words;
@@ -29,24 +70,33 @@ class LessonPlayerController extends ChangeNotifier {
   /// Whether story playback is in progress.
   bool get isPlaying => _isPlaying;
 
+  /// Whether playback is paused mid-story (resumable).
+  bool get isPaused => _isPaused;
+
+  /// Arabic label of the current playback speed (e.g. `١×`).
+  String get speedLabel => storySpeedLabels[_speedIndex];
+
   /// Parses text into words and sets up TTS event listeners.
-  /// Note: The actual audio engine setup is "lazy" (done in speak) to
+  ///
+  /// The actual audio engine setup is "lazy" (finished in [speak]) to
   /// satisfy Web auto-play policies.
   void init(String text) {
+    _text = text;
     _words = _parseWords(text);
     _configureEventHandlers();
 
     // Attempt to set up audio early, but don't wait for it here.
-    _initializeEngine();
+    unawaited(_initializeEngine());
   }
 
   /// Sets up listeners for TTS events (progress, start, completion, error).
   void _configureEventHandlers() {
     _tts
       ..setProgressHandler((_, start, _, _) {
-        // Find the word that corresponds to the current character
-        // position 'start'.
-        final index = _words.indexWhere((w) => w.containsIndex(start));
+        // Map the utterance-relative character position back into the full
+        // story (the utterance may be a suffix after a resume).
+        final absoluteStart = start + _charOffset;
+        final index = _words.indexWhere((w) => w.containsIndex(absoluteStart));
         if (index != -1 && index != _highlightedIndex) {
           _highlightedIndex = index;
           notifyListeners();
@@ -54,97 +104,152 @@ class LessonPlayerController extends ChangeNotifier {
       })
       ..setStartHandler(() {
         _isPlaying = true;
+        _isPaused = false;
         notifyListeners();
       })
-      ..setCompletionHandler(_onPlaybackStopped)
-      ..setErrorHandler((_) {
-        _onPlaybackStopped();
+      ..setCompletionHandler(() {
+        unawaited(_onNaturalCompletion(_utteranceGeneration));
+      })
+      ..setErrorHandler((Object? _) {
+        _onErrorOrCancel(_utteranceGeneration);
       });
   }
 
-  /// Initializes the TTS engine: finds the best Arabic voice and configures
-  /// the speed. This is "lazy safe" - it can be called multiple times but
-  /// only runs once.
-  Future<void> _initializeEngine() async {
-    if (_isEngineReady) return;
+  /// Initializes the TTS engine: picks the best Arabic voice, restores the
+  /// saved speed and configures completion awaiting. Safe to call multiple
+  /// times; only runs once.
+  Future<void> _initializeEngine() => _engineInit ??= _setUpEngine();
 
-    // 1. Find the best Arabic voice.
-    // On Web, voices load asynchronously, so we retry a few times.
-    final arabicVoice = await _findBestArabicVoice();
-    if (arabicVoice != null) {
-      await _tts.setLanguage(arabicVoice);
-    } else {
-      await _tts.setLanguage('ar'); // Fallback
+  Future<void> _setUpEngine() async {
+    await applyBestArabicVoice(_tts);
+
+    _preferences ??= await SharedPreferences.getInstance();
+    final savedIndex = _preferences?.getInt(_speedPrefsKey);
+    if (savedIndex != null &&
+        savedIndex >= 0 &&
+        savedIndex < storySpeedFactors.length) {
+      _speedIndex = savedIndex;
     }
+    await _applyRate();
 
-    // 2. Configure rate and sync.
-    await _tts.setSpeechRate(0.5);
-    // Important: 'awaitSpeakCompletion' ensures the Future returned by
-    // speak() waits until audio is actually finished. Critical for Chrome.
+    // 'awaitSpeakCompletion' ensures the Future returned by speak() waits
+    // until audio is actually finished. Critical for Chrome.
     await _tts.awaitSpeakCompletion(true);
 
-    _isEngineReady = true;
+    notifyListeners();
   }
 
-  /// Polls the TTS engine for available voices, retrying for up to 2 seconds.
-  /// Returns a specific Arabic locale (e.g., 'ar-SA') if found.
-  Future<String?> _findBestArabicVoice() async {
-    dynamic voices;
-
-    // Retry loop: Web browsers often return empty voices immediately
-    // after load.
-    for (var i = 0; i < 5; i++) {
-      voices = await _tts.getLanguages;
-      if (voices is List && voices.isNotEmpty) break;
-      await Future.delayed(const Duration(milliseconds: 400));
-    }
-
-    if (voices is List) {
-      final voiceList = voices.map((v) => v.toString()).toList();
-      // Prefer specific 'ar-' locales (like ar-SA) over generic 'ar'
-      // if possible.
-      return voiceList.firstWhere(
-        (v) => v.startsWith('ar'),
-        orElse: () => 'ar',
-      );
-    }
-    return null;
+  Future<void> _applyRate() async {
+    await _tts.setSpeechRate(
+      platformNormalRate * storySpeedFactors[_speedIndex],
+    );
   }
 
-  /// Starts playback.
-  /// Automatically initializes the engine if it wasn't ready (Lazy Loading
-  /// pattern).
+  /// Play / pause toggle.
+  ///
+  /// Starts the story from the beginning when idle, pauses when playing,
+  /// and resumes from the paused word when paused. Triggered by a user
+  /// gesture, which also unlocks the browser AudioContext on web.
   Future<void> speak(String text) async {
-    // If init failed or hasn't finished, do it now.
-    // Doing this inside 'speak' works because 'speak' is triggered by a
-    // User Gesture (click), which allows the browser to unlock the
-    // AudioContext.
-    if (!_isEngineReady) await _initializeEngine();
+    if (_busy) return;
+    _busy = true;
+    try {
+      await _initializeEngine();
+
+      if (_isPlaying) {
+        await _pause();
+      } else {
+        if (text != _text) {
+          // New text (defensive — the view passes the same story).
+          init(text);
+          _resumeWordIndex = 0;
+        }
+        await _startFrom(_isPaused ? _resumeWordIndex : 0);
+      }
+    } finally {
+      _busy = false;
+    }
+  }
+
+  /// Cycles to the next playback speed and persists it. When invoked
+  /// mid-playback the current utterance restarts from the highlighted word
+  /// at the new speed (engines don't re-rate in-flight utterances).
+  Future<void> cycleSpeed() async {
+    _speedIndex = (_speedIndex + 1) % storySpeedFactors.length;
+    _preferences ??= await SharedPreferences.getInstance();
+    await _preferences?.setInt(_speedPrefsKey, _speedIndex);
+    await _applyRate();
+    notifyListeners();
 
     if (_isPlaying) {
-      await stop();
-    } else {
-      await _tts.speak(text);
+      final fromWord = _highlightedIndex >= 0 ? _highlightedIndex : 0;
+      _utteranceGeneration++;
+      await _tts.stop();
+      await _startFrom(fromWord);
     }
   }
 
-  /// Stops playback and clears the word highlight.
+  /// Stops playback completely and clears highlight + resume state.
   Future<void> stop() async {
+    _utteranceGeneration++;
     await _tts.stop();
-    await _onPlaybackStopped();
+    _isPlaying = false;
+    _isPaused = false;
+    _highlightedIndex = -1;
+    _resumeWordIndex = 0;
+    _charOffset = 0;
+    notifyListeners();
   }
 
-  /// Invoked after playback stops to optionally repeat the lesson.
-  Future<void> Function()? onRepeat;
-
-  Future<void> _onPlaybackStopped() async {
+  Future<void> _pause() async {
+    // Resume from the word being spoken (or the start when unknown).
+    _resumeWordIndex = _highlightedIndex >= 0 ? _highlightedIndex : 0;
+    _utteranceGeneration++;
+    await _tts.stop();
     _isPlaying = false;
+    _isPaused = true;
+    notifyListeners();
+  }
+
+  Future<void> _startFrom(int wordIndex) async {
+    if (_words.isEmpty) return;
+    final index = wordIndex.clamp(0, _words.length - 1);
+    _charOffset = _words[index].startIndex;
+    _highlightedIndex = index;
+    _isPlaying = true;
+    _isPaused = false;
+    notifyListeners();
+    await _tts.speak(_text.substring(_charOffset));
+  }
+
+  /// Natural end of the utterance: reset and fire the repeat hook.
+  Future<void> _onNaturalCompletion(int generation) async {
+    // A completion fired by a cancelled utterance (stop/pause/speed change
+    // bumps the generation first) must not reset state or trigger repeat.
+    if (generation != _utteranceGeneration) return;
+
+    _isPlaying = false;
+    _isPaused = false;
+    _highlightedIndex = -1;
+    _resumeWordIndex = 0;
+    _charOffset = 0;
+    notifyListeners();
+
+    if (onRepeat != null) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      // Re-check: the user may have started playback again or left.
+      if (!_isPlaying && generation == _utteranceGeneration) {
+        await onRepeat!();
+      }
+    }
+  }
+
+  void _onErrorOrCancel(int generation) {
+    if (generation != _utteranceGeneration) return;
+    _isPlaying = false;
+    _isPaused = false;
     _highlightedIndex = -1;
     notifyListeners();
-    if (onRepeat != null) {
-      await Future.delayed(const Duration(seconds: 1));
-      await onRepeat!();
-    }
   }
 
   /// Splits text into words using Regex, capturing start indices for
@@ -158,6 +263,7 @@ class LessonPlayerController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _utteranceGeneration++;
     _tts.stop();
     super.dispose();
   }

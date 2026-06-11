@@ -9,6 +9,8 @@ class LessonControls extends StatelessWidget {
     required this.onStop,
     required this.isRepeatEnabled,
     required this.onRepeatToggle,
+    required this.speedLabel,
+    required this.onSpeedToggle,
     super.key,
   });
 
@@ -17,6 +19,10 @@ class LessonControls extends StatelessWidget {
   final VoidCallback onStop;
   final bool isRepeatEnabled;
   final VoidCallback onRepeatToggle;
+
+  /// Display label of the current playback speed (e.g. `١×`).
+  final String speedLabel;
+  final VoidCallback onSpeedToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +49,8 @@ class LessonControls extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    _SpeedButton(label: speedLabel, onPressed: onSpeedToggle),
+                    const SizedBox(width: 16),
                     IconButton.filled(
                       onPressed: onRepeatToggle,
                       style: IconButton.styleFrom(
@@ -89,6 +97,45 @@ class LessonControls extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Circular button cycling the playback speed; shows the current speed
+/// (Arabic digits) as its label.
+class _SpeedButton extends StatelessWidget {
+  const _SpeedButton({required this.label, required this.onPressed});
+
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: grey140,
+      shape: const CircleBorder(),
+      elevation: 2,
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onPressed,
+        child: SizedBox(
+          width: 42,
+          height: 42,
+          child: Center(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+                fontFamily: 'Cairo',
+                height: 1,
+                leadingDistribution: TextLeadingDistribution.even,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

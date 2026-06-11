@@ -44,6 +44,8 @@ class LessonTabView extends StatefulWidget {
     required this.isPlaying,
     required this.isRepeatEnabled,
     required this.onRepeatToggle,
+    required this.speedLabel,
+    required this.onSpeedToggle,
     required this.onWordSelected,
     required this.selectedWord,
     super.key,
@@ -56,6 +58,8 @@ class LessonTabView extends StatefulWidget {
   final bool isPlaying;
   final bool isRepeatEnabled;
   final VoidCallback onRepeatToggle;
+  final String speedLabel;
+  final VoidCallback onSpeedToggle;
   final void Function(String) onWordSelected;
   final String? selectedWord;
 
@@ -191,6 +195,8 @@ class _LessonTabViewState extends State<LessonTabView> {
           onStop: widget.stop,
           isRepeatEnabled: widget.isRepeatEnabled,
           onRepeatToggle: widget.onRepeatToggle,
+          speedLabel: widget.speedLabel,
+          onSpeedToggle: widget.onSpeedToggle,
         ),
       ],
     );
