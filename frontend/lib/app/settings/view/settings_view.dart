@@ -191,9 +191,12 @@ class _AccountHeader extends StatelessWidget {
                 ),
               ],
               // Web demo toggle — only for signed-in accounts on the
-              // server's demo allowlist (never for anonymous guests).
+              // server's demo allowlist (never for anonymous guests). Also
+              // kept visible while a demo subscription is active, so it can
+              // always be cancelled even if the allowlist check hiccups.
               if (context.select(
-                (SubscriptionCubit cubit) => cubit.state.isDemoAuthorized,
+                (SubscriptionCubit cubit) =>
+                    cubit.state.isDemoAuthorized || cubit.state.isDemoPremium,
               )) ...[
                 const SizedBox(height: 12),
                 const _DemoPremiumToggle(),
