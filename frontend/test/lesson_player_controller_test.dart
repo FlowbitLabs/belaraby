@@ -65,11 +65,16 @@ void main() {
     expect(controller.words[1].containsIndex(4), isFalse);
   });
 
-  test('selects the highest-quality Arabic voice', () async {
+  test('selects the highest-quality Arabic voice and sets its language',
+      () async {
     await controller.speak(story);
     verify(
       () => tts.setVoice({'name': 'Google العربية', 'locale': 'ar-SA'}),
     ).called(1);
+    // The language tag is the safety net: engines where the voice lookup
+    // silently fails would otherwise speak with the default (English)
+    // voice — which reads Arabic text as "dot dot dot".
+    verify(() => tts.setLanguage('ar-SA')).called(1);
   });
 
   test('speak starts playback and highlights via progress events', () async {

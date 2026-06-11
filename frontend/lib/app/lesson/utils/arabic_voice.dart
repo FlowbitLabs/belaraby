@@ -9,10 +9,27 @@ import 'package:flutter_tts/flutter_tts.dart';
 /// and falls back to a plain language tag when nothing matches.
 Future<void> applyBestArabicVoice(FlutterTts tts) async {
   final voice = await _findBestArabicVoice(tts);
+  var languageSet = false;
   if (voice != null) {
-    await tts.setVoice(voice);
-  } else {
-    // No explicit voice available — let the engine resolve the language.
+    // Best-effort: on some engines (notably web) the voice lookup can
+    // silently fail or throw — the language tag below is the real safety
+    // net, it makes the engine pick SOME Arabic voice regardless.
+    try {
+      await tts.setVoice(voice);
+    } on Exception {
+      // Fall through to the language tag.
+    }
+    final locale = voice['locale'] ?? '';
+    if (locale.isNotEmpty) {
+      try {
+        await tts.setLanguage(locale);
+        languageSet = true;
+      } on Exception {
+        languageSet = false;
+      }
+    }
+  }
+  if (!languageSet) {
     try {
       await tts.setLanguage('ar-SA');
     } on Exception {
