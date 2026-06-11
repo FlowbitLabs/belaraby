@@ -143,24 +143,25 @@ class _LessonViewState extends State<LessonView>
                 );
               },
             ),
+            // Back + learned share one row so they sit on the same line.
+            // The learned toggle shows everywhere except the quiz tab,
+            // whose hero is the progress backdrop.
             PositionedDirectional(
-              top: 67,
+              top: 48,
               start: 16,
-              child: _LessonBackButton(onPressed: _stopAndPop),
-            ),
-            PositionedDirectional(
-              top: 60,
               end: 16,
-              // The learned toggle shows everywhere except the quiz tab,
-              // whose hero is the progress backdrop.
-              // The learned toggle shows everywhere except the quiz tab,
-              // whose hero is the progress backdrop.
-              child: ListenableBuilder(
-                listenable: _tabController,
-                builder: (context, _) => Visibility(
-                  visible: _tabController.index != _quizTabIndex,
-                  child: _LearnedToggleButton(lessonId: widget.lesson.id),
-                ),
+              child: Row(
+                children: [
+                  _LessonBackButton(onPressed: _stopAndPop),
+                  const Spacer(),
+                  ListenableBuilder(
+                    listenable: _tabController,
+                    builder: (context, _) => Visibility(
+                      visible: _tabController.index != _quizTabIndex,
+                      child: _LearnedToggleButton(lessonId: widget.lesson.id),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -498,8 +499,7 @@ class _LearnedToggleButton extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(100),
-            onTap: () =>
-                context.read<LearnedCubit>().toggleLearned(lessonId),
+            onTap: () => context.read<LearnedCubit>().toggleLearned(lessonId),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOut,
@@ -537,9 +537,7 @@ class _LearnedToggleButton extends StatelessWidget {
                   ),
                   const SizedBox(width: 6),
                   Icon(
-                    isLearnt
-                        ? Icons.check_circle
-                        : Icons.check_circle_outline,
+                    isLearnt ? Icons.check_circle : Icons.check_circle_outline,
                     color: isLearnt ? Colors.white : grey160,
                     size: 20,
                   ),
