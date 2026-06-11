@@ -35,18 +35,27 @@ class QuizProgressRing extends StatelessWidget {
                   strokeWidth: 6,
                   strokeCap: StrokeCap.round,
                   backgroundColor: Colors.white24,
-                  valueColor: const AlwaysStoppedAnimation<Color>(yellow100),
+                  // The ring turns green once the quiz is completed.
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    state.isCompleted ? green100 : yellow100,
+                  ),
                 ),
               ),
               Center(
-                child: Text(
-                  '${state.answeredCount}/${state.exercises.length}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                child: state.isCompleted
+                    ? const Icon(
+                        Icons.check_rounded,
+                        color: green100,
+                        size: 36,
+                      )
+                    : Text(
+                        '${state.answeredCount}/${state.exercises.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
               ),
             ],
           ),

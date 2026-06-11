@@ -78,9 +78,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('1/2'), findsOneWidget);
 
+    // Completed: the count gives way to a checkmark.
     cubit.selectOption('ex2', 'op2');
     await tester.pumpAndSettle();
-    expect(find.text('2/2'), findsOneWidget);
+    expect(find.text('2/2'), findsNothing);
+    expect(find.byIcon(Icons.check_rounded), findsOneWidget);
   });
 
   testWidgets('renders nothing when the lesson has no quiz', (tester) async {
