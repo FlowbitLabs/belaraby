@@ -25,6 +25,10 @@ class _AppScrollBehavior extends MaterialScrollBehavior {
   };
 }
 
+/// Global navigator key so non-widget code (the auth recovery listener in
+/// main.dart) can push pages.
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
+
 /// The root widget of the application.
 ///
 /// Configures [MaterialApp] with:
@@ -53,6 +57,7 @@ class BelArabyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'BelAraby',
+        navigatorKey: appNavigatorKey,
 
         // Easy localization setup
         localizationsDelegates: context.localizationDelegates,

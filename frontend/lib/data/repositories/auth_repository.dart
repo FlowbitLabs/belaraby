@@ -55,6 +55,22 @@ class AuthRepository {
     );
   }
 
+  /// Sends a password-recovery email. On web the link returns to the app
+  /// origin (must be in the Auth redirect allow-list); supabase_flutter
+  /// picks the token out of the URL and emits a passwordRecovery event.
+  Future<void> sendPasswordReset(String email) {
+    return supabase.auth.resetPasswordForEmail(
+      email,
+      redirectTo: kIsWeb ? Uri.base.origin : null,
+    );
+  }
+
+  /// Sets a new password for the signed-in user (used by the recovery
+  /// flow after the email link established a session).
+  Future<void> updatePassword(String password) async {
+    await supabase.auth.updateUser(UserAttributes(password: password));
+  }
+
   /// Signs out and immediately starts a fresh anonymous session so the
   /// app keeps working (favorites etc. need an identity).
   Future<void> signOut() async {

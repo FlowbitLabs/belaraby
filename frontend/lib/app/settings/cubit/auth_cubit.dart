@@ -38,11 +38,50 @@ class AuthCubit extends Cubit<AuthState> {
     return _run(() => _repository.signUp(email: email, password: password));
   }
 
+  /// Emails a password-recovery link to [email].
+  Future<void> sendPasswordReset(String email) async {
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        errorMessage: '',
+        infoMessage: '',
+      ),
+    );
+    try {
+      await _repository.sendPasswordReset(email);
+      emit(
+        state.copyWith(
+          status: AuthStatus.initial,
+          infoMessage: 'auth_reset_sent',
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('AuthCubit.sendPasswordReset failed: $error');
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'auth_error_generic',
+        ),
+      );
+    }
+  }
+
+  /// Sets a new password (recovery flow).
+  Future<void> updatePassword(String password) {
+    return _run(() => _repository.updatePassword(password));
+  }
+
   /// Signs out back to a fresh guest session.
   Future<void> signOut() => _run(_repository.signOut);
 
   Future<void> _run(Future<void> Function() action) async {
-    emit(state.copyWith(status: AuthStatus.loading, errorMessage: ''));
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        errorMessage: '',
+        infoMessage: '',
+      ),
+    );
     try {
       await action();
       emit(
@@ -94,6 +133,7 @@ class AuthState extends Equatable {
     this.isAnonymous = true,
     this.email = '',
     this.errorMessage = '',
+    this.infoMessage = '',
   });
 
   final AuthStatus status;
@@ -103,20 +143,31 @@ class AuthState extends Equatable {
   /// Translation key for the snackbar shown on failures.
   final String errorMessage;
 
+  /// Translation key for informational snackbars (e.g. reset email sent).
+  final String infoMessage;
+
   @override
-  List<Object?> get props => [status, isAnonymous, email, errorMessage];
+  List<Object?> get props => [
+    status,
+    isAnonymous,
+    email,
+    errorMessage,
+    infoMessage,
+  ];
 
   AuthState copyWith({
     AuthStatus? status,
     bool? isAnonymous,
     String? email,
     String? errorMessage,
+    String? infoMessage,
   }) {
     return AuthState(
       status: status ?? this.status,
       isAnonymous: isAnonymous ?? this.isAnonymous,
       email: email ?? this.email,
       errorMessage: errorMessage ?? this.errorMessage,
+      infoMessage: infoMessage ?? this.infoMessage,
     );
   }
 }

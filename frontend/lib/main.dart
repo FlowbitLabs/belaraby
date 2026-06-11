@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:belaraby/app/app.dart';
+import 'package:belaraby/app/settings/view/new_password_page.dart';
 import 'package:belaraby/data/repositories/auth_repository.dart';
 import 'package:belaraby/data/services/purchases_service.dart';
 import 'package:belaraby/data/supabase_client.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show AuthChangeEvent, Supabase;
 
 /// Entry point of the application.
 ///
@@ -55,6 +57,16 @@ Future<void> main() async {
     final userId = authState.session?.user.id;
     if (userId != null) {
       unawaited(purchasesService.logIn(userId));
+    }
+    // Password-recovery link opened (web): the URL token established a
+    // session; prompt for the new password.
+    if (authState.event == AuthChangeEvent.passwordRecovery) {
+      unawaited(
+        appNavigatorKey.currentState?.push(
+          MaterialPageRoute<void>(builder: (_) => const NewPasswordPage()),
+        ) ??
+            Future<void>.value(),
+      );
     }
   });
 

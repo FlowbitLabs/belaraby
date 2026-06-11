@@ -55,13 +55,20 @@ jobs:
       - name: Set environment auth URLs (never push localhost)
         env:
           AUTH_SITE_URL: ${{ vars.AUTH_SITE_URL }}
+          AUTH_APP_URL: ${{ vars.AUTH_APP_URL }}
         run: |
           if [ -z "$AUTH_SITE_URL" ]; then
             echo "::error::AUTH_SITE_URL is not set on this GitHub environment. Set it (Settings → Environments → production → Variables) to the environment's public URL, e.g. the dashboard URL."
             exit 1
           fi
           sed -i "s|^site_url = .*|site_url = \"${AUTH_SITE_URL}\"|" supabase/config.toml
-          sed -i "s|^additional_redirect_urls = .*|additional_redirect_urls = [\"${AUTH_SITE_URL}\"]|" supabase/config.toml
+          # The Flutter web app origin must also be allow-listed: password
+          # recovery links redirect back to it.
+          REDIRECTS="\"${AUTH_SITE_URL}\""
+          if [ -n "$AUTH_APP_URL" ]; then
+            REDIRECTS="$REDIRECTS, \"${AUTH_APP_URL}\""
+          fi
+          sed -i "s|^additional_redirect_urls = .*|additional_redirect_urls = [${REDIRECTS}]|" supabase/config.toml
           grep -E "^(site_url|additional_redirect_urls) = " supabase/config.toml
 
       - name: Push project settings (config.toml is the source of truth)

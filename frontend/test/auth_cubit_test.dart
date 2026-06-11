@@ -86,6 +86,21 @@ void main() {
   );
 
   blocTest<AuthCubit, AuthState>(
+    'sendPasswordReset emits the sent info message',
+    setUp: () {
+      when(
+        () => repository.sendPasswordReset('a@b.com'),
+      ).thenAnswer((_) async {});
+    },
+    build: buildCubit,
+    act: (cubit) => cubit.sendPasswordReset('a@b.com'),
+    expect: () => [
+      const AuthState(status: AuthStatus.loading),
+      const AuthState(infoMessage: 'auth_reset_sent'),
+    ],
+  );
+
+  blocTest<AuthCubit, AuthState>(
     'signOut returns to a guest session',
     setUp: () {
       when(repository.signOut).thenAnswer((_) async {});

@@ -130,5 +130,11 @@
   "profile_demo_enabled": "Demo subscription activated — all stories are now unlocked.",
   "profile_demo_disabled": "Demo subscription cancelled — back to the free tier.",
   "profile_demo_description": "Web demo for authorized test accounts: activates a real 30-day subscription on your account so all paid stories unlock — no payment involved. Press again anytime to cancel it.",
-  "profile_demo_error": "Could not change the demo subscription. This account may not be authorized."
+  "profile_demo_error": "Could not change the demo subscription. This account may not be authorized.",
+  "auth_forgot_password": "Forgot password?",
+  "auth_reset_sent": "Password reset link sent — check your email.",
+  "auth_new_password_title": "New password",
+  "auth_new_password_subtitle": "Choose a new password for your account.",
+  "auth_new_password_submit": "Save password",
+  "auth_password_updated": "Your password was updated."
 }
