@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:belaraby/data/models/lesson_exercise_model.dart';
 import 'package:belaraby/data/repositories/lesson_content_repository.dart';
 import 'package:equatable/equatable.dart';
@@ -16,6 +18,19 @@ class QuizCubit extends Cubit<QuizState> {
 
   final String _lessonId;
   final LessonContentRepository _repository;
+  final Random _random = Random();
+
+  /// Authored data tends to list the correct option first — shuffle every
+  /// exercise's options so answer positions carry no signal.
+  List<LessonExercise> _shuffled(List<LessonExercise> exercises) => [
+    for (final exercise in exercises)
+      LessonExercise(
+        id: exercise.id,
+        lessonId: exercise.lessonId,
+        question: exercise.question,
+        options: [...exercise.options]..shuffle(_random),
+      ),
+  ];
 
   /// Loads the exercises (with their options) of the lesson.
   Future<void> loadExercises() async {
@@ -25,7 +40,7 @@ class QuizCubit extends Cubit<QuizState> {
       emit(
         state.copyWith(
           status: QuizStatus.success,
-          exercises: exercises,
+          exercises: _shuffled(exercises),
           selectedOptions: const {},
         ),
       );
@@ -48,9 +63,14 @@ class QuizCubit extends Cubit<QuizState> {
     );
   }
 
-  /// Clears all answers so the quiz can be taken again.
+  /// Clears all answers (and reshuffles the options) for a fresh retake.
   void resetAnswers() {
-    emit(state.copyWith(selectedOptions: const {}));
+    emit(
+      state.copyWith(
+        exercises: _shuffled(state.exercises),
+        selectedOptions: const {},
+      ),
+    );
   }
 }
 

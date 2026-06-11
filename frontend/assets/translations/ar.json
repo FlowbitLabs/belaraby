@@ -169,5 +169,12 @@
   "practice_difficulty_done": "مُتقَن",
   "practice_training_done_title": "أحسنت!",
   "practice_training_done_subtitle": "راجعت {} كلمات في هذه الجلسة.",
-  "practice_back": "العودة إلى التمرين"
+  "practice_back": "العودة إلى التمرين",
+  "auth_or": "أو",
+  "auth_continue_google": "المتابعة عبر Google",
+  "auth_continue_apple": "المتابعة عبر Apple",
+  "auth_confirm_email_sent": "خطوة أخيرة — أكّد بريدك عبر الرابط الذي أرسلناه ثم سجّل الدخول.",
+  "auth_error_already_signed_in": "أنت مسجل الدخول بالفعل. سجّل الخروج أولاً لإنشاء حساب آخر.",
+  "profile_stat_keywords": "كلمات متقنة",
+  "quiz_review_title": "مراجعة الإجابات"
 }

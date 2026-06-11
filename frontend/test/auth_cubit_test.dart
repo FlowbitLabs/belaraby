@@ -90,6 +90,38 @@ void main() {
   );
 
   blocTest<AuthCubit, AuthState>(
+    'signUp is refused while already signed in',
+    setUp: () {
+      when(() => repository.isAnonymous).thenReturn(false);
+    },
+    build: buildCubit,
+    act: (cubit) => cubit.signUp('a@b.com', 'password1'),
+    expect: () => [
+      const AuthState(
+        status: AuthStatus.error,
+        errorMessage: 'auth_error_already_signed_in',
+      ),
+    ],
+  );
+
+  blocTest<AuthCubit, AuthState>(
+    'signUp with pending email confirmation reports the info message',
+    setUp: () {
+      when(
+        () => repository.signUp(email: 'a@b.com', password: 'password1'),
+      ).thenAnswer((_) async {});
+      // email stays unattached until the confirmation link is clicked
+      when(() => repository.currentEmail).thenReturn(null);
+    },
+    build: buildCubit,
+    act: (cubit) => cubit.signUp('a@b.com', 'password1'),
+    skip: 2,
+    expect: () => [
+      const AuthState(infoMessage: 'auth_confirm_email_sent'),
+    ],
+  );
+
+  blocTest<AuthCubit, AuthState>(
     'sendPasswordReset emits the sent info message',
     setUp: () {
       when(

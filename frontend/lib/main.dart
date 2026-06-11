@@ -24,12 +24,12 @@ Future<void> main() async {
   // Detect a password-recovery link BEFORE Supabase.initialize consumes the
   // URL: with the PKCE flow the recovery event fires during initialization
   // — earlier than any listener can be attached — so the deep link must be
-  // captured here. Recovery is the only redirect flow pointing at the web
-  // app, so a `code` query param (or a legacy `type=recovery` fragment)
-  // means "the user clicked the reset-password email".
+  // captured here. Recovery links carry a `flow=recovery` marker (set in
+  // AuthRepository.sendPasswordReset) to distinguish them from OAuth
+  // redirects, which also use a `code` param.
   final isRecoveryLink =
       kIsWeb &&
-      (Uri.base.queryParameters.containsKey('code') ||
+      (Uri.base.queryParameters['flow'] == 'recovery' ||
           Uri.base.fragment.contains('type=recovery'));
 
   // Initialize easy_localization

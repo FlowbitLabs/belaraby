@@ -29,9 +29,9 @@ class LibraryHeaderDelegate extends SliverPersistentHeaderDelegate {
           Text(
             'navbar_my_library'.tr(),
             style: const TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: grey190,
             ),
           ),
         ],

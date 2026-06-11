@@ -1,6 +1,6 @@
 import 'package:belaraby/data/supabase_client.dart';
 import 'package:flutter/foundation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show UserAttributes;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Owns the app's Supabase auth identity.
 ///
@@ -56,11 +56,30 @@ class AuthRepository {
   }
 
   /// Sends a password-recovery email. On web the link returns to the app
-  /// origin (must be in the Auth redirect allow-list); supabase_flutter
-  /// picks the token out of the URL and emits a passwordRecovery event.
+  /// origin with a `flow=recovery` marker (so main.dart can tell it apart
+  /// from OAuth redirects, which also carry a `code` param).
   Future<void> sendPasswordReset(String email) {
     return supabase.auth.resetPasswordForEmail(
       email,
+      redirectTo: kIsWeb ? '${Uri.base.origin}/?flow=recovery' : null,
+    );
+  }
+
+  /// Starts the Google OAuth sign-in (browser redirect on web).
+  ///
+  /// Requires the Google provider to be configured on the Supabase
+  /// project; fails with an AuthException otherwise.
+  Future<void> signInWithGoogle() async {
+    await supabase.auth.signInWithOAuth(
+      OAuthProvider.google,
+      redirectTo: kIsWeb ? Uri.base.origin : null,
+    );
+  }
+
+  /// Starts the Apple OAuth sign-in (shown on iOS, per App Store rules).
+  Future<void> signInWithApple() async {
+    await supabase.auth.signInWithOAuth(
+      OAuthProvider.apple,
       redirectTo: kIsWeb ? Uri.base.origin : null,
     );
   }

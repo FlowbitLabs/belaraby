@@ -53,7 +53,21 @@ void main() {
           status: QuizStatus.loading,
           selectedOptions: {'ex-1': 'opt-2'},
         ),
-        const QuizState(status: QuizStatus.success, exercises: [exercise]),
+        // Options are reshuffled into new instances, so match structurally.
+        isA<QuizState>()
+            .having((state) => state.status, 'status', QuizStatus.success)
+            .having(
+              (state) => state.selectedOptions,
+              'selectedOptions',
+              isEmpty,
+            )
+            .having(
+              (state) => state.exercises.single.options
+                  .map((option) => option.id)
+                  .toSet(),
+              'option ids',
+              {'opt-1', 'opt-2'},
+            ),
       ],
     );
 

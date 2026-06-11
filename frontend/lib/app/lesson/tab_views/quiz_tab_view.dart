@@ -97,6 +97,8 @@ class _ExerciseCard extends StatelessWidget {
                       color: navy140,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
+                      height: 1,
+                      leadingDistribution: TextLeadingDistribution.even,
                     ),
                   ),
                 ),
@@ -232,21 +234,24 @@ class _QuizSummary extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        Card(
-          margin: EdgeInsets.zero,
-          color: yellow15,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [navy140, navy110],
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+            ),
+            borderRadius: BorderRadius.circular(18),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.zero,
             child: Column(
               children: [
                 Text(
                   _resultMessageKey.tr(),
                   style: BTextStyles.of(context).title1.copyWith(
-                    color: grey190,
+                    color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -263,9 +268,9 @@ class _QuizSummary extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: grey180,
+                    color: Colors.white70,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -289,7 +294,18 @@ class _QuizSummary extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
+        Padding(
+          padding: const EdgeInsetsDirectional.only(start: 4, bottom: 8),
+          child: Text(
+            'quiz_review_title'.tr(),
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: grey190,
+            ),
+          ),
+        ),
         for (final exercise in state.exercises)
           _ReviewCard(
             exercise: exercise,
@@ -325,7 +341,7 @@ class _ScoreRing extends StatelessWidget {
               value: value,
               strokeWidth: 7,
               strokeCap: StrokeCap.round,
-              backgroundColor: grey110,
+              backgroundColor: Colors.white24,
               valueColor: AlwaysStoppedAnimation<Color>(
                 fraction >= 0.8
                     ? green115
@@ -342,7 +358,7 @@ class _ScoreRing extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: grey190,
+                color: Colors.white,
               ),
             ),
           ),
@@ -381,10 +397,16 @@ class _ReviewCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       color: Colors.white,
       elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(
+          color: _isCorrect ? green50 : red30,
+          width: 1.5,
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -410,15 +432,15 @@ class _ReviewCard extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (!_isCorrect) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      'quiz_your_answer'.tr(args: [_selectedAnswerText]),
-                      style: BTextStyles.of(context).body1.copyWith(
-                        color: red110,
-                        fontSize: 14,
-                      ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'quiz_your_answer'.tr(args: [_selectedAnswerText]),
+                    style: BTextStyles.of(context).body1.copyWith(
+                      color: _isCorrect ? green140 : red110,
+                      fontSize: 14,
                     ),
+                  ),
+                  if (!_isCorrect) ...[
                     const SizedBox(height: 2),
                     Text(
                       'quiz_correct_answer'.tr(args: [_correctAnswerText]),

@@ -1,6 +1,7 @@
 import 'package:belaraby/app/lesson/utils/word_speaker.dart';
 import 'package:belaraby/app/practice/cubit/practice_cubit.dart';
 import 'package:belaraby/app/practice/view/flashcard_training_page.dart';
+import 'package:belaraby/app/practice/widgets/flip_card.dart';
 import 'package:belaraby/app/util/convert_arabic_digits.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
@@ -262,7 +263,8 @@ class _DifficultySection extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: style.color,
-                    height: 1.3,
+                    height: 1,
+                    leadingDistribution: TextLeadingDistribution.even,
                   ),
                 ),
               ),
@@ -292,49 +294,161 @@ class _PracticeWordCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(color: style.tint, width: 1.5),
       ),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.fromSTEB(14, 8, 4, 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    word.word,
-                    style: BTextStyles.of(context).title1.copyWith(
-                      color: grey190,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (word.meaning.isNotEmpty)
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => showMiniFlashcard(context, word),
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(14, 8, 4, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      word.meaning,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: BTextStyles.of(context).body1.copyWith(
-                        color: grey160,
-                        fontSize: 13,
+                      word.word,
+                      style: BTextStyles.of(context).title1.copyWith(
+                        color: grey190,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                ],
+                    if (word.meaning.isNotEmpty)
+                      Text(
+                        word.meaning,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: BTextStyles.of(context).body1.copyWith(
+                          color: grey160,
+                          fontSize: 13,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.volume_up, color: yellow120, size: 22),
-              tooltip: 'tooltip_play'.tr(),
-              onPressed: () => WordSpeaker().speak(word.word),
-            ),
-            IconButton(
-              icon: const Icon(
-                Icons.delete_outline,
-                color: grey140,
-                size: 22,
+              IconButton(
+                icon: const Icon(Icons.volume_up, color: yellow120, size: 22),
+                tooltip: 'tooltip_play'.tr(),
+                onPressed: () => WordSpeaker().speak(word.word),
               ),
-              tooltip: 'practice_remove_tooltip'.tr(),
-              onPressed: () =>
-                  context.read<PracticeCubit>().removeEntry(word),
+              IconButton(
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: grey140,
+                  size: 22,
+                ),
+                tooltip: 'practice_remove_tooltip'.tr(),
+                onPressed: () =>
+                    context.read<PracticeCubit>().removeEntry(word),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Mini flashcard preview: tap-to-flip word/meaning in a bottom sheet.
+Future<void> showMiniFlashcard(BuildContext context, PracticeWord word) {
+  return showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (context) => _MiniFlashcardSheet(word: word),
+  );
+}
+
+class _MiniFlashcardSheet extends StatefulWidget {
+  const _MiniFlashcardSheet({required this.word});
+
+  final PracticeWord word;
+
+  @override
+  State<_MiniFlashcardSheet> createState() => _MiniFlashcardSheetState();
+}
+
+class _MiniFlashcardSheetState extends State<_MiniFlashcardSheet> {
+  bool _revealed = false;
+
+  Widget _face({required Color background, required Widget child}) {
+    return Container(
+      width: double.infinity,
+      height: 220,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 20,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Center(child: child),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final word = widget.word;
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: () => setState(() => _revealed = !_revealed),
+              child: FlipCard(
+                revealed: _revealed,
+                front: _face(
+                  background: Colors.white,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        word.word,
+                        textAlign: TextAlign.center,
+                        style: BTextStyles.of(context).title1.copyWith(
+                          color: grey190,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.volume_up,
+                          color: yellow120,
+                          size: 28,
+                        ),
+                        tooltip: 'tooltip_play'.tr(),
+                        onPressed: () => WordSpeaker().speak(word.word),
+                      ),
+                      Text(
+                        'practice_tap_to_flip'.tr(),
+                        style: const TextStyle(color: grey140, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                back: _face(
+                  background: yellow15,
+                  child: Text(
+                    word.meaning.isNotEmpty
+                        ? word.meaning
+                        : 'practice_no_meaning'.tr(),
+                    textAlign: TextAlign.center,
+                    style: BTextStyles.of(context).body1.copyWith(
+                      color: grey190,
+                      fontSize: 20,
+                      height: 1.7,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),

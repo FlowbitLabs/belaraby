@@ -1,7 +1,6 @@
-import 'dart:math' as math;
-
 import 'package:belaraby/app/lesson/utils/word_speaker.dart';
 import 'package:belaraby/app/practice/cubit/practice_cubit.dart';
+import 'package:belaraby/app/practice/widgets/flip_card.dart';
 import 'package:belaraby/app/util/convert_arabic_digits.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
@@ -103,7 +102,7 @@ class _FlashcardTrainingPageState extends State<FlashcardTrainingPage> {
           Expanded(
             child: GestureDetector(
               onTap: () => setState(() => _revealed = !_revealed),
-              child: _FlipCard(
+              child: FlipCard(
                 revealed: _revealed,
                 front: _CardFace(
                   background: Colors.white,
@@ -256,45 +255,6 @@ class _FlashcardTrainingPageState extends State<FlashcardTrainingPage> {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// 3D Y-axis flip between [front] and [back].
-class _FlipCard extends StatelessWidget {
-  const _FlipCard({
-    required this.revealed,
-    required this.front,
-    required this.back,
-  });
-
-  final bool revealed;
-  final Widget front;
-  final Widget back;
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(end: revealed ? 1 : 0),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeInOut,
-      builder: (context, value, _) {
-        final angle = value * math.pi;
-        final showBack = angle > math.pi / 2;
-        return Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001)
-            ..rotateY(angle),
-          child: showBack
-              ? Transform(
-                  alignment: Alignment.center,
-                  transform: Matrix4.identity()..rotateY(math.pi),
-                  child: back,
-                )
-              : front,
-        );
-      },
     );
   }
 }

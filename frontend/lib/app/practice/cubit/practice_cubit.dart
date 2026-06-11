@@ -176,8 +176,7 @@ class PracticeState extends Equatable {
   final String errorMessage;
 
   /// Keyword ids currently in the deck (for the add-to-practice toggles).
-  Set<String> get keywordIds =>
-      words.map((word) => word.keywordId).toSet();
+  Set<String> get keywordIds => words.map((word) => word.keywordId).toSet();
 
   /// Custom story words currently in the deck.
   Set<String> get customWords => {

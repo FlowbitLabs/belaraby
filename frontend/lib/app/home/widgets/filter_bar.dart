@@ -83,6 +83,7 @@ class _LevelFilterBarState extends State<LevelFilterBar> {
                       style: const TextStyle(
                         fontSize: 16,
                         height: 1,
+                        leadingDistribution: TextLeadingDistribution.even,
                         color: grey190,
                         fontFamily: 'Cairo',
                         fontWeight: FontWeight.w600,

@@ -77,9 +77,39 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   /// Creates an account by upgrading the anonymous user.
-  Future<void> signUp(String email, String password) {
-    return _run(() => _repository.signUp(email: email, password: password));
+  ///
+  /// Corner cases: refuses when already signed in (the upgrade would change
+  /// the existing account's email), and when the project requires email
+  /// confirmation the account is only usable after the link is clicked —
+  /// reported via an info message instead of a success.
+  Future<void> signUp(String email, String password) async {
+    if (!_repository.isAnonymous) {
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'auth_error_already_signed_in',
+        ),
+      );
+      return;
+    }
+    await _run(() => _repository.signUp(email: email, password: password));
+    if (state.status == AuthStatus.success &&
+        (_repository.currentEmail ?? '').isEmpty) {
+      // updateUser succeeded but the email is pending confirmation.
+      emit(
+        state.copyWith(
+          status: AuthStatus.initial,
+          infoMessage: 'auth_confirm_email_sent',
+        ),
+      );
+    }
   }
+
+  /// Signs in with Google (OAuth redirect).
+  Future<void> signInWithGoogle() => _run(_repository.signInWithGoogle);
+
+  /// Signs in with Apple (OAuth redirect; offered on iOS).
+  Future<void> signInWithApple() => _run(_repository.signInWithApple);
 
   /// Emails a password-recovery link to [email].
   Future<void> sendPasswordReset(String email) async {

@@ -47,24 +47,46 @@ class LibraryLessonList extends StatelessWidget {
             ),
           );
         }
+        // One visible container holding the whole section list.
         return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          sliver: SliverList.builder(
-            itemCount: lessons.length,
-            itemBuilder: (context, index) {
-              final lesson = lessons[index];
-              return _CompactLessonCard(
-                lesson: lesson,
-                // Paid lessons go through the paywall for non-premium users.
-                onTap: () async {
-                  await navigateToLessonGated(context, lesson);
-                  // Refresh so newly learned/unfavorited lessons show up.
-                  if (context.mounted) {
-                    await context.read<MyLibraryCubit>().loadLibrary();
-                  }
-                },
-              );
-            },
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+          sliver: SliverToBoxAdapter(
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: grey110),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  for (final (index, lesson) in lessons.indexed) ...[
+                    _CompactLessonCard(
+                      lesson: lesson,
+                      // Paid lessons go through the paywall for
+                      // non-premium users.
+                      onTap: () async {
+                        await navigateToLessonGated(context, lesson);
+                        // Refresh so newly learned/unfavorited lessons
+                        // show up.
+                        if (context.mounted) {
+                          await context.read<MyLibraryCubit>().loadLibrary();
+                        }
+                      },
+                    ),
+                    if (index != lessons.length - 1)
+                      const Divider(height: 1, indent: 86, color: grey110),
+                  ],
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -108,12 +130,8 @@ class _CompactLessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      color: Colors.white,
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      clipBehavior: Clip.antiAlias,
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -171,7 +189,9 @@ class _CompactLessonCard extends StatelessWidget {
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: grey180,
-                              height: 1.3,
+                              height: 1,
+                              leadingDistribution:
+                                  TextLeadingDistribution.even,
                             ),
                           ),
                         ),

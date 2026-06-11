@@ -1,6 +1,8 @@
 import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
 import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
+import 'package:belaraby/app/practice/cubit/practice_cubit.dart';
 import 'package:belaraby/constant/colors.dart';
+import 'package:belaraby/data/models/practice_word_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,6 +47,10 @@ class LearningProgressCard extends StatelessWidget {
     );
     final favoriteCount = context.select(
       (FavoriteCubit cubit) => cubit.state.favoriteIds.length,
+    );
+    final masteredWords = context.select(
+      (PracticeCubit cubit) =>
+          cubit.state.byDifficulty(PracticeDifficulty.done).length,
     );
     final next = _nextMilestone(learnedCount);
     final progress = next == null ? 1.0 : learnedCount / next;
@@ -95,6 +101,15 @@ class LearningProgressCard extends StatelessWidget {
                       color: red110,
                       value: favoriteCount,
                       labelKey: 'profile_stat_favorites',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _StatChip(
+                      icon: Icons.style,
+                      color: navy110,
+                      value: masteredWords,
+                      labelKey: 'profile_stat_keywords',
                     ),
                   ),
                 ],

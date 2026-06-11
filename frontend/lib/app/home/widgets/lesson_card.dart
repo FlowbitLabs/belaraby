@@ -95,7 +95,10 @@ class LessonCard extends StatelessWidget {
                                 lesson.level,
                                 style: const TextStyle(
                                   fontSize: 14,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
+                                  height: 1,
+                                  leadingDistribution:
+                                      TextLeadingDistribution.even,
                                 ),
                               ),
                             ),
