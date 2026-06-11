@@ -430,6 +430,24 @@ Cancellations and expirations flow back through the RevenueCat webhook.
 > sandbox testers / Google Play license testers on real builds — not on
 > simulators without a store account.
 
+### Sandbox events
+
+The webhook **ignores `environment: SANDBOX` events by default**, so
+sandbox/TestFlight test purchases never grant real premium access in
+production. To exercise the full purchase→unlock chain during pre-launch
+store testing, opt in deliberately:
+
+```bash
+supabase secrets set REVENUECAT_ALLOW_SANDBOX=true --project-ref hmgwrovvqeezkyfiqula
+```
+
+Before launch: unset it (`supabase secrets unset REVENUECAT_ALLOW_SANDBOX`)
+and clean up any test rows:
+
+```sql
+delete from public.subscriptions where environment = 'SANDBOX';
+```
+
 ---
 
 ## 5. Keep-alive + backups
@@ -689,4 +707,13 @@ also supports manual `workflow_dispatch`.
 - [ ] **REQUIRED:** replace the placeholder app icons — `frontend/android/app/src/main/res/mipmap-*/ic_launcher.png` and `frontend/ios/Runner/Assets.xcassets/AppIcon.appiconset/` still contain the **stock Flutter template logo**. Apple rejects placeholder icons (Guideline 2.3.8) and Play would ship the generic Flutter "F". Generate branded icons for every density (e.g. with the `flutter_launcher_icons` package) and add an Android **adaptive icon**
 - [ ] **REQUIRED:** host real privacy-policy and terms pages and replace the placeholder URLs in `frontend/lib/constant/legal_links.dart` (`https://belaraby.app/privacy` and `https://belaraby.app/terms`) **before** submitting to either store — both the paywall **and Settings** link to them, and Apple/Google both require working URLs (Apple additionally requires the privacy policy URL in App Store Connect, Google in the Play Console data-safety form)
 - [ ] Verify the privacy policy covers account deletion (the in-app `delete-account` flow) and anonymous-usage data retention (90-day cleanup)
-- [ ] Fill in the App Store privacy "nutrition labels" / Play data-safety form consistently with the hosted policy
+- [ ] Fill in the App Store privacy "nutrition labels" / Play data-safety form consistently with the hosted policy. Disclose: email (account login), learning activity (favorites/learned/quiz results), purchase history (RevenueCat), and the third parties Supabase + RevenueCat
+- [ ] **REQUIRED (Apple, since 2024):** add an app-level privacy manifest at `frontend/ios/Runner/PrivacyInfo.xcprivacy` and add it to the Runner target in Xcode — declare `NSPrivacyCollectedDataTypes` (email, purchase history, learning activity), `NSPrivacyTracking: false`, and any `NSPrivacyAccessedAPITypes` (e.g. UserDefaults CA92.1). The RevenueCat pods ship their own manifests; the app target has none yet
+- [ ] Have legal counsel review the in-app legal text — `frontend/lib/constant/legal_content.dart` is explicitly marked as a placeholder draft
+- [ ] During TestFlight / license-tester verification of purchases: set `REVENUECAT_ALLOW_SANDBOX=true` (see §4 *Sandbox events*), then **unset it and delete sandbox subscription rows before launch**
+
+### Subscription known limitations (post-launch backlog, not blocking)
+- **Webhook latency vs unlock:** after a purchase the story body unmasks only once the RevenueCat webhook lands; the client retries for ~9.5s (`LessonRepository.getUnlockedLessonById`) then falls back to a manual-retry screen. If RevenueCat delivery is ever slower in practice, lengthen the backoff or add a server-side premium fallback check on mobile
+- **Account deletion does not cancel the store subscription** (stores do not allow it). The delete dialog says so and renewals after deletion bill an unmappable RevenueCat id — consider a pre-delete interstitial deep-linking to the store's manage-subscriptions page
+- **No offline cache of premium status:** an offline app launch shows the paywall error state instead of the last known entitlement; RevenueCat's own SDK cache covers most of this in practice
+- **No explicit R8 keep rules for `purchases_flutter`:** the plugin ships consumer rules, but the first release build should be smoke-tested on a real device (purchase + restore) to confirm nothing is stripped
