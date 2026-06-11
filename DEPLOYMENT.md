@@ -76,7 +76,7 @@ There is **one** Supabase project: ref `hmgwrovvqeezkyfiqula`.
 | `SUPABASE_ACCESS_TOKEN` | repo secret | personal access token |
 | `SUPABASE_PROJECT_ID` | repo variable | `hmgwrovvqeezkyfiqula` |
 | `SUPABASE_DB_PASSWORD` | `production` secret | the project's database password |
-| `AUTH_SITE_URL` | `production` variable | `https://belaraby-admin.mahongru-dev.workers.dev` |
+| `AUTH_SITE_URL` | `production` variable | `https://admin.belaraby.workers.dev` |
 
 ### Settings as code (`config.toml`)
 
@@ -164,7 +164,7 @@ Worker:
 
 | Worker | URL |
 |---|---|
-| `belaraby-admin` | `https://belaraby-admin.mahongru-dev.workers.dev` |
+| `admin` | `https://admin.belaraby.workers.dev` |
 
 **One-time setup:**
 1. Create a Cloudflare account (free, no card).
@@ -186,7 +186,7 @@ there is nothing extra to configure.
 **Optional hardening — Cloudflare Access:** the Zero Trust free tier (up to
 50 users) can put an email/SSO login wall in front of the admin Worker
 before React Admin's own login even loads: Zero Trust → Access →
-Applications → add the `belaraby-admin.mahongru-dev.workers.dev` hostname
+Applications → add the `admin.belaraby.workers.dev` hostname
 and an allow-policy for your admin emails. Note: Zero Trust signup asks for
 payment details even on the free plan (it does not charge).
 
@@ -197,7 +197,7 @@ The dashboard login is ra-supabase's email/password page; `/forgot-password`
 and `/set-password` handle the Supabase invite/recovery email callbacks. For
 those links to work, the Supabase Auth redirect allow-list must include the
 dashboard origin — the `AUTH_SITE_URL` GitHub variable (section 1) is set to
-`https://belaraby-admin.mahongru-dev.workers.dev` so the deploy workflow
+`https://admin.belaraby.workers.dev` so the deploy workflow
 pushes it into `site_url`/`additional_redirect_urls`.
 
 ### Making a dashboard admin
@@ -594,7 +594,7 @@ dashboard, Flutter). Every deploy workflow also supports manual
 - [ ] Add `SUPABASE_PROJECT_ID` repo variable (`hmgwrovvqeezkyfiqula`)
 - [ ] Create the GitHub `production` environment (Settings → Environments)
 - [ ] Add `SUPABASE_DB_PASSWORD` secret to the `production` environment
-- [ ] Add `AUTH_SITE_URL` var to the `production` environment (`https://belaraby-admin.mahongru-dev.workers.dev` — the deploy fails without it)
+- [ ] Add `AUTH_SITE_URL` var to the `production` environment (`https://admin.belaraby.workers.dev` — the deploy fails without it)
 - [ ] Verify "Allow anonymous sign-ins" is enabled on the project (Auth → Sign In / Providers) — the app bootstraps every user with `signInAnonymously()`
 - [ ] Verify the Deploy Supabase workflow runs on push to `main` (migrations + config + functions)
 - [ ] Add `SUPABASE_DB_URL` secret to the `production` environment (Postgres session-pooler connection string, for backups)
@@ -625,7 +625,7 @@ dashboard, Flutter). Every deploy workflow also supports manual
 - [ ] Create an API token with the "Edit Cloudflare Workers" template
 - [ ] Add `CLOUDFLARE_API_TOKEN` secret to GitHub (repo-level, shared)
 - [ ] Add `CLOUDFLARE_ACCOUNT_ID` secret to GitHub (repo-level, shared)
-- [ ] Push to `main` (or dispatch Deploy Dashboard) and verify `https://belaraby-admin.mahongru-dev.workers.dev` loads
+- [ ] Push to `main` (or dispatch Deploy Dashboard) and verify `https://admin.belaraby.workers.dev` loads
 - [ ] Optional: gate the Worker behind Cloudflare Access (Zero Trust free tier)
 - [ ] Delete the old Vercel project + uninstall the Vercel GitHub App (Settings → Integrations)
 - [ ] Create an admin user in the Supabase project (Auth → Users)

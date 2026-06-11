@@ -4,7 +4,7 @@
 #   npx wrangler deploy
 # Local preview against a build: npm run build && npx wrangler dev
 
-name = "belaraby-admin"
+name = "admin"
 compatibility_date = "2026-06-10"
 
 [assets]
