@@ -10,7 +10,8 @@ class LessonView extends StatefulWidget {
 
 class _LessonViewState extends State<LessonView>
     with SingleTickerProviderStateMixin {
-  /// Index of the quiz tab in [_tabController].
+  /// Tab indices in [_tabController].
+  static const int _storyTabIndex = 0;
   static const int _quizTabIndex = 1;
 
   late final TabController _tabController = TabController(
@@ -164,12 +165,12 @@ class _LessonViewState extends State<LessonView>
             PositionedDirectional(
               top: 60,
               end: 16,
-              // The learned toggle belongs to the story context — hide it
-              // while the quiz tab owns the hero section.
+              // The learned toggle belongs to the story context — only the
+              // story tab shows it.
               child: ListenableBuilder(
                 listenable: _tabController,
                 builder: (context, _) => Visibility(
-                  visible: _tabController.index != _quizTabIndex,
+                  visible: _tabController.index == _storyTabIndex,
                   child: _LearnedToggleButton(lessonId: widget.lesson.id),
                 ),
               ),
