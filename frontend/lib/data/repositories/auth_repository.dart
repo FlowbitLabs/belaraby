@@ -8,15 +8,26 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// and subscriptions can be persisted server-side, and so purchases can be
 /// attributed to the Supabase user id in RevenueCat.
 class AuthRepository {
+  /// In-flight anonymous sign-in, shared across instances so concurrent
+  /// callers (e.g. the signed-out listener in main.dart racing signOut's
+  /// own recovery) don't create two anonymous users.
+  static Future<String?>? _anonymousSignIn;
+
   /// Returns the current Supabase user id, signing in anonymously first
   /// when no session exists yet.
   ///
   /// Returns `null` when sign-in fails (e.g. the device is offline); safe to
   /// call repeatedly — callers should retry before identity-critical
   /// operations such as purchases.
-  Future<String?> ensureSignedIn() async {
+  Future<String?> ensureSignedIn() {
     final currentId = supabase.auth.currentUser?.id;
-    if (currentId != null) return currentId;
+    if (currentId != null) return Future.value(currentId);
+    return _anonymousSignIn ??= _signInAnonymously().whenComplete(
+      () => _anonymousSignIn = null,
+    );
+  }
+
+  Future<String?> _signInAnonymously() async {
     try {
       final response = await supabase.auth.signInAnonymously();
       return response.user?.id;

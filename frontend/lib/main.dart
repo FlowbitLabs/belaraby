@@ -70,6 +70,13 @@ Future<void> main() async {
     if (userId != null) {
       unawaited(purchasesService.logIn(userId));
     }
+    // Session invalidated server-side (e.g. the refresh token no longer
+    // exists after a DB reset or account deletion): the SDK clears the
+    // session and emits signedOut. Start a fresh anonymous identity so the
+    // app keeps working instead of issuing unauthenticated queries.
+    if (authState.event == AuthChangeEvent.signedOut) {
+      unawaited(AuthRepository().ensureSignedIn());
+    }
     // Password-recovery link opened (web): the URL token established a
     // session; prompt for the new password.
     if (authState.event == AuthChangeEvent.passwordRecovery) {
