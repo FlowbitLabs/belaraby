@@ -19,6 +19,8 @@ void main() {
   // PurchasesErrorHelper.getErrorCode (1 = purchaseCancelledError).
   const cancelledCode = '1';
   const storeProblemCode = '2';
+  const networkErrorCode = '10';
+  const paymentPendingCode = '20';
 
   setUpAll(() {
     registerFallbackValue(MockPackage());
@@ -222,6 +224,42 @@ void main() {
       expect: () => [
         const SubscriptionState(status: SubscriptionStatus.loading),
         const SubscriptionState(status: SubscriptionStatus.success),
+      ],
+    );
+
+    blocTest<SubscriptionCubit, SubscriptionState>(
+      'emits success with a pending message for Ask to Buy purchases',
+      setUp: () {
+        when(() => purchases.purchasePackage(package)).thenThrow(
+          PlatformException(code: paymentPendingCode),
+        );
+      },
+      build: buildCubit,
+      act: (cubit) => cubit.purchase(package),
+      expect: () => [
+        const SubscriptionState(status: SubscriptionStatus.loading),
+        const SubscriptionState(
+          status: SubscriptionStatus.success,
+          infoMessage: 'paywall_purchase_pending',
+        ),
+      ],
+    );
+
+    blocTest<SubscriptionCubit, SubscriptionState>(
+      'emits a network-specific error when the connection fails',
+      setUp: () {
+        when(() => purchases.purchasePackage(package)).thenThrow(
+          PlatformException(code: networkErrorCode),
+        );
+      },
+      build: buildCubit,
+      act: (cubit) => cubit.purchase(package),
+      expect: () => [
+        const SubscriptionState(status: SubscriptionStatus.loading),
+        const SubscriptionState(
+          status: SubscriptionStatus.error,
+          errorMessage: 'paywall_error_network',
+        ),
       ],
     );
 

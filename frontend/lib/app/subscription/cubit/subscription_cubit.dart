@@ -201,11 +201,24 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
         emit(state.copyWith(status: SubscriptionStatus.success));
         return;
       }
+      // Ask to Buy / deferred transactions: not a failure — the entitlement
+      // arrives via the customer-info stream once the purchase is approved.
+      if (PurchasesService.isPendingPayment(error)) {
+        emit(
+          state.copyWith(
+            status: SubscriptionStatus.success,
+            infoMessage: 'paywall_purchase_pending',
+          ),
+        );
+        return;
+      }
       debugPrint('SubscriptionCubit.purchase failed: $error');
       emit(
         state.copyWith(
           status: SubscriptionStatus.error,
-          errorMessage: 'paywall_error_purchase',
+          errorMessage: PurchasesService.isNetworkFailure(error)
+              ? 'paywall_error_network'
+              : 'paywall_error_purchase',
         ),
       );
     } on Exception catch (error) {

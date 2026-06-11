@@ -24,7 +24,20 @@ class PaywallPackages extends StatelessWidget {
           );
         }
         if (state.packages.isEmpty) {
-          return PaywallMessage(message: 'paywall_no_packages'.tr());
+          // Offerings can come back empty on flaky connections or store
+          // misconfiguration — give the user a way out of the dead end.
+          return Column(
+            children: [
+              PaywallMessage(message: 'paywall_no_packages'.tr()),
+              TextButton(
+                onPressed: () => context.read<SubscriptionCubit>().load(),
+                child: Text(
+                  'paywall_retry'.tr(),
+                  style: const TextStyle(color: yellow120),
+                ),
+              ),
+            ],
+          );
         }
         return Column(
           children: [

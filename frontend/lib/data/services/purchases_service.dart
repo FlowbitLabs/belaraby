@@ -55,6 +55,22 @@ class PurchasesService {
       PurchasesErrorHelper.getErrorCode(error) ==
           PurchasesErrorCode.purchaseCancelledError;
 
+  /// Whether [error] is a purchase awaiting external approval (e.g. iOS
+  /// Ask to Buy / parental controls, or a deferred Play transaction). The
+  /// entitlement arrives later via [customerInfoStream] once approved.
+  static bool isPendingPayment(Object error) =>
+      error is PlatformException &&
+      PurchasesErrorHelper.getErrorCode(error) ==
+          PurchasesErrorCode.paymentPendingError;
+
+  /// Whether [error] is a connectivity failure (retryable by the user).
+  static bool isNetworkFailure(Object error) {
+    if (error is! PlatformException) return false;
+    final code = PurchasesErrorHelper.getErrorCode(error);
+    return code == PurchasesErrorCode.networkError ||
+        code == PurchasesErrorCode.offlineConnectionError;
+  }
+
   String get _platformApiKey {
     // purchases_flutter has no web implementation, and on web
     // defaultTargetPlatform reports the browser's OS — so without this guard
