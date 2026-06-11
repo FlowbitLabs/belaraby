@@ -1,11 +1,11 @@
 {
-    "name": "frontend",
-    "short_name": "frontend",
+    "name": "Belaraby — اكتشف بالعربي",
+    "short_name": "Belaraby",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Belaraby — Arabic stories, quizzes and grammar for learners.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
