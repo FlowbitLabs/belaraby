@@ -69,7 +69,7 @@ class GrammarCard extends StatelessWidget {
                 children: [
                   const Padding(
                     padding: EdgeInsetsDirectional.only(end: 12, top: 2),
-                    child: Icon(Icons.lightbulb_outline, color: orange120),
+                    child: Icon(Icons.lightbulb_outline, color: yellow120),
                   ),
                   Expanded(
                     child: Text(

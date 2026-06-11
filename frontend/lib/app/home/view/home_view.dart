@@ -15,7 +15,7 @@ class HomeView extends StatelessWidget {
                 (state.status == HomeStatus.loading ||
                     state.status == HomeStatus.initial)) {
               return const Center(
-                child: CircularProgressIndicator(color: orange120),
+                child: CircularProgressIndicator(color: yellow120),
               );
             }
             if (state.status == HomeStatus.error && state.lessons.isEmpty) {
@@ -26,7 +26,7 @@ class HomeView extends StatelessWidget {
             }
 
             return RefreshIndicator(
-              color: orange120,
+              color: yellow120,
               onRefresh: () => context.read<HomeCubit>().getLessons(),
               child: CustomScrollView(
                 physics: const AlwaysScrollableScrollPhysics(
@@ -113,7 +113,7 @@ class _HomeError extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: orange120,
+                backgroundColor: yellow120,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
               ),
@@ -139,7 +139,7 @@ class _HideLearnedButton extends StatelessWidget {
     return TextButton(
       onPressed: () => context.read<HomeCubit>().toggleHideLearned(),
       style: TextButton.styleFrom(
-        backgroundColor: isActive ? orange120 : Colors.white,
+        backgroundColor: isActive ? yellow120 : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),

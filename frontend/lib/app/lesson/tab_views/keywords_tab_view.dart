@@ -52,7 +52,7 @@ class KeywordsTabView extends StatelessWidget {
                   ),
                 ),
                 trailing: IconButton(
-                  icon: const Icon(Icons.volume_up, color: orange120),
+                  icon: const Icon(Icons.volume_up, color: yellow120),
                   tooltip: 'tooltip_play'.tr(),
                   onPressed: () => WordSpeaker().speak(keyword.keyword),
                 ),

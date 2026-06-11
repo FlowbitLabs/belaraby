@@ -59,7 +59,7 @@ class PaywallPackageCard extends StatelessWidget {
             ElevatedButton(
               onPressed: onSubscribe,
               style: ElevatedButton.styleFrom(
-                backgroundColor: orange120,
+                backgroundColor: yellow120,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(

@@ -79,7 +79,7 @@ class _LibraryButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: isSelected
-                ? const BorderSide(color: orange120, width: 2)
+                ? const BorderSide(color: yellow120, width: 2)
                 : BorderSide.none,
           ),
           backgroundColor: Colors.white,
@@ -91,7 +91,7 @@ class _LibraryButton extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsetsDirectional.only(start: 18, end: 5),
-              child: Icon(trailingIcon, size: 40, color: orange120),
+              child: Icon(trailingIcon, size: 40, color: yellow120),
             ),
             Expanded(
               child: Column(
@@ -118,7 +118,7 @@ class _LibraryButton extends StatelessWidget {
                     ? Icons.check_circle_rounded
                     : Icons.arrow_forward_ios_rounded,
                 size: 20,
-                color: isSelected ? orange120 : null,
+                color: isSelected ? yellow120 : null,
               ),
             ),
           ],

@@ -223,7 +223,9 @@ class _LessonViewState extends State<LessonView>
             TextSpan(
               text: info.word,
               style: BTextStyles.of(context).displaySmall.copyWith(
-                color: isHighlighted ? orange120 : grey190,
+                color: isHighlighted ? yellow120 : grey190,
+                fontSize: 20,
+                height: 1.9,
               ),
             ),
             // Add a non-highlighted space after each word
@@ -510,13 +512,15 @@ class _LessonTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Cairo with height 1 keeps the label vertically centered inside the
-    // pill indicator — Amiri's line metrics sit visibly below center.
+    // Cairo with evenly distributed leading keeps the label optically
+    // centered inside the pill — Arabic fonts reserve far more ascent than
+    // descent, which otherwise pushes the glyphs off-center.
     const labelStyle = TextStyle(
       fontFamily: 'Cairo',
-      fontSize: 16,
+      fontSize: 15,
       fontWeight: FontWeight.w600,
-      height: 1,
+      height: 1.4,
+      leadingDistribution: TextLeadingDistribution.even,
       color: grey0,
     );
     return TabBar(
@@ -527,7 +531,7 @@ class _LessonTabBar extends StatelessWidget {
       unselectedLabelColor: grey140,
       unselectedLabelStyle: labelStyle,
       indicator: BoxDecoration(
-        color: orange120,
+        color: yellow120,
         borderRadius: BorderRadius.circular(100),
       ),
       indicatorSize: TabBarIndicatorSize.label,

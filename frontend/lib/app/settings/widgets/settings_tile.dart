@@ -8,7 +8,7 @@ class SettingsTile extends StatelessWidget {
     required this.label,
     this.onTap,
     this.trailing,
-    this.iconColor = orange120,
+    this.iconColor = yellow120,
     this.labelColor,
     super.key,
   });

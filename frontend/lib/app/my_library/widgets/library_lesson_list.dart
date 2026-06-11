@@ -1,5 +1,6 @@
 import 'package:belaraby/app/my_library/cubit/my_library_cubit.dart';
 import 'package:belaraby/app/router.dart';
+import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:belaraby/app/util/get_level_color.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/data/data.dart';
@@ -19,7 +20,7 @@ class LibraryLessonList extends StatelessWidget {
             state.sectionLessons.isEmpty) {
           return const SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(child: CircularProgressIndicator(color: orange120)),
+            child: Center(child: CircularProgressIndicator(color: yellow120)),
           );
         }
         if (state.status == MyLibraryStatus.error &&
@@ -97,7 +98,6 @@ class _LibraryMessage extends StatelessWidget {
   }
 }
 
-
 /// Compact library row: thumbnail, title, level badge and a chevron —
 /// denser than the home feed's full-size cards.
 class _CompactLessonCard extends StatelessWidget {
@@ -131,8 +131,10 @@ class _CompactLessonCard extends StatelessWidget {
                     width: 64,
                     height: 64,
                     color: grey110,
-                    child: const Icon(Icons.image_not_supported_outlined,
-                        color: grey140),
+                    child: const Icon(
+                      Icons.image_not_supported_outlined,
+                      color: grey140,
+                    ),
                   ),
                 ),
               ),
@@ -173,10 +175,18 @@ class _CompactLessonCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                        if (lesson.isPaid) ...[
+                        // Lock only when actually locked for this user.
+                        if (lesson.isPaid &&
+                            !context.select(
+                              (SubscriptionCubit cubit) =>
+                                  cubit.state.isPremium,
+                            )) ...[
                           const SizedBox(width: 6),
-                          const Icon(Icons.lock_outline,
-                              size: 14, color: grey140),
+                          const Icon(
+                            Icons.lock_outline,
+                            size: 14,
+                            color: grey140,
+                          ),
                         ],
                       ],
                     ),

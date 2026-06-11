@@ -63,7 +63,7 @@ class LearningProgressCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.emoji_events, color: orange120, size: 26),
+                  const Icon(Icons.emoji_events, color: yellow120, size: 26),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -110,7 +110,7 @@ class LearningProgressCard extends StatelessWidget {
                     value: value,
                     minHeight: 10,
                     backgroundColor: grey100,
-                    valueColor: const AlwaysStoppedAnimation<Color>(orange100),
+                    valueColor: const AlwaysStoppedAnimation<Color>(yellow100),
                   ),
                 ),
               ),

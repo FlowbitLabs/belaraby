@@ -1,5 +1,6 @@
 import 'package:belaraby/app/lesson/cubit/quiz_cubit.dart';
 import 'package:belaraby/app/lesson/widgets/lesson_content_status.dart';
+import 'package:belaraby/app/util/convert_arabic_digits.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
 import 'package:belaraby/data/models/lesson_exercise_model.dart';
@@ -91,7 +92,7 @@ class _ExerciseCard extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: Text(
-                    '$questionNumber',
+                    convertToArabicDigits(number: questionNumber),
                     style: const TextStyle(
                       color: navy140,
                       fontSize: 14,
@@ -233,7 +234,7 @@ class _QuizSummary extends StatelessWidget {
       children: [
         Card(
           margin: EdgeInsets.zero,
-          color: orange10,
+          color: yellow15,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -254,7 +255,12 @@ class _QuizSummary extends StatelessWidget {
                 _ScoreRing(correctCount: correct, totalCount: total),
                 const SizedBox(height: 16),
                 Text(
-                  'quiz_score'.tr(args: ['$correct', '$total']),
+                  'quiz_score'.tr(
+                    args: [
+                      convertToArabicDigits(number: correct),
+                      convertToArabicDigits(number: total),
+                    ],
+                  ),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontSize: 16,
@@ -266,7 +272,7 @@ class _QuizSummary extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () => context.read<QuizCubit>().resetAnswers(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: orange120,
+                    backgroundColor: yellow120,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -324,14 +330,15 @@ class _ScoreRing extends StatelessWidget {
                 fraction >= 0.8
                     ? green115
                     : fraction >= 0.5
-                    ? orange120
+                    ? yellow120
                     : red110,
               ),
             ),
           ),
           Center(
             child: Text(
-              '$correctCount/$totalCount',
+              '${convertToArabicDigits(number: correctCount)}/'
+              '${convertToArabicDigits(number: totalCount)}',
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,

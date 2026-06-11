@@ -37,7 +37,7 @@ class MyLibraryView extends StatelessWidget {
           ),
         ],
         child: RefreshIndicator(
-          color: orange120,
+          color: yellow120,
           onRefresh: () => context.read<MyLibraryCubit>().loadLibrary(),
           child: const CustomScrollView(
             physics: AlwaysScrollableScrollPhysics(

@@ -15,7 +15,7 @@ class PaywallFeatureRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          const Icon(Icons.check_circle, color: orange120, size: 22),
+          const Icon(Icons.check_circle, color: yellow120, size: 22),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

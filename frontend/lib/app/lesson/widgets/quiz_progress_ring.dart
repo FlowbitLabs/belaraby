@@ -1,4 +1,5 @@
 import 'package:belaraby/app/lesson/cubit/quiz_cubit.dart';
+import 'package:belaraby/app/util/convert_arabic_digits.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +11,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 /// no quiz.
 class QuizProgressRing extends StatelessWidget {
   const QuizProgressRing({super.key});
+
+  /// "answered/total" with Arabic-Indic digits.
+  static String _progressLabel(QuizState state) {
+    final answered = convertToArabicDigits(number: state.answeredCount);
+    final total = convertToArabicDigits(number: state.exercises.length);
+    return '$answered/$total';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +45,7 @@ class QuizProgressRing extends StatelessWidget {
                   backgroundColor: Colors.white24,
                   // The ring turns green once the quiz is completed.
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    state.isCompleted ? green100 : orange100,
+                    state.isCompleted ? green100 : yellow100,
                   ),
                 ),
               ),
@@ -49,7 +57,7 @@ class QuizProgressRing extends StatelessWidget {
                         size: 36,
                       )
                     : Text(
-                        '${state.answeredCount}/${state.exercises.length}',
+                        _progressLabel(state),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 15,

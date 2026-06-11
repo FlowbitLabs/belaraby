@@ -143,7 +143,10 @@ class _LessonTabViewState extends State<LessonTabView> {
                 widget.lesson.title,
                 style: BTextStyles.of(
                   context,
-                ).displayLarge.copyWith(fontWeight: FontWeight.bold),
+                ).displayLarge.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 26,
+                ),
               ),
               const SizedBox(height: 15),
               Row(

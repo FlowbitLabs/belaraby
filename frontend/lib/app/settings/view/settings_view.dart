@@ -157,7 +157,7 @@ class _AccountHeader extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => navigateToPaywall(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: orange120,
+                      backgroundColor: yellow120,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -255,7 +255,7 @@ class _TierBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isPremium ? orange120 : Colors.white24,
+        color: isPremium ? yellow120 : Colors.white24,
         borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
@@ -407,7 +407,7 @@ class _RestorePurchasesTile extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: orange120,
+                    color: yellow120,
                   ),
                 )
               : null,
@@ -444,7 +444,7 @@ class _ManageSubscriptionTile extends StatelessWidget {
           await showDialog<void>(
             context: context,
             builder: (context) => AlertDialog(
-              icon: const Icon(Icons.phone_iphone, color: orange120, size: 40),
+              icon: const Icon(Icons.phone_iphone, color: yellow120, size: 40),
               title: Text('paywall_web_only_title'.tr()),
               content: Text(
                 'manage_subscription_web_message'.tr(),

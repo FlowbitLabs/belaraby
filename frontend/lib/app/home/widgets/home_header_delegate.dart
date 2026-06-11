@@ -23,7 +23,7 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
     // or the sliver reports invalid geometry and rendering throws.
     return Container(
       color: appBackground,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsetsDirectional.only(start: 24, end: 12),
       alignment: Alignment.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -31,18 +31,18 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
           Text(
             'home_title'.tr(),
             style: const TextStyle(
-              fontSize: 30,
+              fontSize: 28,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
           ),
           Padding(
-            padding: const EdgeInsetsDirectional.only(start: 23, top: 5),
+            padding: const EdgeInsetsDirectional.only(top: 4),
             child: IconButton(
               icon: const Icon(
                 Icons.account_box,
                 size: 40,
-                color: orange120,
+                color: yellow120,
               ),
               tooltip: 'settings_title'.tr(),
               onPressed: () => navigateToSettings(context),

@@ -117,7 +117,7 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
                       return ElevatedButton(
                         onPressed: isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: orange120,
+                          backgroundColor: yellow120,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(

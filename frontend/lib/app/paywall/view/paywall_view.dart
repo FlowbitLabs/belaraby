@@ -39,7 +39,7 @@ class _PaywallViewState extends State<PaywallView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(Icons.workspace_premium, size: 72, color: orange120),
+                const Icon(Icons.workspace_premium, size: 72, color: yellow120),
                 const SizedBox(height: 12),
                 Text(
                   'paywall_title'.tr(),
@@ -111,7 +111,7 @@ class _PaywallPackages extends StatelessWidget {
         if (state.status == SubscriptionStatus.loading) {
           return const Padding(
             padding: EdgeInsets.symmetric(vertical: 32),
-            child: Center(child: CircularProgressIndicator(color: orange120)),
+            child: Center(child: CircularProgressIndicator(color: yellow120)),
           );
         }
         if (state.packages.isEmpty) {

@@ -73,7 +73,7 @@ class LessonControls extends StatelessWidget {
                       onPressed: onPlay,
                       style: IconButton.styleFrom(
                         backgroundColor: isPlaying
-                            ? orange140
+                            ? yellow140
                             : Colors.green,
                         foregroundColor: Colors.white,
                         shape: const CircleBorder(),
