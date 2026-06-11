@@ -77,6 +77,15 @@ class QuizState extends Equatable {
         (exercise) => selectedOptions.containsKey(exercise.id),
       );
 
+  /// Number of exercises the user has answered so far.
+  int get answeredCount => exercises
+      .where((exercise) => selectedOptions.containsKey(exercise.id))
+      .length;
+
+  /// Quiz completion as a 0..1 fraction (0 when no exercises are loaded).
+  double get progress =>
+      exercises.isEmpty ? 0 : answeredCount / exercises.length;
+
   /// Number of correctly answered exercises.
   int get correctCount => exercises.where((exercise) {
     final selectedId = selectedOptions[exercise.id];

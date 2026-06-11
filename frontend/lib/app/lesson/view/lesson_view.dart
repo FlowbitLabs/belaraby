@@ -8,7 +8,16 @@ class LessonView extends StatefulWidget {
   State<LessonView> createState() => _LessonViewState();
 }
 
-class _LessonViewState extends State<LessonView> {
+class _LessonViewState extends State<LessonView>
+    with SingleTickerProviderStateMixin {
+  /// Index of the quiz tab in [_tabController].
+  static const int _quizTabIndex = 1;
+
+  late final TabController _tabController = TabController(
+    length: 4,
+    vsync: this,
+  );
+
   String? _selectedWord;
   String? _translatedText;
   bool _isTranslating = false;
@@ -29,6 +38,7 @@ class _LessonViewState extends State<LessonView> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -114,6 +124,15 @@ class _LessonViewState extends State<LessonView> {
           fit: StackFit.expand,
           children: [
             _LessonHeroImage(imageUrl: widget.lesson.heroImage),
+            // Quiz progress over the hero image while the quiz tab is active.
+            ListenableBuilder(
+              listenable: _tabController,
+              builder: (context, _) => AnimatedOpacity(
+                opacity: _tabController.index == _quizTabIndex ? 1 : 0,
+                duration: const Duration(milliseconds: 200),
+                child: const Center(child: QuizProgressRing()),
+              ),
+            ),
             if (_selectedWord != null)
               Positioned(
                 left: 16,
@@ -140,38 +159,36 @@ class _LessonViewState extends State<LessonView> {
           ],
         ),
       ),
-      body: DefaultTabController(
-        length: 4,
-        child: Column(
-          children: [
-            const _LessonTabBar(),
-            Expanded(
-              child: TabBarView(
-                children: [
-                  ListenableBuilder(
-                    listenable: _controller,
-                    builder: (context, _) {
-                      return LessonTabView(
-                        lesson: widget.lesson,
-                        textSpan: _buildHighlightedText(),
-                        isPlaying: _controller.isPlaying,
-                        speak: () => _controller.speak(widget.lesson.body),
-                        stop: _controller.stop,
-                        isRepeatEnabled: _isRepeatEnabled,
-                        onRepeatToggle: _toggleRepeat,
-                        onWordSelected: _onWordSelected,
-                        selectedWord: _selectedWord,
-                      );
-                    },
-                  ),
-                  const QuizTabView(),
-                  const KeywordsTabView(),
-                  const GrammarTabView(),
-                ],
-              ),
+      body: Column(
+        children: [
+          _LessonTabBar(controller: _tabController),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                ListenableBuilder(
+                  listenable: _controller,
+                  builder: (context, _) {
+                    return LessonTabView(
+                      lesson: widget.lesson,
+                      textSpan: _buildHighlightedText(),
+                      isPlaying: _controller.isPlaying,
+                      speak: () => _controller.speak(widget.lesson.body),
+                      stop: _controller.stop,
+                      isRepeatEnabled: _isRepeatEnabled,
+                      onRepeatToggle: _toggleRepeat,
+                      onWordSelected: _onWordSelected,
+                      selectedWord: _selectedWord,
+                    );
+                  },
+                ),
+                const QuizTabView(),
+                const KeywordsTabView(),
+                const GrammarTabView(),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -447,11 +464,14 @@ class _LearnedToggleButton extends StatelessWidget {
 }
 
 class _LessonTabBar extends StatelessWidget {
-  const _LessonTabBar();
+  const _LessonTabBar({required this.controller});
+
+  final TabController controller;
 
   @override
   Widget build(BuildContext context) {
     return TabBar(
+      controller: controller,
       labelColor: grey0,
       labelPadding: EdgeInsets.zero,
       labelStyle: BTextStyles.of(context).title1.copyWith(color: grey0),

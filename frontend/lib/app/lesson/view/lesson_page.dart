@@ -9,6 +9,7 @@ import 'package:belaraby/app/lesson/tab_views/lesson_tab_view.dart';
 import 'package:belaraby/app/lesson/tab_views/quiz_tab_view.dart';
 import 'package:belaraby/app/lesson/utils/translation_helper.dart';
 import 'package:belaraby/app/lesson/utils/word_speaker.dart';
+import 'package:belaraby/app/lesson/widgets/quiz_progress_ring.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/typography.dart';
 import 'package:belaraby/data/data.dart';

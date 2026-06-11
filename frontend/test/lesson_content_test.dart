@@ -186,6 +186,22 @@ void main() {
       expect(state.selectedOptionId('ex1'), 'op1');
       expect(state.selectedOptionId('ex2'), isNull);
     });
+
+    test('answeredCount and progress track the loaded exercises', () {
+      const state = QuizState(exercises: exercises);
+      expect(state.answeredCount, 0);
+      expect(state.progress, 0);
+
+      final half = state.copyWith(selectedOptions: {'ex1': 'op1'});
+      expect(half.answeredCount, 1);
+      expect(half.progress, 0.5);
+
+      // Stale answers for exercises that are no longer loaded don't count.
+      final stale = state.copyWith(selectedOptions: {'gone': 'op9'});
+      expect(stale.answeredCount, 0);
+
+      expect(const QuizState().progress, 0);
+    });
   });
 
   group('KeywordsState / GrammarState', () {
