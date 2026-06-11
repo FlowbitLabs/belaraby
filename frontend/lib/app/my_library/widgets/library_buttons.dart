@@ -26,7 +26,9 @@ class LibraryButtons extends StatelessWidget {
               _LibraryButton(
                 label: 'library_favorites'.tr(),
                 itemCount: _itemCountLabel(context, state.favorites.length),
-                trailingIcon: Icons.favorite_border,
+                // Same icon + color as the profile's favorites stat chip.
+                icon: Icons.favorite,
+                iconColor: red110,
                 isSelected: state.section == MyLibrarySection.favorites,
                 onPressed: () => context.read<MyLibraryCubit>().selectSection(
                   MyLibrarySection.favorites,
@@ -39,7 +41,9 @@ class LibraryButtons extends StatelessWidget {
                   context,
                   state.learnedLessons.length,
                 ),
-                trailingIcon: Icons.library_add_check,
+                // Same icon + color as the profile's learned stat chip.
+                icon: Icons.school,
+                iconColor: green115,
                 isSelected: state.section == MyLibrarySection.learned,
                 onPressed: () => context.read<MyLibraryCubit>().selectSection(
                   MyLibrarySection.learned,
@@ -57,14 +61,16 @@ class _LibraryButton extends StatelessWidget {
   const _LibraryButton({
     required this.label,
     required this.itemCount,
-    required this.trailingIcon,
+    required this.icon,
+    required this.iconColor,
     required this.isSelected,
     required this.onPressed,
   });
 
   final String label;
   final String itemCount;
-  final IconData trailingIcon;
+  final IconData icon;
+  final Color iconColor;
   final bool isSelected;
   final VoidCallback onPressed;
 
@@ -90,8 +96,16 @@ class _LibraryButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 18, end: 5),
-              child: Icon(trailingIcon, size: 40, color: yellow120),
+              padding: const EdgeInsetsDirectional.only(start: 12, end: 12),
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 24, color: iconColor),
+              ),
             ),
             Expanded(
               child: Column(
