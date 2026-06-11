@@ -46,9 +46,11 @@ describe("lesson content create views", () => {
     expect(screen.getByLabelText(/correct answer/i)).toBeInTheDocument();
   });
 
-  it("lesson_grammar renders the explanation input", () => {
+  it("lesson_grammar renders the title, explanation and example inputs", () => {
     renderCreate("lesson_grammar", <LessonGrammarCreate />);
+    expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/explanation/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/example/i)).toBeInTheDocument();
   });
 
   it("lesson_keywords renders the keyword input", () => {

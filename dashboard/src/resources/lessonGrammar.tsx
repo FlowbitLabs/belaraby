@@ -14,12 +14,29 @@ import {
 
 const grammarInputs = [
   <TextInput
+    key="title"
+    source="title"
+    fullWidth
+    validate={required()}
+    inputProps={rtlInputProps}
+    sx={arabicInputSx}
+  />,
+  <TextInput
     key="explanation"
     source="explanation"
     multiline
     minRows={6}
     fullWidth
     validate={required()}
+    inputProps={rtlInputProps}
+    sx={arabicInputSx}
+  />,
+  <TextInput
+    key="example"
+    source="example"
+    multiline
+    minRows={2}
+    fullWidth
     inputProps={rtlInputProps}
     sx={arabicInputSx}
   />,

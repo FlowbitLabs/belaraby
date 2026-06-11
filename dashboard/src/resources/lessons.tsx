@@ -182,6 +182,7 @@ export const LessonEdit = () => (
           target="lesson_id"
           addLabel="Add grammar note"
         >
+          <TextField source="title" />
           <TextField source="explanation" />
         </ChildRecordsPanel>
       </TabbedForm.Tab>

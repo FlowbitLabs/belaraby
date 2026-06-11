@@ -30,7 +30,9 @@ export interface LessonExerciseOption {
 export interface LessonGrammar {
   id: string;
   lesson_id: string;
+  title: string;
   explanation: string;
+  example: string | null;
 }
 
 export interface LessonKeyword {
