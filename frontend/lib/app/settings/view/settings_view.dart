@@ -43,31 +43,37 @@ class SettingsView extends StatelessWidget {
         ],
         child: ListView(
           children: [
+            const _AccountHeader(),
+            const LearningProgressCard(),
+            SettingsSection(
+              title: 'settings_section_account'.tr(),
+              children: const [_AccountTiles(), _DeleteAccountTile()],
+            ),
             SettingsSection(
               title: 'settings_section_subscription'.tr(),
               children: const [
-                _PremiumStatusTile(),
                 _RestorePurchasesTile(),
                 _ManageSubscriptionTile(),
               ],
             ),
             SettingsSection(
               title: 'settings_section_about'.tr(),
-              children: const [
-                _LegalLinkTile(
-                  labelKey: 'legal_privacy_policy',
-                  url: privacyPolicyUrl,
+              children: [
+                SettingsTile(
+                  icon: Icons.info_outline,
+                  label: 'settings_section_about'.tr(),
+                  trailing: const Icon(
+                    Icons.chevron_left,
+                    size: 20,
+                    color: grey140,
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const AboutPage(),
+                    ),
+                  ),
                 ),
-                _LegalLinkTile(
-                  labelKey: 'legal_terms_of_use',
-                  url: termsOfUseUrl,
-                ),
-                _AppVersionTile(),
               ],
-            ),
-            SettingsSection(
-              title: 'settings_section_account'.tr(),
-              children: const [_DeleteAccountTile()],
             ),
             const SizedBox(height: 24),
           ],
@@ -106,25 +112,189 @@ class SettingsView extends StatelessWidget {
   }
 }
 
-class _PremiumStatusTile extends StatelessWidget {
-  const _PremiumStatusTile();
+/// Profile header: identity (email or guest), account tier badge and a
+/// subscribe call-to-action for free users.
+class _AccountHeader extends StatelessWidget {
+  const _AccountHeader();
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
     final isPremium = context.select(
       (SubscriptionCubit cubit) => cubit.state.isPremium,
     );
-    return SettingsTile(
-      icon: isPremium
-          ? Icons.workspace_premium
-          : Icons.workspace_premium_outlined,
-      iconColor: isPremium ? yellow120 : grey140,
-      label: isPremium
-          ? 'settings_premium_active'.tr()
-          : 'settings_premium_inactive'.tr(),
-      trailing: isPremium
-          ? const Icon(Icons.check_circle, color: green115)
-          : null,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Card(
+        margin: EdgeInsets.zero,
+        color: purple140,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 28,
+                    backgroundColor: purple110,
+                    child: Icon(Icons.person, color: Colors.white, size: 32),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          authState.isAnonymous
+                              ? 'profile_guest'.tr()
+                              : authState.email,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _TierBadge(isPremium: isPremium),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (!isPremium) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => navigateToPaywall(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: yellow120,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.workspace_premium, size: 20),
+                    label: Text(
+                      'profile_subscribe_now'.tr(),
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TierBadge extends StatelessWidget {
+  const _TierBadge({required this.isPremium});
+
+  final bool isPremium;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isPremium ? yellow120 : Colors.white24,
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            isPremium ? Icons.workspace_premium : Icons.person_outline,
+            size: 14,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            isPremium ? 'profile_tier_premium'.tr() : 'profile_tier_free'.tr(),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sign-in / sign-up tiles for guests; email + sign-out for account holders.
+class _AccountTiles extends StatelessWidget {
+  const _AccountTiles();
+
+  Future<void> _openAuth(BuildContext context, {required bool isSignUp}) async {
+    final authenticated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => AuthPage(
+          isSignUp: isSignUp,
+          authCubit: context.read<AuthCubit>(),
+        ),
+      ),
+    );
+    if ((authenticated ?? false) && context.mounted) {
+      // The identity changed — reload everything tied to the user.
+      unawaited(context.read<FavoriteCubit>().loadFavorites());
+      unawaited(context.read<LearnedCubit>().loadLearned());
+      unawaited(context.read<SubscriptionCubit>().load());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+    if (authState.isAnonymous) {
+      return Column(
+        children: [
+          SettingsTile(
+            icon: Icons.login,
+            label: 'auth_sign_in'.tr(),
+            onTap: () => _openAuth(context, isSignUp: false),
+          ),
+          SettingsTile(
+            icon: Icons.person_add_alt,
+            label: 'auth_sign_up'.tr(),
+            onTap: () => _openAuth(context, isSignUp: true),
+          ),
+        ],
+      );
+    }
+    return Column(
+      children: [
+        SettingsTile(
+          icon: Icons.mail_outline,
+          label: authState.email,
+          trailing: const Icon(Icons.check_circle, size: 18, color: green115),
+        ),
+        SettingsTile(
+          icon: Icons.logout,
+          label: 'auth_sign_out'.tr(),
+          onTap: () async {
+            await context.read<AuthCubit>().signOut();
+            if (context.mounted) {
+              unawaited(context.read<FavoriteCubit>().loadFavorites());
+              unawaited(context.read<LearnedCubit>().loadLearned());
+              unawaited(context.read<SubscriptionCubit>().load());
+            }
+          },
+        ),
+      ],
     );
   }
 }
@@ -189,49 +359,6 @@ class _ManageSubscriptionTile extends StatelessWidget {
           );
         }
       },
-    );
-  }
-}
-
-class _LegalLinkTile extends StatelessWidget {
-  const _LegalLinkTile({required this.labelKey, required this.url});
-
-  final String labelKey;
-  final String url;
-
-  @override
-  Widget build(BuildContext context) {
-    return SettingsTile(
-      icon: Icons.description_outlined,
-      label: labelKey.tr(),
-      trailing: const Icon(Icons.open_in_new, size: 18, color: grey140),
-      onTap: () async {
-        final opened = await launchExternalUrl(url);
-        if (!opened && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('link_open_error'.tr())),
-          );
-        }
-      },
-    );
-  }
-}
-
-class _AppVersionTile extends StatelessWidget {
-  const _AppVersionTile();
-
-  @override
-  Widget build(BuildContext context) {
-    final version = context.select(
-      (SettingsCubit cubit) => cubit.state.appVersion,
-    );
-    return SettingsTile(
-      icon: Icons.info_outline,
-      label: 'settings_version'.tr(),
-      trailing: Text(
-        version,
-        style: const TextStyle(fontSize: 14, color: grey160),
-      ),
     );
   }
 }

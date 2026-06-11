@@ -1,0 +1,122 @@
+import 'package:belaraby/data/repositories/auth_repository.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
+
+enum AuthStatus { initial, loading, success, error }
+
+/// Cubit for the profile's account state: guest vs signed-in, plus the
+/// email sign-in / sign-up / sign-out flows.
+///
+/// Sign-up upgrades the anonymous Supabase user (same user id), so the
+/// guest's favorites, learned lessons and purchases carry over.
+class AuthCubit extends Cubit<AuthState> {
+  AuthCubit({AuthRepository? repository})
+    : _repository = repository ?? AuthRepository(),
+      super(const AuthState());
+
+  final AuthRepository _repository;
+
+  /// Reads the current session into the state.
+  void load() {
+    emit(
+      state.copyWith(
+        isAnonymous: _repository.isAnonymous,
+        email: _repository.currentEmail ?? '',
+      ),
+    );
+  }
+
+  /// Signs in to an existing account.
+  Future<void> signIn(String email, String password) {
+    return _run(() => _repository.signIn(email: email, password: password));
+  }
+
+  /// Creates an account by upgrading the anonymous user.
+  Future<void> signUp(String email, String password) {
+    return _run(() => _repository.signUp(email: email, password: password));
+  }
+
+  /// Signs out back to a fresh guest session.
+  Future<void> signOut() => _run(_repository.signOut);
+
+  Future<void> _run(Future<void> Function() action) async {
+    emit(state.copyWith(status: AuthStatus.loading, errorMessage: ''));
+    try {
+      await action();
+      emit(
+        state.copyWith(
+          status: AuthStatus.success,
+          isAnonymous: _repository.isAnonymous,
+          email: _repository.currentEmail ?? '',
+        ),
+      );
+    } on AuthException catch (error) {
+      debugPrint('AuthCubit: auth failed: ${error.code} ${error.message}');
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: _errorKey(error),
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('AuthCubit: auth failed: $error');
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'auth_error_generic',
+        ),
+      );
+    }
+  }
+
+  static String _errorKey(AuthException error) {
+    switch (error.code) {
+      case 'invalid_credentials':
+        return 'auth_error_invalid_credentials';
+      case 'email_exists':
+      case 'user_already_exists':
+        return 'auth_error_email_exists';
+      case 'weak_password':
+        return 'auth_error_weak_password';
+      case 'validation_failed':
+        return 'auth_error_invalid_email';
+      default:
+        return 'auth_error_generic';
+    }
+  }
+}
+
+class AuthState extends Equatable {
+  const AuthState({
+    this.status = AuthStatus.initial,
+    this.isAnonymous = true,
+    this.email = '',
+    this.errorMessage = '',
+  });
+
+  final AuthStatus status;
+  final bool isAnonymous;
+  final String email;
+
+  /// Translation key for the snackbar shown on failures.
+  final String errorMessage;
+
+  @override
+  List<Object?> get props => [status, isAnonymous, email, errorMessage];
+
+  AuthState copyWith({
+    AuthStatus? status,
+    bool? isAnonymous,
+    String? email,
+    String? errorMessage,
+  }) {
+    return AuthState(
+      status: status ?? this.status,
+      isAnonymous: isAnonymous ?? this.isAnonymous,
+      email: email ?? this.email,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+}

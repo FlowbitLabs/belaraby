@@ -1,5 +1,6 @@
 import 'package:belaraby/data/supabase_client.dart';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show UserAttributes;
 
 /// Owns the app's Supabase auth identity.
 ///
@@ -23,6 +24,46 @@ class AuthRepository {
       debugPrint('AuthRepository.ensureSignedIn failed: $error');
       return null;
     }
+  }
+
+  /// Whether the current session belongs to an anonymous (guest) user.
+  bool get isAnonymous => supabase.auth.currentUser?.isAnonymous ?? true;
+
+  /// Email of the signed-in user, or `null` for guests.
+  String? get currentEmail => supabase.auth.currentUser?.email;
+
+  /// Signs in to an existing email/password account.
+  ///
+  /// Replaces the anonymous session; the signed-in account's own
+  /// favorites/learned/subscription take over. Throws `AuthException` on
+  /// bad credentials.
+  Future<void> signIn({required String email, required String password}) {
+    return supabase.auth.signInWithPassword(email: email, password: password);
+  }
+
+  /// Creates an account by UPGRADING the current anonymous user with an
+  /// email and password — the user keeps their id, so favorites, learned
+  /// lessons and purchases carry over. Throws `AuthException` when the
+  /// email is already registered or the password is rejected.
+  Future<void> signUp({
+    required String email,
+    required String password,
+  }) async {
+    await ensureSignedIn();
+    await supabase.auth.updateUser(
+      UserAttributes(email: email, password: password),
+    );
+  }
+
+  /// Signs out and immediately starts a fresh anonymous session so the
+  /// app keeps working (favorites etc. need an identity).
+  Future<void> signOut() async {
+    try {
+      await supabase.auth.signOut();
+    } on Exception catch (error) {
+      debugPrint('AuthRepository.signOut failed: $error');
+    }
+    await ensureSignedIn();
   }
 
   /// Permanently deletes the caller's account.
