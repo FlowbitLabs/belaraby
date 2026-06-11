@@ -8,6 +8,7 @@ import 'package:belaraby/constant/typography.dart';
 import 'package:belaraby/data/data.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Punctuation stripped from tapped words so taps on "كلمة،" still match
@@ -46,6 +47,7 @@ class LessonTabView extends StatefulWidget {
     required this.onRepeatToggle,
     required this.speedLabel,
     required this.onSpeedToggle,
+    required this.highlightedCharIndex,
     required this.onWordSelected,
     required this.selectedWord,
     super.key,
@@ -60,6 +62,10 @@ class LessonTabView extends StatefulWidget {
   final VoidCallback onRepeatToggle;
   final String speedLabel;
   final VoidCallback onSpeedToggle;
+
+  /// Character offset (into the story) of the word being spoken, or -1.
+  /// Drives the auto-scroll that keeps the karaoke highlight visible.
+  final int highlightedCharIndex;
   final void Function(String) onWordSelected;
   final String? selectedWord;
 
@@ -68,7 +74,71 @@ class LessonTabView extends StatefulWidget {
 }
 
 class _LessonTabViewState extends State<LessonTabView> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _storyTextKey = GlobalKey();
   bool _isTranslated = false;
+
+  @override
+  void didUpdateWidget(covariant LessonTabView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Follow the karaoke highlight while the story plays (also right after
+    // a resume, when the index itself may not have changed).
+    final highlightMoved =
+        widget.highlightedCharIndex != oldWidget.highlightedCharIndex;
+    if (widget.isPlaying &&
+        widget.highlightedCharIndex >= 0 &&
+        (highlightMoved || !oldWidget.isPlaying)) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _scrollToHighlightedWord(),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// Scrolls so the word being spoken sits in the upper third of the
+  /// viewport. Small corrections are skipped to avoid jitter.
+  void _scrollToHighlightedWord() {
+    if (!mounted || _isTranslated || !widget.isPlaying) return;
+    final context = _storyTextKey.currentContext;
+    if (context == null || !_scrollController.hasClients) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return;
+    final viewport = RenderAbstractViewport.maybeOf(box);
+    if (viewport == null) return;
+
+    // Top of the story text inside the scrollable, then the highlighted
+    // word's vertical position inside the text (same span/strut/width as
+    // the rendered RichText, so the layout matches).
+    final textTop = viewport.getOffsetToReveal(box, 0).offset;
+    final painter = TextPainter(
+      text: widget.textSpan,
+      textDirection: Directionality.of(context),
+      strutStyle: _TappableStoryText._strutStyle,
+    )..layout(maxWidth: box.size.width);
+    final caret = painter.getOffsetForCaret(
+      TextPosition(offset: widget.highlightedCharIndex),
+      Rect.zero,
+    );
+    painter.dispose();
+
+    final position = _scrollController.position;
+    final target = (textTop + caret.dy - position.viewportDimension / 3).clamp(
+      0.0,
+      position.maxScrollExtent,
+    );
+    if ((target - position.pixels).abs() < 24) return;
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  }
+
   final Map<String, String> _sentenceTranslations = {};
   bool _isTranslatingAll = false;
   final TranslationHelper _translationHelper = TranslationHelper();
@@ -139,18 +209,20 @@ class _LessonTabViewState extends State<LessonTabView> {
     return Stack(
       children: [
         SingleChildScrollView(
+          controller: _scrollController,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 widget.lesson.title,
-                style: BTextStyles.of(
-                  context,
-                ).displayLarge.copyWith(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 26,
-                ),
+                style:
+                    BTextStyles.of(
+                      context,
+                    ).displayLarge.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26,
+                    ),
               ),
               const SizedBox(height: 15),
               Row(
@@ -181,6 +253,7 @@ class _LessonTabViewState extends State<LessonTabView> {
                 )
               else
                 _TappableStoryText(
+                  key: _storyTextKey,
                   textSpan: widget.textSpan,
                   selectedWord: widget.selectedWord,
                   onWordSelected: widget.onWordSelected,
@@ -256,6 +329,7 @@ class _TappableStoryText extends StatelessWidget {
     required this.textSpan,
     required this.selectedWord,
     required this.onWordSelected,
+    super.key,
   });
 
   static const StrutStyle _strutStyle = StrutStyle(
