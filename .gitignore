@@ -58,3 +58,5 @@ coverage/
 .DS_Store
 # Ignore all files in the .idea directory
 .idea/
+# Flutter web build output (built in CI)
+frontend/build/
