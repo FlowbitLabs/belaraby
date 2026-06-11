@@ -65,25 +65,6 @@ class AuthRepository {
     );
   }
 
-  /// Starts the Google OAuth sign-in (browser redirect on web).
-  ///
-  /// Requires the Google provider to be configured on the Supabase
-  /// project; fails with an AuthException otherwise.
-  Future<void> signInWithGoogle() async {
-    await supabase.auth.signInWithOAuth(
-      OAuthProvider.google,
-      redirectTo: kIsWeb ? Uri.base.origin : null,
-    );
-  }
-
-  /// Starts the Apple OAuth sign-in (shown on iOS, per App Store rules).
-  Future<void> signInWithApple() async {
-    await supabase.auth.signInWithOAuth(
-      OAuthProvider.apple,
-      redirectTo: kIsWeb ? Uri.base.origin : null,
-    );
-  }
-
   /// Sets a new password for the signed-in user (used by the recovery
   /// flow after the email link established a session).
   Future<void> updatePassword(String password) async {

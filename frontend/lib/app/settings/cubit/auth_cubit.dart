@@ -105,12 +105,6 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  /// Signs in with Google (OAuth redirect).
-  Future<void> signInWithGoogle() => _run(_repository.signInWithGoogle);
-
-  /// Signs in with Apple (OAuth redirect; offered on iOS).
-  Future<void> signInWithApple() => _run(_repository.signInWithApple);
-
   /// Emails a password-recovery link to [email].
   Future<void> sendPasswordReset(String email) async {
     emit(

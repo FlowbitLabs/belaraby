@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 import 'package:belaraby/app/settings/cubit/auth_cubit.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -228,42 +227,6 @@ class _AuthFormState extends State<_AuthForm> {
                         ),
                       ),
                     ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Expanded(child: Divider()),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          'auth_or'.tr(),
-                          style: const TextStyle(
-                            color: grey140,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: Divider()),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _ProviderButton(
-                    icon: Icons.g_mobiledata_rounded,
-                    labelKey: 'auth_continue_google',
-                    onPressed: () =>
-                        context.read<AuthCubit>().signInWithGoogle(),
-                  ),
-                  // Apple sign-in is an App Store requirement on iOS when
-                  // other social logins are offered.
-                  if (!kIsWeb &&
-                      defaultTargetPlatform == TargetPlatform.iOS) ...[
-                    const SizedBox(height: 10),
-                    _ProviderButton(
-                      icon: Icons.apple,
-                      labelKey: 'auth_continue_apple',
-                      onPressed: () =>
-                          context.read<AuthCubit>().signInWithApple(),
-                    ),
-                  ],
                 ],
               ),
             ),
@@ -275,36 +238,3 @@ class _AuthFormState extends State<_AuthForm> {
 }
 
 
-/// Outlined social sign-in button (Google / Apple).
-class _ProviderButton extends StatelessWidget {
-  const _ProviderButton({
-    required this.icon,
-    required this.labelKey,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final String labelKey;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: grey190,
-        backgroundColor: Colors.white,
-        side: const BorderSide(color: grey110),
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      icon: Icon(icon, size: 24),
-      label: Text(
-        labelKey.tr(),
-        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-}
