@@ -3,13 +3,16 @@
 ## Branching strategy
 
 ```
-feature/* ──► dev ──► main
+feature/* ──► main
 ```
 
 | Branch | Role | Auto-deploys |
 |---|---|---|
-| `dev` | Default branch, day-to-day work | Nothing (manual `supabase start` for local dev) |
-| `main` | Production — pushing deploys | Supabase, Cloudflare Worker dashboard, Flutter internal track / TestFlight |
+| `main` | Only long-lived branch (default) — pushing deploys production | Supabase, Cloudflare Workers (dashboard + Flutter web) |
+
+Store builds (`deploy_flutter.yml`) are manual-only. Day-to-day work happens
+on short-lived feature branches (or directly on `main` for small changes);
+every push to `main` is a production deploy of whatever trees changed.
 
 There is a **single deployment environment**. One GitHub environment named
 `production`, one Supabase project (ref `hmgwrovvqeezkyfiqula`), one
@@ -18,9 +21,9 @@ the project ever needs one.
 
 ### CI
 
-`.github/workflows/ci.yml` runs on every PR into `dev`/`main` and
-every push to `dev`. Jobs are path-filtered (each runs only when its tree —
-or the workflow file — changed):
+`.github/workflows/ci.yml` runs on every PR into `main` and every push to
+`main`. Jobs are path-filtered (each runs only when its tree — or the
+workflow file — changed):
 
 - **flutter** — `flutter analyze --fatal-infos` + `flutter test` (Flutter 3.35.2, matching the deploy workflow)
 - **dashboard** — `npm run type-check`, report-only ESLint, `npm run test` (vitest — the only CI coverage of the menu-hidden lesson-content authoring views), `npm run build`
@@ -38,6 +41,7 @@ or the workflow file — changed):
 | `SUPABASE_DB_PASSWORD` | secret | Supabase deploy |
 | `SUPABASE_DB_URL` | secret | weekly backups |
 | `AUTH_SITE_URL` | variable | Supabase deploy (`config push`) |
+| `AUTH_APP_URL` | variable | Supabase deploy — extra auth redirect origin (the Flutter web app, for password-recovery links) |
 | Android/Apple/RevenueCat secrets | secret | Flutter deploy (added when store setup happens — see sections 3–4) |
 
 **Repo-level (shared) secrets:** `SUPABASE_ACCESS_TOKEN`,
@@ -578,22 +582,21 @@ The local anon key is printed by `supabase start` or available in the Supabase S
 ## 8. Release flow
 
 ```
-feature/* ──► dev        local dev + testing (CI on PRs and pushes)
-dev ──► main             production deploy (Supabase + Dashboard + Flutter internal/TestFlight)
+feature/* ──► main       CI on PRs; merging deploys production
 ```
 
 A push to `main` deploys everything relevant: each deploy workflow has a
 paths filter, so only the parts that actually changed run (Supabase,
-dashboard, Flutter). Every deploy workflow also supports manual
-`workflow_dispatch`.
+dashboard, Flutter web). Store builds are manual-only. Every deploy workflow
+also supports manual `workflow_dispatch`.
 
-**To release:**
+**To release to the stores:**
 1. For a user-visible version change, bump the **marketing version** in
    `frontend/pubspec.yaml` (e.g. `1.1.0+1`) — the build *number* is
    CI-generated per upload (see *Build numbers* in section 3), so it never
    needs a manual bump
-2. Open a PR from `dev` → `main`
-3. Review and merge
+2. Open a PR into `main` (or push directly for small changes)
+3. Review and merge, then `gh workflow run "Deploy Flutter" --ref main`
 4. The relevant deployments trigger automatically (paths-filtered)
 5. Promote the Android build from the Play internal track to production, and
    the iOS build from TestFlight → App Store in App Store Connect
@@ -677,10 +680,9 @@ dashboard, Flutter). Every deploy workflow also supports manual
 - [ ] Add `SUPABASE_ANON_KEY` secret to the GitHub `production` environment
 
 ### CI/CD
-- [ ] Open a PR into `dev` and verify the CI workflow runs only the jobs whose paths changed
+- [ ] Open a PR into `main` and verify the CI workflow runs only the jobs whose paths changed
 - [ ] Push a migration to `main` and verify the Deploy Supabase workflow runs
 - [ ] Dispatch the Deploy Flutter workflow once to prove the iOS signing chain (certificate import + manual profile) end-to-end **before** relying on it for a release — it has never run on a clean runner
-- [ ] Merge a change to `main` and verify the Flutter workflow runs (internal track + TestFlight) — note it only triggers when `frontend/**` changed
 - [ ] Merge a change to `main` touching `dashboard/**` and verify the Deploy Dashboard workflow runs
 
 ### Store submission (blocking — both stores reject without these)

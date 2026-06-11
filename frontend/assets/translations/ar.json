@@ -86,8 +86,6 @@
   "link_open_error": "تعذر فتح الرابط. حاول مرة أخرى.",
   "settings_title": "الملف الشخصي",
   "settings_section_subscription": "الاشتراك",
-  "settings_premium_active": "اشتراك بريميوم مفعّل",
-  "settings_premium_inactive": "لا يوجد اشتراك مفعّل",
   "settings_manage_subscription": "إدارة الاشتراك",
   "settings_restore_success": "تمت استعادة مشترياتك بنجاح!",
   "settings_section_about": "حول التطبيق",

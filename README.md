@@ -1,6 +1,8 @@
-# Belaraby
+# Belaraby (بالعربي)
 
-An interactive Arabic learning platform. Mobile app built with Flutter, admin dashboard in React, backend powered by Supabase.
+An interactive Arabic learning platform: stories per CEFR level (A1–C2) with audio playback, keyword flashcards, grammar notes and quizzes. Flutter app (iOS, Android & web), React Admin dashboard, Supabase backend.
+
+**Live:** [app.belaraby.workers.dev](https://app.belaraby.workers.dev) (app) · [admin.belaraby.workers.dev](https://admin.belaraby.workers.dev) (dashboard)
 
 ---
 
@@ -8,9 +10,9 @@ An interactive Arabic learning platform. Mobile app built with Flutter, admin da
 
 ```
 belaraby/
-├── frontend/     # Flutter mobile app (iOS & Android)
-├── dashboard/    # React admin panel
-└── supabase/     # Database migrations & local config
+├── frontend/     # Flutter app (iOS, Android & web)
+├── dashboard/    # React Admin panel
+└── supabase/     # Migrations, edge functions, config & seed
 ```
 
 ---
@@ -78,7 +80,7 @@ flutter run -d chrome   # web
 **Key packages:**
 - `supabase_flutter` — backend client
 - `flutter_bloc` — state management
-- `easy_localization` — AR/EN translations
+- `easy_localization` — translations (Arabic-only UI)
 - `flutter_tts` — text-to-speech
 
 ---
@@ -131,7 +133,7 @@ supabase db push
 
 ## Contributing
 
-1. Branch off `dev` for all work
+1. Branch off `main` (the only long-lived branch); merging to `main` deploys production — see [DEPLOYMENT.md](DEPLOYMENT.md)
 2. Keep Flutter, dashboard, and Supabase changes in separate commits
 3. Run `flutter analyze` before pushing Flutter changes
 4. Run `npm run lint` before pushing dashboard changes

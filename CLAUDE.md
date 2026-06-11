@@ -1,9 +1,9 @@
 # Belaraby — Claude Context
 
-Arabic learning platform: Flutter mobile app + React admin dashboard + Supabase backend.
+Arabic learning platform: Flutter app (iOS/Android/web) + React admin dashboard + Supabase backend. Arabic-only UI.
 
 ```
-frontend/   Flutter app (iOS & Android)
+frontend/   Flutter app (iOS, Android & web)
 dashboard/  React admin panel (Vite + React Admin + MUI)
 supabase/   Migrations, config, seed data
 ```
@@ -139,5 +139,5 @@ supabase migration new <name>  # create a new migration
 
 - Check `pubspec.yaml` / `package.json` before suggesting new packages — prefer what's already installed
 - Never commit `.env` files or Supabase service role keys
-- Branch off `dev`; keep Flutter, dashboard, and Supabase changes in separate commits
+- `main` is the only long-lived branch; pushing to it deploys production. Keep Flutter, dashboard, and Supabase changes in separate commits
 - Keep Flutter, dashboard, and DB types in sync — if a column changes, update the Dart model and TS interface

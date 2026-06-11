@@ -55,8 +55,3 @@ VITE_SUPABASE_URL=
 # Your supabase anon JWT key (eyJ...) - the sb_publishable_ format does not work
 VITE_SUPABASE_KEY=
 ```
-
-## Customize The Application
-
-Follow the instructions in your browser console once you start the application.
-
