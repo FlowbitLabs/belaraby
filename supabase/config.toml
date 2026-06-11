@@ -357,6 +357,12 @@ verify_jwt = false
 # handler is its own auth boundary: it rejects requests without a valid JWT
 # and derives the user id exclusively from the caller's JWT via
 # auth.getUser() (see supabase/functions/delete-account/handler.ts).
+# Demo subscription (web demo). Same verify_jwt note as delete-account:
+# the handler is its own auth boundary (JWT + email allowlist).
+[functions.demo-subscription]
+enabled = true
+verify_jwt = false
+
 [functions.delete-account]
 enabled = true
 verify_jwt = false
