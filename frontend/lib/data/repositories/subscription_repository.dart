@@ -14,6 +14,22 @@ class SubscriptionRepository {
     return result;
   }
 
+  /// Whether the current account may use the demo subscription toggle
+  /// (signed-in AND on the server's DEMO_PREMIUM_EMAILS allowlist).
+  /// Any failure — including the 403 for unauthorized accounts — is `false`.
+  Future<bool> isDemoAuthorized() async {
+    try {
+      final response = await supabase.functions.invoke(
+        'demo-subscription',
+        body: {'action': 'check'},
+      );
+      final data = response.data as Map<String, dynamic>?;
+      return (data?['authorized'] as bool?) ?? false;
+    } on Exception {
+      return false;
+    }
+  }
+
   /// Toggles the REAL demo subscription via the `demo-subscription` edge
   /// function. Only allowlisted demo accounts are accepted (403 otherwise).
   /// Returns the new subscribed state.

@@ -190,8 +190,11 @@ class _AccountHeader extends StatelessWidget {
                   ),
                 ),
               ],
-              // Web demo: simulate a premium account without a purchase.
-              if (kIsWeb) ...[
+              // Web demo toggle — only for signed-in accounts on the
+              // server's demo allowlist (never for anonymous guests).
+              if (context.select(
+                (SubscriptionCubit cubit) => cubit.state.isDemoAuthorized,
+              )) ...[
                 const SizedBox(height: 12),
                 const _DemoPremiumToggle(),
               ],

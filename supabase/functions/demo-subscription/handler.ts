@@ -14,7 +14,9 @@
 //     call it. Anyone else gets 403 — otherwise any user could self-grant
 //     premium for free.
 //
-// Contract: POST { action: "subscribe" | "unsubscribe" }.
+// Contract: POST { action: "subscribe" | "unsubscribe" | "check" }.
+//   check       -> 200 {authorized:true} for allowlisted accounts (the UI
+//                  uses it to decide whether to show the demo toggle)
 //   subscribe   -> upsert an active demo row (store='demo', 30 days)
 //   unsubscribe -> expire the demo row immediately
 // Demo rows never touch RevenueCat-managed rows (store != 'demo').
@@ -38,7 +40,7 @@ export async function handler(req: Request): Promise<Response> {
   } catch {
     return json(400, { ok: false, message: "Invalid JSON body" });
   }
-  if (action !== "subscribe" && action !== "unsubscribe") {
+  if (action !== "subscribe" && action !== "unsubscribe" && action !== "check") {
     return json(400, { ok: false, message: "Unknown action" });
   }
 
@@ -80,6 +82,10 @@ export async function handler(req: Request): Promise<Response> {
       ok: false,
       message: "This account is not authorized for demo subscriptions",
     });
+  }
+
+  if (action === "check") {
+    return json(200, { ok: true, authorized: true });
   }
 
   const adminClient = createClient(supabaseUrl, serviceRoleKey, {

@@ -121,6 +121,13 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
       } on Exception catch (error) {
         debugPrint('SubscriptionCubit.load (server check) failed: $error');
       }
+      // The demo toggle is only shown to signed-in, allowlisted accounts —
+      // never to anonymous guests. Resolved fresh on every load so it
+      // tracks sign-in/sign-out.
+      var isDemoAuthorized = false;
+      if (_demoPremiumAllowed && !_authRepository.isAnonymous) {
+        isDemoAuthorized = await _subscriptionRepository.isDemoAuthorized();
+      }
       emit(
         state.copyWith(
           status: SubscriptionStatus.success,
@@ -129,6 +136,7 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
           // On web only demo subscriptions exist, so server premium means
           // the demo toggle is on.
           isDemoPremium: _demoPremiumAllowed && isPremium,
+          isDemoAuthorized: isDemoAuthorized,
         ),
       );
       return;
@@ -263,6 +271,7 @@ class SubscriptionState extends Equatable {
     this.status = SubscriptionStatus.initial,
     this.isPremium = false,
     this.isDemoPremium = false,
+    this.isDemoAuthorized = false,
     this.isBillingAvailable = true,
     this.packages = const [],
     this.errorMessage = '',
@@ -274,6 +283,10 @@ class SubscriptionState extends Equatable {
 
   /// Whether [isPremium] is only simulated by the web demo toggle.
   final bool isDemoPremium;
+
+  /// Whether the signed-in account may use the demo toggle (web only;
+  /// allowlisted by the demo-subscription edge function).
+  final bool isDemoAuthorized;
   final bool isBillingAvailable;
   final List<Package> packages;
 
@@ -288,6 +301,7 @@ class SubscriptionState extends Equatable {
     status,
     isPremium,
     isDemoPremium,
+    isDemoAuthorized,
     isBillingAvailable,
     packages,
     errorMessage,
@@ -298,6 +312,7 @@ class SubscriptionState extends Equatable {
     SubscriptionStatus? status,
     bool? isPremium,
     bool? isDemoPremium,
+    bool? isDemoAuthorized,
     bool? isBillingAvailable,
     List<Package>? packages,
     String? errorMessage,
@@ -307,6 +322,7 @@ class SubscriptionState extends Equatable {
       status: status ?? this.status,
       isPremium: isPremium ?? this.isPremium,
       isDemoPremium: isDemoPremium ?? this.isDemoPremium,
+      isDemoAuthorized: isDemoAuthorized ?? this.isDemoAuthorized,
       isBillingAvailable: isBillingAvailable ?? this.isBillingAvailable,
       packages: packages ?? this.packages,
       errorMessage: errorMessage ?? this.errorMessage,

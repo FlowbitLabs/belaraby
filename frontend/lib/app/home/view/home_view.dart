@@ -39,10 +39,17 @@ class HomeView extends StatelessWidget {
                       delegate: HomeHeaderDelegate(),
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: FreeLessons(lessons: state.freeLessons),
-                  ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  // The free-stories teaser only makes sense for free
+                  // accounts — premium users already have everything.
+                  if (!context.select(
+                    (SubscriptionCubit cubit) => cubit.state.isPremium,
+                  )) ...[
+                    SliverToBoxAdapter(
+                      child: FreeLessons(lessons: state.freeLessons),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  ] else
+                    const SliverToBoxAdapter(child: SizedBox(height: 8)),
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

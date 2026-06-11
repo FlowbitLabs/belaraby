@@ -35,6 +35,7 @@ void main() {
     ).thenAnswer((_) => customerInfoController.stream);
     when(() => purchases.isBillingAvailable).thenReturn(true);
     when(() => auth.ensureSignedIn()).thenAnswer((_) async => 'user-1');
+    when(() => auth.isAnonymous).thenReturn(true);
     when(() => purchases.logIn(any())).thenAnswer((_) async {});
   });
 
