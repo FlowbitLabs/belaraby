@@ -236,5 +236,3 @@ class _AuthFormState extends State<_AuthForm> {
     );
   }
 }
-
-
