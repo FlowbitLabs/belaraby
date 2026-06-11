@@ -22,7 +22,7 @@ class LibraryHeaderDelegate extends SliverPersistentHeaderDelegate {
   ) {
     return Container(
       color: _backgroundColor,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsetsDirectional.only(start: 24, end: 16),
       alignment: Alignment.centerRight,
       child: Row(
         children: [

@@ -70,6 +70,7 @@ class PracticePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        titleSpacing: 24,
         centerTitle: false,
         title: Text(
           'practice_title'.tr(),

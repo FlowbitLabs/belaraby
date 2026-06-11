@@ -147,7 +147,7 @@ class _LessonViewState extends State<LessonView>
               Positioned(
                 left: 16,
                 right: 16,
-                bottom: 20,
+                bottom: 12,
                 child: _WordTranslationCard(
                   word: _selectedWord!,
                   translatedText: _translatedText,
@@ -166,10 +166,14 @@ class _LessonViewState extends State<LessonView>
               end: 16,
               // The learned toggle shows everywhere except the quiz tab,
               // whose hero is the progress backdrop.
+              // Hidden on the quiz tab (progress backdrop) and while a
+              // tapped word's translation card occupies the hero.
               child: ListenableBuilder(
                 listenable: _tabController,
                 builder: (context, _) => Visibility(
-                  visible: _tabController.index != _quizTabIndex,
+                  visible:
+                      _tabController.index != _quizTabIndex &&
+                      _selectedWord == null,
                   child: _LearnedToggleButton(lessonId: widget.lesson.id),
                 ),
               ),
@@ -280,9 +284,9 @@ class _WordTranslationCard extends StatelessWidget {
       key: ValueKey(word),
       onDismissed: (_) => onDismissed(),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.95),
+          color: Colors.white.withValues(alpha: 0.97),
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [
             BoxShadow(

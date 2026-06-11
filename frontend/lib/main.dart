@@ -6,6 +6,7 @@ import 'package:belaraby/data/repositories/auth_repository.dart';
 import 'package:belaraby/data/services/purchases_service.dart';
 import 'package:belaraby/data/supabase_client.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthChangeEvent, Supabase;
@@ -19,6 +20,17 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 /// 4. [PurchasesService] for RevenueCat billing.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Detect a password-recovery link BEFORE Supabase.initialize consumes the
+  // URL: with the PKCE flow the recovery event fires during initialization
+  // — earlier than any listener can be attached — so the deep link must be
+  // captured here. Recovery is the only redirect flow pointing at the web
+  // app, so a `code` query param (or a legacy `type=recovery` fragment)
+  // means "the user clicked the reset-password email".
+  final isRecoveryLink =
+      kIsWeb &&
+      (Uri.base.queryParameters.containsKey('code') ||
+          Uri.base.fragment.contains('type=recovery'));
 
   // Initialize easy_localization
   await EasyLocalization.ensureInitialized();
@@ -69,6 +81,20 @@ Future<void> main() async {
       );
     }
   });
+
+  if (isRecoveryLink) {
+    // Open the new-password form once the navigator exists.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(
+        appNavigatorKey.currentState?.push(
+              MaterialPageRoute<void>(
+                builder: (_) => const NewPasswordPage(),
+              ),
+            ) ??
+            Future<void>.value(),
+      );
+    });
+  }
 
   runApp(
     EasyLocalization(

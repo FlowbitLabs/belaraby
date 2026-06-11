@@ -38,6 +38,7 @@ class _AboutView extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        titleSpacing: 24,
         title: Text(
           'settings_section_about'.tr(),
           style: const TextStyle(fontWeight: FontWeight.w600, color: grey190),

@@ -48,6 +48,7 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        titleSpacing: 24,
         title: Text(
           'auth_new_password_title'.tr(),
           style: const TextStyle(fontWeight: FontWeight.w600, color: grey190),

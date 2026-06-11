@@ -85,6 +85,7 @@ class _AuthFormState extends State<_AuthForm> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        titleSpacing: 24,
         title: Text(
           _titleKey.tr(),
           style: const TextStyle(fontWeight: FontWeight.w600, color: grey190),
