@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:belaraby/app/lesson/controller/lesson_player_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -144,6 +146,25 @@ void main() {
     completionHandler!(); // natural end — repeat fires after the delay
     await Future<void>.delayed(const Duration(milliseconds: 1100));
     expect(repeats, 1);
+  });
+
+  test('controls stay responsive while the utterance future is in flight',
+      () async {
+    // With awaitSpeakCompletion(true) the speak() future resolves only
+    // when the audio finishes — controls must not block on it.
+    when(() => tts.speak(any())).thenAnswer((_) => Completer<int>().future);
+
+    await controller.speak(story); // starts playing, future never resolves
+    expect(controller.isPlaying, isTrue);
+
+    await controller.speak(story); // pause must still go through
+    expect(controller.isPaused, isTrue);
+
+    await controller.cycleSpeed(); // and so must speed changes
+    expect(controller.speedLabel, '١٫٣×');
+
+    await controller.stop();
+    expect(controller.isPlaying, isFalse);
   });
 
   test('cycleSpeed cycles labels, persists, and re-rates the engine',

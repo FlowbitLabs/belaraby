@@ -219,7 +219,18 @@ class LessonPlayerController extends ChangeNotifier {
     _isPlaying = true;
     _isPaused = false;
     notifyListeners();
-    await _tts.speak(_text.substring(_charOffset));
+    // Fire and forget: with awaitSpeakCompletion(true) this future only
+    // resolves when the audio FINISHES — awaiting it here would hold the
+    // _busy guard for the whole story and deadlock every control tap.
+    // Completion/errors are handled by the engine handlers instead.
+    final generation = _utteranceGeneration;
+    unawaited(
+      _tts.speak(_text.substring(_charOffset)).catchError((Object error) {
+        debugPrint('LessonPlayerController.speak failed: $error');
+        _onErrorOrCancel(generation);
+        return null;
+      }),
+    );
   }
 
   /// Natural end of the utterance: reset and fire the repeat hook.
