@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:belaraby/app/lesson/utils/arabic_voice.dart';
+import 'package:belaraby/app/lesson/utils/tts_engine.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -26,7 +27,7 @@ const String _speedPrefsKey = 'story_speed_index';
 /// playback-speed setting.
 class LessonPlayerController extends ChangeNotifier {
   LessonPlayerController({FlutterTts? tts, SharedPreferences? preferences})
-    : _tts = tts ?? FlutterTts(),
+    : _tts = tts ?? sharedTts,
       _preferences = preferences;
 
   final FlutterTts _tts;
@@ -56,6 +57,10 @@ class LessonPlayerController extends ChangeNotifier {
 
   /// Guards against concurrent speak/pause calls from rapid taps.
   bool _busy = false;
+
+  /// Set while a story utterance we initiated is starting, so start events
+  /// caused by other users of the shared engine (WordSpeaker) are ignored.
+  bool _expectingStart = false;
 
   /// Invoked after playback completes naturally to optionally repeat the
   /// lesson. Never invoked for manual stops, pauses or engine errors.
@@ -103,6 +108,10 @@ class LessonPlayerController extends ChangeNotifier {
         }
       })
       ..setStartHandler(() {
+        // The engine is shared with WordSpeaker — only starts we initiated
+        // (via _startFrom) may flip the playback state.
+        if (!_expectingStart) return;
+        _expectingStart = false;
         _isPlaying = true;
         _isPaused = false;
         notifyListeners();
@@ -221,11 +230,15 @@ class LessonPlayerController extends ChangeNotifier {
 
   Future<void> _startFrom(int wordIndex) async {
     if (_words.isEmpty) return;
+    // The engine is shared with WordSpeaker, which sets its own rate —
+    // re-apply ours before every story start.
+    await _applyRate();
     final index = wordIndex.clamp(0, _words.length - 1);
     _charOffset = _words[index].startIndex;
     _highlightedIndex = index;
     _isPlaying = true;
     _isPaused = false;
+    _expectingStart = true;
     notifyListeners();
     // Fire and forget: with awaitSpeakCompletion(true) this future only
     // resolves when the audio FINISHES — awaiting it here would hold the

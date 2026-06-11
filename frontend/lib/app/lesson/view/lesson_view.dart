@@ -203,12 +203,13 @@ class _LessonViewState extends State<LessonView>
             ],
           ),
           // Floating translation card for the tapped story word: slides up
-          // from the bottom over the content, leaving the hero (back /
-          // learned buttons) untouched.
+          // from the bottom over the content, sitting ABOVE the playback
+          // controls (which live at bottom 50, ~58px tall) so neither
+          // blocks the other.
           PositionedDirectional(
             start: 16,
             end: 16,
-            bottom: 16,
+            bottom: 120,
             child: AnimatedSlide(
               offset: _selectedWord != null
                   ? Offset.zero
