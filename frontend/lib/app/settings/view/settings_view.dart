@@ -27,11 +27,6 @@ class SettingsView extends StatelessWidget {
               );
             },
           ),
-          BlocListener<SettingsCubit, SettingsState>(
-            listenWhen: (previous, current) =>
-                !previous.accountDeleted && current.accountDeleted,
-            listener: _onAccountDeleted,
-          ),
           // Feedback for the restore-purchases flow.
           BlocListener<SubscriptionCubit, SubscriptionState>(
             listenWhen: (previous, current) =>
@@ -47,7 +42,7 @@ class SettingsView extends StatelessWidget {
             const LearningProgressCard(),
             SettingsSection(
               title: 'settings_section_account'.tr(),
-              children: const [_AccountTiles(), _DeleteAccountTile()],
+              children: const [_AccountTiles()],
             ),
             SettingsSection(
               title: 'settings_section_subscription'.tr(),
@@ -80,18 +75,6 @@ class SettingsView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  void _onAccountDeleted(BuildContext context, SettingsState state) {
-    // The deleted user's data is gone; refresh the global cubits so the
-    // fresh anonymous session starts clean.
-    context.read<FavoriteCubit>().loadFavorites();
-    context.read<LearnedCubit>().loadLearned();
-    context.read<SubscriptionCubit>().load();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('settings_delete_success'.tr())),
-    );
-    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _onSubscriptionChanged(BuildContext context, SubscriptionState state) {
@@ -127,7 +110,7 @@ class _AccountHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Card(
         margin: EdgeInsets.zero,
-        color: purple140,
+        color: navy140,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
@@ -138,7 +121,7 @@ class _AccountHeader extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 28,
-                    backgroundColor: purple110,
+                    backgroundColor: navy110,
                     child: Icon(Icons.person, color: Colors.white, size: 32),
                   ),
                   const SizedBox(width: 14),
@@ -149,7 +132,9 @@ class _AccountHeader extends StatelessWidget {
                         Text(
                           authState.isAnonymous
                               ? 'profile_guest'.tr()
-                              : authState.email,
+                              : (authState.username.isNotEmpty
+                                    ? authState.username
+                                    : authState.email),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -172,7 +157,7 @@ class _AccountHeader extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => navigateToPaywall(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: yellow120,
+                      backgroundColor: orange120,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
@@ -238,9 +223,7 @@ class _DemoPremiumToggle extends StatelessWidget {
             size: 18,
           ),
           label: Text(
-            isDemo
-                ? 'profile_demo_disable'.tr()
-                : 'profile_demo_enable'.tr(),
+            isDemo ? 'profile_demo_disable'.tr() : 'profile_demo_enable'.tr(),
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -272,7 +255,7 @@ class _TierBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isPremium ? yellow120 : Colors.white24,
+        color: isPremium ? orange120 : Colors.white24,
         borderRadius: BorderRadius.circular(100),
       ),
       child: Row(
@@ -320,6 +303,37 @@ class _AccountTiles extends StatelessWidget {
     }
   }
 
+  Future<void> _editUsername(BuildContext context, String current) async {
+    final cubit = context.read<AuthCubit>();
+    final controller = TextEditingController(text: current);
+    final username = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('profile_username_title'.tr()),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 30,
+          decoration: InputDecoration(hintText: 'profile_username_hint'.tr()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('dialog_cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context).pop(controller.text.trim()),
+            child: Text('dialog_save'.tr()),
+          ),
+        ],
+      ),
+    );
+    if (username != null && username.isNotEmpty && username != current) {
+      await cubit.setUsername(username);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
@@ -345,6 +359,14 @@ class _AccountTiles extends StatelessWidget {
           icon: Icons.mail_outline,
           label: authState.email,
           trailing: const Icon(Icons.check_circle, size: 18, color: green115),
+        ),
+        SettingsTile(
+          icon: Icons.badge_outlined,
+          label: authState.username.isNotEmpty
+              ? authState.username
+              : 'profile_username_unset'.tr(),
+          trailing: const Icon(Icons.edit_outlined, size: 18, color: grey140),
+          onTap: () => _editUsername(context, authState.username),
         ),
         SettingsTile(
           icon: Icons.logout,
@@ -385,7 +407,7 @@ class _RestorePurchasesTile extends StatelessWidget {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: yellow120,
+                    color: orange120,
                   ),
                 )
               : null,
@@ -416,6 +438,28 @@ class _ManageSubscriptionTile extends StatelessWidget {
       label: 'settings_manage_subscription'.tr(),
       trailing: const Icon(Icons.open_in_new, size: 18, color: grey140),
       onTap: () async {
+        // Store subscriptions are managed on the device that bought them —
+        // on web there is no store, so explain instead of dead-linking.
+        if (kIsWeb) {
+          await showDialog<void>(
+            context: context,
+            builder: (context) => AlertDialog(
+              icon: const Icon(Icons.phone_iphone, color: orange120, size: 40),
+              title: Text('paywall_web_only_title'.tr()),
+              content: Text(
+                'manage_subscription_web_message'.tr(),
+                textAlign: TextAlign.center,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('paywall_web_only_ok'.tr()),
+                ),
+              ],
+            ),
+          );
+          return;
+        }
         final opened = await launchExternalUrl(_storeUrl);
         if (!opened && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -423,38 +467,6 @@ class _ManageSubscriptionTile extends StatelessWidget {
           );
         }
       },
-    );
-  }
-}
-
-class _DeleteAccountTile extends StatelessWidget {
-  const _DeleteAccountTile();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDeleting = context.select(
-      (SettingsCubit cubit) => cubit.state.status == SettingsStatus.loading,
-    );
-    return SettingsTile(
-      icon: Icons.delete_forever_outlined,
-      iconColor: red110,
-      labelColor: red110,
-      label: 'settings_delete_account'.tr(),
-      trailing: isDeleting
-          ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2, color: red110),
-            )
-          : null,
-      onTap: isDeleting
-          ? null
-          : () async {
-              final confirmed = await showDeleteAccountDialog(context);
-              if (confirmed && context.mounted) {
-                await context.read<SettingsCubit>().deleteAccount();
-              }
-            },
     );
   }
 }

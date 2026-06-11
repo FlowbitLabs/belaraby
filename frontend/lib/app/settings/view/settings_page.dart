@@ -7,7 +7,6 @@ import 'package:belaraby/app/settings/cubit/auth_cubit.dart';
 import 'package:belaraby/app/settings/cubit/settings_cubit.dart';
 import 'package:belaraby/app/settings/view/about_page.dart';
 import 'package:belaraby/app/settings/view/auth_page.dart';
-import 'package:belaraby/app/settings/widgets/delete_account_dialog.dart';
 import 'package:belaraby/app/settings/widgets/learning_progress_card.dart';
 import 'package:belaraby/app/settings/widgets/settings_section.dart';
 import 'package:belaraby/app/settings/widgets/settings_tile.dart';

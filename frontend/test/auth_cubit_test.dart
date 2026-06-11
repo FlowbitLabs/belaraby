@@ -8,14 +8,18 @@ import 'helpers.dart';
 
 void main() {
   late MockAuthRepository repository;
+  late MockProfileRepository profiles;
 
   setUp(() {
     repository = MockAuthRepository();
+    profiles = MockProfileRepository();
     when(() => repository.isAnonymous).thenReturn(true);
     when(() => repository.currentEmail).thenReturn(null);
+    when(profiles.fetchUsername).thenAnswer((_) async => null);
   });
 
-  AuthCubit buildCubit() => AuthCubit(repository: repository);
+  AuthCubit buildCubit() =>
+      AuthCubit(repository: repository, profileRepository: profiles);
 
   test('load reads the current session', () {
     when(() => repository.isAnonymous).thenReturn(false);

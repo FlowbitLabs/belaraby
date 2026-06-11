@@ -77,7 +77,7 @@ class _UnlockLoading extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(color: yellow120),
+          const CircularProgressIndicator(color: orange120),
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -106,7 +106,7 @@ class _UnlockRetry extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.hourglass_top, size: 48, color: yellow120),
+            const Icon(Icons.hourglass_top, size: 48, color: orange120),
             const SizedBox(height: 16),
             Text(
               messageKey.tr(),
@@ -116,7 +116,7 @@ class _UnlockRetry extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: yellow120,
+                backgroundColor: orange120,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(

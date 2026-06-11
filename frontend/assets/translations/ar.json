@@ -139,5 +139,12 @@
   "auth_new_password_title": "كلمة مرور جديدة",
   "auth_new_password_subtitle": "اختر كلمة مرور جديدة لحسابك.",
   "auth_new_password_submit": "حفظ كلمة المرور",
-  "auth_password_updated": "تم تحديث كلمة المرور."
+  "auth_password_updated": "تم تحديث كلمة المرور.",
+  "manage_subscription_web_message": "تُدار الاشتراكات في تطبيق بالعربي عبر حسابك في App Store أو Google Play.",
+  "profile_username_title": "اسم المستخدم",
+  "profile_username_hint": "اختر اسماً للعرض",
+  "profile_username_unset": "أضف اسم مستخدم",
+  "profile_username_saved": "تم حفظ اسم المستخدم.",
+  "dialog_cancel": "إلغاء",
+  "dialog_save": "حفظ"
 }

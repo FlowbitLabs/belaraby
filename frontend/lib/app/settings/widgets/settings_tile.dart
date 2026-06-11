@@ -8,7 +8,7 @@ class SettingsTile extends StatelessWidget {
     required this.label,
     this.onTap,
     this.trailing,
-    this.iconColor = yellow120,
+    this.iconColor = orange120,
     this.labelColor,
     super.key,
   });
@@ -26,7 +26,11 @@ class SettingsTile extends StatelessWidget {
       leading: Icon(icon, color: iconColor),
       title: Text(
         label,
-        style: TextStyle(fontSize: 16, color: labelColor ?? grey190),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: labelColor ?? grey190,
+        ),
       ),
       trailing: trailing,
       onTap: onTap,

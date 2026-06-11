@@ -1,5 +1,5 @@
 {
-  "home_title": "Discover BelAraby",
+  "home_title": "Belaraby",
   "home_free_stories": "Free Stories",
   "home_hide_learnt": "Hide Learned",
   "home_filter": "Filter by Level: {}",
@@ -124,5 +124,24 @@
   "auth_error_weak_password": "Password must be at least 8 characters.",
   "auth_error_invalid_email": "Please enter a valid email address.",
   "auth_error_generic": "Something went wrong. Please try again.",
-  "about_legal": "Legal"
+  "about_legal": "Legal",
+  "profile_demo_enable": "Enable demo premium",
+  "profile_demo_disable": "Disable demo premium",
+  "profile_demo_enabled": "Demo subscription activated — all stories are now unlocked.",
+  "profile_demo_disabled": "Demo subscription cancelled — back to the free tier.",
+  "profile_demo_description": "Web demo for authorized test accounts: activates a real 30-day subscription on your account so all paid stories unlock — no payment involved. Press again anytime to cancel it.",
+  "profile_demo_error": "Could not change the demo subscription. This account may not be authorized.",
+  "auth_forgot_password": "Forgot password?",
+  "auth_reset_sent": "Password reset link sent — check your email.",
+  "auth_new_password_title": "New password",
+  "auth_new_password_subtitle": "Choose a new password for your account.",
+  "auth_new_password_submit": "Save password",
+  "auth_password_updated": "Your password was updated.",
+  "manage_subscription_web_message": "Subscriptions are managed in the Belaraby mobile app through your App Store or Google Play account.",
+  "profile_username_title": "Username",
+  "profile_username_hint": "Choose a display name",
+  "profile_username_unset": "Set a username",
+  "profile_username_saved": "Username saved.",
+  "dialog_cancel": "Cancel",
+  "dialog_save": "Save"
 }

@@ -37,7 +37,7 @@ class QuizProgressRing extends StatelessWidget {
                   backgroundColor: Colors.white24,
                   // The ring turns green once the quiz is completed.
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    state.isCompleted ? green100 : yellow100,
+                    state.isCompleted ? green100 : orange100,
                   ),
                 ),
               ),

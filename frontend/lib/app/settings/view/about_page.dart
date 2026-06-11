@@ -1,7 +1,11 @@
+import 'package:belaraby/app/lesson/cubit/favorite_cubit.dart';
+import 'package:belaraby/app/lesson/cubit/learned_cubit.dart';
 import 'package:belaraby/app/settings/cubit/settings_cubit.dart';
 import 'package:belaraby/app/settings/view/legal_page.dart';
+import 'package:belaraby/app/settings/widgets/delete_account_dialog.dart';
 import 'package:belaraby/app/settings/widgets/settings_section.dart';
 import 'package:belaraby/app/settings/widgets/settings_tile.dart';
+import 'package:belaraby/app/subscription/cubit/subscription_cubit.dart';
 import 'package:belaraby/constant/colors.dart';
 import 'package:belaraby/constant/legal_content.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -39,62 +43,114 @@ class _AboutView extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.w600, color: grey190),
         ),
       ),
-      body: ListView(
-        children: [
-          SettingsSection(
-            title: 'about_legal'.tr(),
-            children: [
-              SettingsTile(
-                icon: Icons.description_outlined,
-                label: 'legal_terms_of_use'.tr(),
-                trailing: const Icon(
-                  Icons.chevron_left,
-                  size: 20,
-                  color: grey140,
-                ),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const LegalPage(
-                      titleKey: 'legal_terms_of_use',
-                      body: termsOfUseBody,
+      body: BlocListener<SettingsCubit, SettingsState>(
+        listenWhen: (previous, current) =>
+            !previous.accountDeleted && current.accountDeleted,
+        listener: (context, state) {
+          // The deleted user's data is gone; refresh the global cubits so
+          // the fresh anonymous session starts clean.
+          context.read<FavoriteCubit>().loadFavorites();
+          context.read<LearnedCubit>().loadLearned();
+          context.read<SubscriptionCubit>().load();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('settings_delete_success'.tr())),
+          );
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        },
+        child: ListView(
+          children: [
+            SettingsSection(
+              title: 'about_legal'.tr(),
+              children: [
+                SettingsTile(
+                  icon: Icons.description_outlined,
+                  label: 'legal_terms_of_use'.tr(),
+                  trailing: const Icon(
+                    Icons.chevron_left,
+                    size: 20,
+                    color: grey140,
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LegalPage(
+                        titleKey: 'legal_terms_of_use',
+                        body: termsOfUseBody,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SettingsTile(
-                icon: Icons.privacy_tip_outlined,
-                label: 'legal_privacy_policy'.tr(),
-                trailing: const Icon(
-                  Icons.chevron_left,
-                  size: 20,
-                  color: grey140,
-                ),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => const LegalPage(
-                      titleKey: 'legal_privacy_policy',
-                      body: privacyPolicyBody,
+                SettingsTile(
+                  icon: Icons.privacy_tip_outlined,
+                  label: 'legal_privacy_policy'.tr(),
+                  trailing: const Icon(
+                    Icons.chevron_left,
+                    size: 20,
+                    color: grey140,
+                  ),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const LegalPage(
+                        titleKey: 'legal_privacy_policy',
+                        body: privacyPolicyBody,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          SettingsSection(
-            title: 'settings_version'.tr(),
-            children: [
-              SettingsTile(
-                icon: Icons.info_outline,
-                label: 'settings_version'.tr(),
-                trailing: Text(
-                  version,
-                  style: const TextStyle(fontSize: 14, color: grey160),
+              ],
+            ),
+            SettingsSection(
+              title: 'settings_version'.tr(),
+              children: [
+                SettingsTile(
+                  icon: Icons.info_outline,
+                  label: 'settings_version'.tr(),
+                  trailing: Text(
+                    version,
+                    style: const TextStyle(fontSize: 14, color: grey160),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            SettingsSection(
+              title: 'settings_section_account'.tr(),
+              children: const [_DeleteAccountTile()],
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _DeleteAccountTile extends StatelessWidget {
+  const _DeleteAccountTile();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDeleting = context.select(
+      (SettingsCubit cubit) => cubit.state.status == SettingsStatus.loading,
+    );
+    return SettingsTile(
+      icon: Icons.delete_forever_outlined,
+      iconColor: red110,
+      labelColor: red110,
+      label: 'settings_delete_account'.tr(),
+      trailing: isDeleting
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2, color: red110),
+            )
+          : null,
+      onTap: isDeleting
+          ? null
+          : () async {
+              final confirmed = await showDeleteAccountDialog(context);
+              if (confirmed && context.mounted) {
+                await context.read<SettingsCubit>().deleteAccount();
+              }
+            },
     );
   }
 }

@@ -87,13 +87,13 @@ class _ExerciseCard extends StatelessWidget {
                   margin: const EdgeInsetsDirectional.only(end: 10),
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(
-                    color: purple10,
+                    color: navy10,
                     shape: BoxShape.circle,
                   ),
                   child: Text(
                     '$questionNumber',
                     style: const TextStyle(
-                      color: purple140,
+                      color: navy140,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                     ),
@@ -233,7 +233,7 @@ class _QuizSummary extends StatelessWidget {
       children: [
         Card(
           margin: EdgeInsets.zero,
-          color: yellow15,
+          color: orange10,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -266,7 +266,7 @@ class _QuizSummary extends StatelessWidget {
                 ElevatedButton.icon(
                   onPressed: () => context.read<QuizCubit>().resetAnswers(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: yellow120,
+                    backgroundColor: orange120,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -324,7 +324,7 @@ class _ScoreRing extends StatelessWidget {
                 fraction >= 0.8
                     ? green115
                     : fraction >= 0.5
-                    ? yellow120
+                    ? orange120
                     : red110,
               ),
             ),

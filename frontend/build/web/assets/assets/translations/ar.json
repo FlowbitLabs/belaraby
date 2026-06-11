@@ -1,5 +1,5 @@
 {
-  "home_title": "اكتشف بالعربي",
+  "home_title": "بالعربي",
   "home_free_stories": "قصص مجانية",
   "home_hide_learnt": "إخفاء ما تعلمت",
   "home_filter": "البحث بالمستوى: {}",
@@ -127,5 +127,24 @@
   "auth_error_weak_password": "يجب أن تكون كلمة المرور ٨ أحرف على الأقل.",
   "auth_error_invalid_email": "الرجاء إدخال بريد إلكتروني صحيح.",
   "auth_error_generic": "حدث خطأ ما. حاول مرة أخرى.",
-  "about_legal": "قانوني"
+  "about_legal": "قانوني",
+  "profile_demo_enable": "تفعيل الاشتراك التجريبي",
+  "profile_demo_disable": "إيقاف الاشتراك التجريبي",
+  "profile_demo_enabled": "تم تفعيل الاشتراك التجريبي — فُتحت جميع القصص.",
+  "profile_demo_disabled": "تم إلغاء الاشتراك التجريبي — عدت إلى الباقة المجانية.",
+  "profile_demo_description": "عرض تجريبي على الويب للحسابات المصرح بها: يفعّل اشتراكاً حقيقياً لمدة ٣٠ يوماً على حسابك فتُفتح جميع القصص المدفوعة — دون أي دفع. اضغط مرة أخرى لإلغائه في أي وقت.",
+  "profile_demo_error": "تعذر تغيير الاشتراك التجريبي. قد لا يكون هذا الحساب مصرحاً له.",
+  "auth_forgot_password": "نسيت كلمة المرور؟",
+  "auth_reset_sent": "أُرسل رابط إعادة التعيين — تحقق من بريدك الإلكتروني.",
+  "auth_new_password_title": "كلمة مرور جديدة",
+  "auth_new_password_subtitle": "اختر كلمة مرور جديدة لحسابك.",
+  "auth_new_password_submit": "حفظ كلمة المرور",
+  "auth_password_updated": "تم تحديث كلمة المرور.",
+  "manage_subscription_web_message": "تُدار الاشتراكات في تطبيق بالعربي عبر حسابك في App Store أو Google Play.",
+  "profile_username_title": "اسم المستخدم",
+  "profile_username_hint": "اختر اسماً للعرض",
+  "profile_username_unset": "أضف اسم مستخدم",
+  "profile_username_saved": "تم حفظ اسم المستخدم.",
+  "dialog_cancel": "إلغاء",
+  "dialog_save": "حفظ"
 }

@@ -10,8 +10,7 @@ class LessonView extends StatefulWidget {
 
 class _LessonViewState extends State<LessonView>
     with SingleTickerProviderStateMixin {
-  /// Tab indices in [_tabController].
-  static const int _storyTabIndex = 0;
+  /// Index of the quiz tab in [_tabController].
   static const int _quizTabIndex = 1;
 
   late final TabController _tabController = TabController(
@@ -137,7 +136,7 @@ class _LessonViewState extends State<LessonView>
                   child: IgnorePointer(
                     ignoring: !isQuizTab,
                     child: const ColoredBox(
-                      color: purple140,
+                      color: navy140,
                       child: Center(child: QuizProgressRing()),
                     ),
                   ),
@@ -165,12 +164,12 @@ class _LessonViewState extends State<LessonView>
             PositionedDirectional(
               top: 60,
               end: 16,
-              // The learned toggle belongs to the story context — only the
-              // story tab shows it.
+              // The learned toggle shows everywhere except the quiz tab,
+              // whose hero is the progress backdrop.
               child: ListenableBuilder(
                 listenable: _tabController,
                 builder: (context, _) => Visibility(
-                  visible: _tabController.index == _storyTabIndex,
+                  visible: _tabController.index != _quizTabIndex,
                   child: _LearnedToggleButton(lessonId: widget.lesson.id),
                 ),
               ),
@@ -224,7 +223,7 @@ class _LessonViewState extends State<LessonView>
             TextSpan(
               text: info.word,
               style: BTextStyles.of(context).displaySmall.copyWith(
-                color: isHighlighted ? yellow120 : grey190,
+                color: isHighlighted ? orange120 : grey190,
               ),
             ),
             // Add a non-highlighted space after each word
@@ -471,17 +470,11 @@ class _LearnedToggleButton extends StatelessWidget {
                   ),
                 ],
               ),
+              // RTL: the icon is the LAST child so the checkmark renders
+              // on the left of the label.
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    isLearnt
-                        ? Icons.check_circle
-                        : Icons.check_circle_outline,
-                    color: isLearnt ? Colors.white : grey160,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 6),
                   Text(
                     'lesson_learnt_button'.tr(),
                     style: TextStyle(
@@ -491,6 +484,14 @@ class _LearnedToggleButton extends StatelessWidget {
                       height: 1,
                       fontFamily: 'Cairo',
                     ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    isLearnt
+                        ? Icons.check_circle
+                        : Icons.check_circle_outline,
+                    color: isLearnt ? Colors.white : grey160,
+                    size: 20,
                   ),
                 ],
               ),
@@ -509,12 +510,15 @@ class _LessonTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // height: 1 keeps the Arabic glyphs vertically centered inside the
-    // pill indicator — the fonts' default line metrics push them below
-    // the visual center.
-    final labelStyle = BTextStyles.of(
-      context,
-    ).title1.copyWith(color: grey0, height: 1);
+    // Cairo with height 1 keeps the label vertically centered inside the
+    // pill indicator — Amiri's line metrics sit visibly below center.
+    const labelStyle = TextStyle(
+      fontFamily: 'Cairo',
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      height: 1,
+      color: grey0,
+    );
     return TabBar(
       controller: controller,
       labelColor: grey0,
@@ -523,7 +527,7 @@ class _LessonTabBar extends StatelessWidget {
       unselectedLabelColor: grey140,
       unselectedLabelStyle: labelStyle,
       indicator: BoxDecoration(
-        color: yellow120,
+        color: orange120,
         borderRadius: BorderRadius.circular(100),
       ),
       indicatorSize: TabBarIndicatorSize.label,

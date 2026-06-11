@@ -136,5 +136,12 @@
   "auth_new_password_title": "New password",
   "auth_new_password_subtitle": "Choose a new password for your account.",
   "auth_new_password_submit": "Save password",
-  "auth_password_updated": "Your password was updated."
+  "auth_password_updated": "Your password was updated.",
+  "manage_subscription_web_message": "Subscriptions are managed in the Belaraby mobile app through your App Store or Google Play account.",
+  "profile_username_title": "Username",
+  "profile_username_hint": "Choose a display name",
+  "profile_username_unset": "Set a username",
+  "profile_username_saved": "Username saved.",
+  "dialog_cancel": "Cancel",
+  "dialog_save": "Save"
 }

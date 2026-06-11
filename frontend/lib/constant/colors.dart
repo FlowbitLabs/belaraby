@@ -75,3 +75,19 @@ const Color appBackground = Color(0xFFF1F1F1);
 
 /// Soft red tint for wrong-answer surfaces.
 const Color red10 = Color(0xFFFDEDED);
+
+// Primary (Orange) — the app's primary/brand accent.
+// B35309, E8650D, F97316, FB923C, FDBA74, FFF4EA
+const Color orange140 = Color(0xFFB35309);
+const Color orange120 = Color(0xFFE8650D);
+const Color orange100 = Color(0xFFF97316);
+const Color orange75 = Color(0xFFFB923C);
+const Color orange50 = Color(0xFFFDBA74);
+const Color orange10 = Color(0xFFFFF4EA);
+
+// Complementary (Navy) — deep blue surfaces opposite orange on the wheel.
+// 1E3A5F, 2E5077, D7E2EE, F0F5FA
+const Color navy140 = Color(0xFF1E3A5F);
+const Color navy110 = Color(0xFF2E5077);
+const Color navy30 = Color(0xFFD7E2EE);
+const Color navy10 = Color(0xFFF0F5FA);

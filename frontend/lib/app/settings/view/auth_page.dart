@@ -120,7 +120,7 @@ class _AuthFormState extends State<_AuthForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.account_circle, size: 72, color: purple110),
+                  const Icon(Icons.account_circle, size: 72, color: navy110),
                   const SizedBox(height: 8),
                   Text(
                     widget.isSignUp
@@ -188,7 +188,7 @@ class _AuthFormState extends State<_AuthForm> {
                       return ElevatedButton(
                         onPressed: isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: yellow120,
+                          backgroundColor: orange120,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
@@ -220,7 +220,7 @@ class _AuthFormState extends State<_AuthForm> {
                       child: Text(
                         'auth_forgot_password'.tr(),
                         style: const TextStyle(
-                          color: purple110,
+                          color: navy110,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),

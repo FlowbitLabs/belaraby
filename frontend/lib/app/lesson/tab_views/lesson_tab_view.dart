@@ -230,7 +230,7 @@ class _TranslateToggleIcon extends StatelessWidget {
       onTap: onTap,
       child: Icon(
         Icons.translate,
-        color: isTranslated ? purple110 : grey140,
+        color: isTranslated ? navy110 : grey140,
         size: 30,
       ),
     );

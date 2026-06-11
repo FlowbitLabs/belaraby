@@ -69,14 +69,14 @@ class BelArabyApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: purple140,
-            primary: purple140,
-            secondary: yellow120,
+            seedColor: orange120,
+            primary: orange120,
+            secondary: navy140,
           ),
           scaffoldBackgroundColor: appBackground,
           fontFamily: 'Cairo',
           progressIndicatorTheme: const ProgressIndicatorThemeData(
-            color: yellow120,
+            color: orange120,
           ),
           snackBarTheme: const SnackBarThemeData(
             backgroundColor: grey180,

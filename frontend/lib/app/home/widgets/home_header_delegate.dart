@@ -42,7 +42,7 @@ class HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
               icon: const Icon(
                 Icons.account_box,
                 size: 40,
-                color: yellow120,
+                color: orange120,
               ),
               tooltip: 'settings_title'.tr(),
               onPressed: () => navigateToSettings(context),

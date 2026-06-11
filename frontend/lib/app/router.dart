@@ -54,13 +54,13 @@ class _MainScreenState extends State<MainScreen> {
           onTap: (index) => setState(() => _currentIndex = index),
           selectedIconTheme: const IconThemeData(
             size: 25,
-            color: yellow120,
+            color: orange120,
           ),
           unselectedIconTheme: const IconThemeData(
             size: 22,
             color: grey140,
           ),
-          selectedItemColor: yellow120,
+          selectedItemColor: orange120,
           unselectedItemColor: grey140,
           selectedLabelStyle: const TextStyle(
             fontSize: 14,
@@ -151,7 +151,7 @@ Future<bool?> navigateToPaywall(BuildContext context) {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.phone_iphone, color: yellow120, size: 40),
+        icon: const Icon(Icons.phone_iphone, color: orange120, size: 40),
         title: Text('paywall_web_only_title'.tr()),
         content: Text(
           'paywall_web_only_message'.tr(),

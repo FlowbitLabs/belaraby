@@ -69,7 +69,7 @@ class GrammarCard extends StatelessWidget {
                 children: [
                   const Padding(
                     padding: EdgeInsetsDirectional.only(end: 12, top: 2),
-                    child: Icon(Icons.lightbulb_outline, color: yellow120),
+                    child: Icon(Icons.lightbulb_outline, color: orange120),
                   ),
                   Expanded(
                     child: Text(
@@ -100,7 +100,7 @@ class GrammarCard extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: purple10,
+                  color: navy10,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
@@ -109,7 +109,7 @@ class GrammarCard extends StatelessWidget {
                     Text(
                       'lesson_grammar_example'.tr(),
                       style: styles.body1.copyWith(
-                        color: purple110,
+                        color: navy110,
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
@@ -118,7 +118,7 @@ class GrammarCard extends StatelessWidget {
                     Text(
                       example,
                       style: styles.body1.copyWith(
-                        color: purple140,
+                        color: navy140,
                         fontSize: 16,
                         height: 1.6,
                         fontStyle: FontStyle.italic,

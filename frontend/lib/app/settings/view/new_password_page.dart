@@ -75,7 +75,7 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.lock_reset, size: 72, color: purple110),
+                  const Icon(Icons.lock_reset, size: 72, color: navy110),
                   const SizedBox(height: 8),
                   Text(
                     'auth_new_password_subtitle'.tr(),
@@ -117,7 +117,7 @@ class _NewPasswordFormState extends State<_NewPasswordForm> {
                       return ElevatedButton(
                         onPressed: isLoading ? null : _submit,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: yellow120,
+                          backgroundColor: orange120,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(

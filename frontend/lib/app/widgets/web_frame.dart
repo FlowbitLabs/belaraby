@@ -25,7 +25,7 @@ class WebFrame extends StatelessWidget {
           return child;
         }
         return ColoredBox(
-          color: purple140,
+          color: navy140,
           child: Center(
             // Phone-style bezel: a dark rounded border with a thin
             // highlight edge, so the app reads as a device mockup.

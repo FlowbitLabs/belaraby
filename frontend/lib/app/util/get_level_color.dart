@@ -28,6 +28,6 @@ Color getFilterColor(String filterKey) {
   } else if (filterKey == 'level_filter_grade_4') {
     return purple30;
   } else {
-    return yellow100; // "all" chip
+    return orange100; // "all" chip
   }
 }

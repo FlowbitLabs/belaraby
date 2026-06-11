@@ -1,4 +1,5 @@
 import 'package:belaraby/data/repositories/auth_repository.dart';
+import 'package:belaraby/data/repositories/profile_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,20 +13,62 @@ enum AuthStatus { initial, loading, success, error }
 /// Sign-up upgrades the anonymous Supabase user (same user id), so the
 /// guest's favorites, learned lessons and purchases carry over.
 class AuthCubit extends Cubit<AuthState> {
-  AuthCubit({AuthRepository? repository})
+  AuthCubit({AuthRepository? repository, ProfileRepository? profileRepository})
     : _repository = repository ?? AuthRepository(),
+      _profileRepository = profileRepository ?? ProfileRepository(),
       super(const AuthState());
 
   final AuthRepository _repository;
+  final ProfileRepository _profileRepository;
 
-  /// Reads the current session into the state.
-  void load() {
+  /// Reads the current session (and the profile's username) into the state.
+  Future<void> load() async {
     emit(
       state.copyWith(
         isAnonymous: _repository.isAnonymous,
         email: _repository.currentEmail ?? '',
       ),
     );
+    if (_repository.isAnonymous) {
+      emit(state.copyWith(username: ''));
+      return;
+    }
+    try {
+      final username = await _profileRepository.fetchUsername();
+      if (isClosed) return;
+      emit(state.copyWith(username: username ?? ''));
+    } on Exception catch (error) {
+      debugPrint('AuthCubit.load username fetch failed: $error');
+    }
+  }
+
+  /// Saves the username on the profile.
+  Future<void> setUsername(String username) async {
+    emit(
+      state.copyWith(
+        status: AuthStatus.loading,
+        errorMessage: '',
+        infoMessage: '',
+      ),
+    );
+    try {
+      await _profileRepository.updateUsername(username);
+      emit(
+        state.copyWith(
+          status: AuthStatus.initial,
+          username: username,
+          infoMessage: 'profile_username_saved',
+        ),
+      );
+    } on Exception catch (error) {
+      debugPrint('AuthCubit.setUsername failed: $error');
+      emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'auth_error_generic',
+        ),
+      );
+    }
   }
 
   /// Signs in to an existing account.
@@ -132,6 +175,7 @@ class AuthState extends Equatable {
     this.status = AuthStatus.initial,
     this.isAnonymous = true,
     this.email = '',
+    this.username = '',
     this.errorMessage = '',
     this.infoMessage = '',
   });
@@ -139,6 +183,9 @@ class AuthState extends Equatable {
   final AuthStatus status;
   final bool isAnonymous;
   final String email;
+
+  /// Display name from the profiles row; empty when unset.
+  final String username;
 
   /// Translation key for the snackbar shown on failures.
   final String errorMessage;
@@ -151,6 +198,7 @@ class AuthState extends Equatable {
     status,
     isAnonymous,
     email,
+    username,
     errorMessage,
     infoMessage,
   ];
@@ -159,6 +207,7 @@ class AuthState extends Equatable {
     AuthStatus? status,
     bool? isAnonymous,
     String? email,
+    String? username,
     String? errorMessage,
     String? infoMessage,
   }) {
@@ -166,6 +215,7 @@ class AuthState extends Equatable {
       status: status ?? this.status,
       isAnonymous: isAnonymous ?? this.isAnonymous,
       email: email ?? this.email,
+      username: username ?? this.username,
       errorMessage: errorMessage ?? this.errorMessage,
       infoMessage: infoMessage ?? this.infoMessage,
     );

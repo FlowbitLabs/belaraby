@@ -8,7 +8,7 @@ class LessonContentLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(child: CircularProgressIndicator(color: yellow120));
+    return const Center(child: CircularProgressIndicator(color: orange120));
   }
 }
 
@@ -36,7 +36,7 @@ class LessonContentError extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: yellow120,
+                backgroundColor: orange120,
                 foregroundColor: Colors.white,
                 shape: const StadiumBorder(),
               ),
