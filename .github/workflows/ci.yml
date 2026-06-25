@@ -26,7 +26,7 @@ jobs:
       supabase: ${{ steps.filter.outputs.supabase }}
       functions: ${{ steps.filter.outputs.functions }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: dorny/paths-filter@v4
         id: filter
@@ -55,7 +55,7 @@ jobs:
         working-directory: frontend
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Pinned to the same version as deploy_flutter.yml.
       - uses: subosito/flutter-action@v2
@@ -80,7 +80,7 @@ jobs:
         working-directory: dashboard
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v6
         with:
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: supabase/setup-cli@v2
         with:
@@ -139,7 +139,7 @@ jobs:
         working-directory: supabase/functions
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Deno 2 to match deno_version in supabase/config.toml.
       - uses: denoland/setup-deno@v2
