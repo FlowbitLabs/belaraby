@@ -93,10 +93,10 @@ packages:
     dependency: "direct main"
     description:
       name: carousel_slider
-      sha256: bcc61735345c9ab5cb81073896579e735f81e35fd588907a393143ea986be8ff
+      sha256: febf4b0163e0242adc13d7a863b04965351f59e7dfea56675c7c2caa7bcd7476
       url: "https://pub.dev"
     source: hosted
-    version: "5.1.1"
+    version: "5.1.2"
   characters:
     dependency: transitive
     description:
@@ -181,10 +181,10 @@ packages:
     dependency: "direct main"
     description:
       name: equatable
-      sha256: "567c64b3cb4cf82397aac55f4f0cbd3ca20d77c6c03bedbc4ceaddc08904aef7"
+      sha256: "3bce007a596ff8b3119c45d68aaef631272537c03d30e5d4534dd24bf4c5eaa2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.7"
+    version: "2.1.0"
   fake_async:
     dependency: transitive
     description:
@@ -236,10 +236,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_tts
-      sha256: bdf2fc4483e74450dc9fc6fe6a9b6a5663e108d4d0dad3324a22c8e26bf48af4
+      sha256: ce5eb209b40e95f2f4a1397116c87ab2fcdff32257d04ed7a764e75894c03775
       url: "https://pub.dev"
     source: hosted
-    version: "4.2.3"
+    version: "4.2.5"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -561,10 +561,10 @@ packages:
     dependency: "direct main"
     description:
       name: purchases_flutter
-      sha256: be377ba740a650b64ecbb418ea24cc36a91bf13d61db2f9552c8d2b20ca3d670
+      sha256: "246023b9638ab69f96d793698e08ae24c20f27668eb481a1a2fa7b958bb94ed8"
       url: "https://pub.dev"
     source: hosted
-    version: "10.2.2"
+    version: "10.7.0"
   realtime_client:
     dependency: transitive
     description:
@@ -964,4 +964,4 @@ packages:
     version: "2.1.0"
 sdks:
   dart: "3.9.0"
-  flutter: "3.35.2"
+  flutter: ">=3.35.2"
