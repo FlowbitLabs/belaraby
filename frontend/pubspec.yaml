@@ -9,17 +9,17 @@ environment:
   flutter: 3.35.2
 
 dependencies:
-  carousel_slider: ^5.1.1
+  carousel_slider: ^5.1.2
   easy_localization: ^3.0.7
-  equatable: ^2.0.7
+  equatable: ^2.1.0
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
-  flutter_tts: ^4.2.3
+  flutter_tts: ^4.2.5
   package_info_plus: ^8.3.0
   translator: ^1.0.0
-  supabase_flutter: ^2.10.0
-  purchases_flutter: ^10.2.2
+  supabase_flutter: ^2.17.2
+  purchases_flutter: ^10.10.1
   url_launcher: ^6.3.1
   shared_preferences: ^2.5.5
 
